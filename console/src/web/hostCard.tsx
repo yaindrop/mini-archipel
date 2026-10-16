@@ -117,7 +117,9 @@ export function HostCard({ host }: { host: HostView }) {
           {host.online ? "🟢" : "🔴"} {host.name}
         </span>
         <span className="meta">
-          {hostInfo.model} · up {fmtUptime(hostInfo.uptime_s)} · load{" "}
+          {hostInfo.model} ·{" "}
+          <span className="uptime-badge">↑{fmtUptime(hostInfo.uptime_s)}</span>{" "}
+          · load{" "}
           {Array.isArray(hostInfo.load) ? hostInfo.load[0]?.toFixed(2) : "—"}
           {!host.online && host.lastError ? ` · ${host.lastError}` : ""}
         </span>
@@ -143,6 +145,20 @@ export function HostCard({ host }: { host: HostView }) {
             <MetricTooltip label="内存" points={memHistory} unit="B" />
           </div>
           <div className="value">{memPct !== null ? `${memPct}%` : "—"}</div>
+          <div className="mem-bar">
+            <div
+              className="mem-fill"
+              style={{
+                width: `${memPct ?? 0}%`,
+                background:
+                  (memPct ?? 0) > 85
+                    ? "#f85149"
+                    : (memPct ?? 0) > 70
+                      ? "#e3b341"
+                      : "#3fb950",
+              }}
+            />
+          </div>
           <div className="sub">
             {sys.mem
               ? `${fmtBytes(sys.mem.used_bytes)} / ${fmtBytes(sys.mem.total_bytes)}`
