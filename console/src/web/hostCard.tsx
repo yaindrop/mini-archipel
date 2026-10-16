@@ -155,31 +155,31 @@ export function HostCard({ host }: { host: HostView }) {
           </div>
           <Spark points={freqHistory} color="#d29922" />
         </div>
-        <div className="metric">
-          <div className="label">
-            风扇{fan ? ` · ${Number(fan.temp).toFixed(1)}°C` : ""}
+        {fan ? (
+          <div className="metric">
+            <div className="label">风扇 · {Number(fan.temp).toFixed(1)}°C</div>
+            <div className="value">{fan ? `${fan.rpm} RPM` : "—"}</div>
+            <div className="sub">
+              {thermal ? (
+                <span
+                  className={
+                    thermal.state >= 2
+                      ? "thermal-critical"
+                      : thermal.state === 1
+                        ? "thermal-warn"
+                        : ""
+                  }
+                >
+                  {THERMAL_LABELS[thermal.state] ?? "?"}
+                </span>
+              ) : (
+                ""
+              )}
+              {fan?.forced === false ? " · 已交回系统" : ""}
+            </div>
+            <Spark points={fanHistory} color="#f778ba" />
           </div>
-          <div className="value">{fan ? `${fan.rpm} RPM` : "—"}</div>
-          <div className="sub">
-            {thermal ? (
-              <span
-                className={
-                  thermal.state >= 2
-                    ? "thermal-critical"
-                    : thermal.state === 1
-                      ? "thermal-warn"
-                      : ""
-                }
-              >
-                {THERMAL_LABELS[thermal.state] ?? "?"}
-              </span>
-            ) : (
-              ""
-            )}
-            {fan?.forced === false ? " · 已交回系统" : ""}
-          </div>
-          <Spark points={fanHistory} color="#f778ba" />
-        </div>
+        ) : null}
       </div>
 
       <RunnerPanel

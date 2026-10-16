@@ -128,6 +128,19 @@ function App() {
         <span className="muted">·</span>
         <span ref={clockRef} className="muted" />
       </div>
+      {state ? (
+        <div className="fleet-summary">
+          <span>总计 {state.hosts.length} 台</span>
+          <span>·</span>
+          <span className="ok">
+            {state.hosts.filter((h) => h.online).length} 在线
+          </span>
+          <span>·</span>
+          <span className="err">
+            {state.hosts.filter((h) => !h.online).length} 离线
+          </span>
+        </div>
+      ) : null}
       <div
         className={`host-grid${(state?.hosts?.length ?? 0) > 3 ? " compact" : ""}`}
       >

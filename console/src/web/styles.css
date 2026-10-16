@@ -403,3 +403,25 @@ body {
   text-align: center;
   padding: 6px 0;
 }
+
+.history-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.history-cell .label {
+  margin-bottom: 4px;
+}
+
+.fleet-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px 8px;
+  font-size: 13px;
+  color: #8b949e;
+}
+.fleet-summary .ok {
+  color: #3fb950;
+}
+.fleet-summary .err {
+  color: #f85149;
+}
