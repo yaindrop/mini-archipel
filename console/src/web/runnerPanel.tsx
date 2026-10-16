@@ -43,6 +43,12 @@ export function RunnerPanel({
   if (runners.length === 0) return null;
 
   const setRunner = async (runnerName: string, enable: boolean) => {
+    if (
+      !enable &&
+      !window.confirm(`确定停用 ${runnerName}？停用后重启也不会自动接单。`)
+    ) {
+      return;
+    }
     setPending(runnerName);
     setNotice(null);
     try {
@@ -103,6 +109,12 @@ export function RunnerPanel({
             </span>
             <span className="runner-meta">
               #{runner.agent_id ?? "?"} · {runner.repo_dir}
+              {remote?.labels?.length
+                ? ` · ${(remote.labels ?? [])
+                    .map((l) => l.name)
+                    .filter((n) => !n.startsWith("self-hosted"))
+                    .join(", ")}`
+                : ""}
             </span>
             <span className="runner-metric">
               _work {fmtGiB(runner.work_bytes)}

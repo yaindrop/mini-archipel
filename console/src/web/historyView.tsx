@@ -7,15 +7,23 @@ export interface HistoryPoint {
 
 const SERIES: Array<{ key: string; label: string; unit: string }> = [
   { key: "cpu.usage_pct", label: "CPU 占用", unit: "%" },
+  { key: "cpu.p_freq_mhz", label: "P 核频率", unit: "MHz" },
   { key: "mem.used_bytes", label: "内存已用", unit: "B" },
+  { key: "mem.swap_used_bytes", label: "Swap 已用", unit: "B" },
   { key: "disk.data_available_bytes", label: "磁盘可用", unit: "B" },
+  { key: "gpu.usage_pct", label: "GPU 占用", unit: "%" },
+  { key: "power.cpu_w", label: "CPU 功耗", unit: "W" },
+  { key: "power.package_w", label: "整机功耗", unit: "W" },
   { key: "fan.rpm", label: "风扇转速", unit: "RPM" },
+  { key: "fan.temp_c", label: "最高温度", unit: "°C" },
+  { key: "host.load_1m", label: "负载(1m)", unit: "" },
 ];
 
 const WINDOWS: Array<{ label: string; ms: number }> = [
   { label: "10 分钟", ms: 600_000 },
   { label: "1 小时", ms: 3_600_000 },
   { label: "24 小时", ms: 86_400_000 },
+  { label: "7 天", ms: 7 * 86_400_000 },
 ];
 
 function fmtValue(value: number, unit: string): string {

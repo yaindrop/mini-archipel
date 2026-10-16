@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DiskPanel } from "./diskPanel.tsx";
 import { HistoryView } from "./historyView.tsx";
 import { RunnerPanel } from "./runnerPanel.tsx";
@@ -58,6 +59,7 @@ function CoreBars({ cores }: { cores: number[] }) {
 }
 
 export function HostCard({ host }: { host: HostView }) {
+  const [expanded, setExpanded] = useState(false);
   const snapshot = host.snapshot ?? {};
   const sys = snapshot.sys ?? {};
   const hostInfo = snapshot.host ?? {};
@@ -79,7 +81,11 @@ export function HostCard({ host }: { host: HostView }) {
 
   return (
     <div className={`host-card${host.online ? "" : " offline"}`}>
-      <div className="host-title">
+      <div
+        className="host-title"
+        onClick={() => setExpanded(!expanded)}
+        style={{ cursor: "pointer" }}
+      >
         <span className="name">
           {host.online ? "🟢" : "🔴"} {host.name}
         </span>
@@ -194,6 +200,49 @@ export function HostCard({ host }: { host: HostView }) {
 
       <HistoryView host={host.name} />
 
+      {expanded ? (
+        <div className="host-detail">
+          <div className="detail-row">
+            <span className="muted">机型</span>
+            <span>{hostInfo.model || "—"}</span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">系统</span>
+            <span>{hostInfo.os || "—"}</span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">架构</span>
+            <span>
+              {hostInfo.arch || "—"} · {hostInfo.cores || "—"} 核
+            </span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">运行时长</span>
+            <span>{fmtUptime(hostInfo.uptime_s)}</span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">负载</span>
+            <span>
+              {Array.isArray(hostInfo.load)
+                ? hostInfo.load.map((l: number) => l.toFixed(2)).join(" / ")
+                : "—"}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">Agent</span>
+            <span>
+              v{(snapshot.agent ?? {}).version || "?"} · 启动于{" "}
+              {new Date(
+                (snapshot.agent ?? {}).started_at ?? 0,
+              ).toLocaleTimeString()}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span className="muted">最后更新</span>
+            <span>{new Date(host.lastTs).toLocaleTimeString()}</span>
+          </div>
+        </div>
+      ) : null}
       <SortableTable
         items={(sys.procs ?? []) as any[]}
         rowKey={(proc: any) => proc.pid}
