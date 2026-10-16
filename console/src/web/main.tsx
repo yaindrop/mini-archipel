@@ -113,6 +113,22 @@ function App() {
       />
     );
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      const cards = document.querySelectorAll(".host-card");
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= cards.length) {
+        (cards[num - 1] as HTMLElement).scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
     <>
       <div className="fleet-header">

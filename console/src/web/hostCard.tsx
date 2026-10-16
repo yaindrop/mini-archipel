@@ -58,6 +58,32 @@ function CoreBars({ cores }: { cores: number[] }) {
   );
 }
 
+function MetricTooltip({
+  label,
+  points,
+  unit,
+}: {
+  label: string;
+  points: Array<{ ts: number; value: number }>;
+  unit?: string;
+}) {
+  if (points.length < 2) return <>{label}</>;
+  const values = points.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const fmt =
+    unit === "B"
+      ? (v: number) => `${(v / 2 ** 30).toFixed(1)}G`
+      : (v: number) => v.toFixed(1);
+  return (
+    <span
+      title={`${label} — 当前 ${fmt(values[values.length - 1]!)} · 最低 ${fmt(min)} · 最高 ${fmt(max)}（近10分钟）`}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function HostCard({ host }: { host: HostView }) {
   const [expanded, setExpanded] = useState(false);
   const snapshot = host.snapshot ?? {};
@@ -98,7 +124,9 @@ export function HostCard({ host }: { host: HostView }) {
 
       <div className="metric-grid">
         <div className="metric">
-          <div className="label">CPU</div>
+          <div className="label">
+            <MetricTooltip label="CPU" points={cpuHistory} unit="%" />
+          </div>
           <div className="value">
             {sys.cpu ? `${sys.cpu.usage_pct.toFixed(1)}%` : "—"}
           </div>
@@ -110,7 +138,9 @@ export function HostCard({ host }: { host: HostView }) {
           <Spark points={cpuHistory} color="#58a6ff" max={100} />
         </div>
         <div className="metric">
-          <div className="label">内存</div>
+          <div className="label">
+            <MetricTooltip label="内存" points={memHistory} unit="B" />
+          </div>
           <div className="value">{memPct !== null ? `${memPct}%` : "—"}</div>
           <div className="sub">
             {sys.mem
