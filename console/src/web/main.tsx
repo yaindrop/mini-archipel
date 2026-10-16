@@ -129,6 +129,14 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  useEffect(() => {
+    if (state) {
+      const online = state.hosts.filter((h) => h.online).length;
+      const total = state.hosts.length;
+      document.title = `mini-fleet (${online}/${total})`;
+    }
+  }, [state?.hosts.map((h) => h.online).join(","), state]);
+
   return (
     <>
       <div className="fleet-header">

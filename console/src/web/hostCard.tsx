@@ -183,6 +183,7 @@ export function HostCard({ host }: { host: HostView }) {
               : "水位线 40G"}
           </div>
         </div>
+        {macmon ? (
         <div className="metric">
           <div className="label">GPU</div>
           <div className="value">
@@ -202,6 +203,7 @@ export function HostCard({ host }: { host: HostView }) {
           </div>
           <Spark points={freqHistory} color="#d29922" />
         </div>
+        ) : null}
         {fan ? (
           <div className="metric">
             <div className="label">风扇 · {Number(fan.temp).toFixed(1)}°C</div>
@@ -309,6 +311,12 @@ export function HostCard({ host }: { host: HostView }) {
         }
         rowKey={(proc: any) => proc.pid}
         columns={[
+          {
+            key: "pid",
+            label: "PID",
+            sortValue: (proc: any) => proc.pid,
+            render: (proc: any) => <span className="muted">{proc.pid}</span>,
+          },
           {
             key: "name",
             label: "活跃进程",
