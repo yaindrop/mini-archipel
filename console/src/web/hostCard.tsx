@@ -86,6 +86,7 @@ function MetricTooltip({
 
 export function HostCard({ host }: { host: HostView }) {
   const [expanded, setExpanded] = useState(false);
+  const [procFilter, setProcFilter] = useState("");
   const snapshot = host.snapshot ?? {};
   const sys = snapshot.sys ?? {};
   const hostInfo = snapshot.host ?? {};
@@ -273,8 +274,23 @@ export function HostCard({ host }: { host: HostView }) {
           </div>
         </div>
       ) : null}
+      <div className="proc-filter">
+        <input
+          type="text"
+          placeholder="筛选进程…"
+          value={procFilter}
+          onChange={(e) => setProcFilter(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
       <SortableTable
-        items={(sys.procs ?? []) as any[]}
+        items={
+          (sys.procs ?? []).filter(
+            (p: any) =>
+              procFilter === "" ||
+              p.name.toLowerCase().includes(procFilter.toLowerCase()),
+          ) as any[]
+        }
         rowKey={(proc: any) => proc.pid}
         columns={[
           {

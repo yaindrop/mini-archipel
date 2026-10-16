@@ -425,3 +425,27 @@ body {
 .fleet-summary .err {
   color: #f85149;
 }
+
+.proc-filter {
+  margin: 6px 0 4px;
+}
+.proc-filter input {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 12px;
+  padding: 4px 8px;
+  outline: none;
+}
+.proc-filter input:focus {
+  border-color: #58a6ff;
+}
+
+.metric .value {
+  transition: color 0.3s ease;
+}
+.metric .value:hover {
+  color: #fff;
+}
