@@ -1,0 +1,296 @@
+--- a/src/fanctl.c
++++ b/src/fanctl.c
+@@ -26,9 +26,9 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#define VERSION "1.4.0"
+-#define DEFAULT_CONF "/usr/local/etc/fanctl.conf"
+-#define RUN_DIR      "/usr/local/var/run"
++#define VERSION "1.4.0-macmini-m6.1"
++#define DEFAULT_CONF "/Library/MacMiniFanControl/fanctl.conf"
++#define RUN_DIR      "/Library/MacMiniFanControl"
+ #define PAUSE_FILE   RUN_DIR "/fanctl.paused"
+ 
+ /* Seconds between writes while the fan command is ramping. */
+@@ -36,7 +36,7 @@
+ 
+ #define MAX_FANS    8
+ #define MAX_STEPS   16
+-#define MAX_SENSORS 32
++#define MAX_SENSORS 64
+ 
+ /* ---------------------------------------------------------------- config */
+ 
+@@ -213,6 +213,10 @@
+     snprintf(k, sizeof k, "F%dTg", idx); if (!skey_init(&f->target, k)) return false;
+     snprintf(k, sizeof k, "F%dMx", idx); if (!skey_init(&f->fmax,   k)) return false;
+     snprintf(k, sizeof k, "F%dMd", idx); f->has_mode = skey_init(&f->mode, k);
++    if (!f->has_mode) {
++        snprintf(k, sizeof k, "F%dmd", idx); /* M6 uses lowercase md. */
++        f->has_mode = skey_init(&f->mode, k);
++    }
+     snprintf(k, sizeof k, "F%dMn", idx); f->has_fmin = skey_init(&f->fmin, k);
+     if (!skey_read(&f->fmax, &f->hw_max) || f->hw_max < 100 || f->hw_max > 20000)
+         f->hw_max = 0;
+@@ -263,17 +267,18 @@
+ 
+ static skey_t g_sensors[MAX_SENSORS];
+ static int    g_nsensors = 0;
++static bool   g_sensor_setup_ok = true;
+ 
+ static bool sensor_plausible(double v) { return v > 5.0 && v < 125.0; }
+ 
+ static void sensor_add(const char *name) {
+-    if (g_nsensors >= MAX_SENSORS) return;
++    if (g_nsensors >= MAX_SENSORS) { g_sensor_setup_ok = false; return; }
+     for (int i = 0; i < g_nsensors; i++)
+         if (memcmp(g_sensors[i].name, name, 4) == 0) return;
+     skey_t k;
+-    if (!skey_init(&k, name)) return;
++    if (!skey_init(&k, name)) { g_sensor_setup_ok = false; return; }
+     double v;
+-    if (!skey_read(&k, &v) || !sensor_plausible(v)) return;
++    if (!skey_read(&k, &v) || !sensor_plausible(v)) { g_sensor_setup_ok = false; return; }
+     g_sensors[g_nsensors++] = k;
+ }
+ 
+@@ -327,6 +332,7 @@
+ 
+ static void sensors_setup(const cfg_t *cfg) {
+     g_nsensors = 0;
++    g_sensor_setup_ok = true;
+     if (strcmp(cfg->sensors, "auto") == 0) {
+         sensors_auto();
+     } else {
+@@ -351,9 +357,10 @@
+  * `peak` is always the raw hottest reading, and only feeds the critical-
+  * temperature cutout - that one should not be smoothed or averaged away.
+  *
+- * Returns false only if every sensor failed to read. */
++ * Missing/invalid configured sensors invalidate the entire sample. */
+ static bool sensors_sample(int aggregate, double *ctrl, double *peak,
+                            const char **who) {
++    if (!g_sensor_setup_ok) return false;
+     struct { uint32_t fam; double sum; int n; } g[8];
+     int ng = 0;
+     double mx = -1e9;
+@@ -361,7 +368,7 @@
+ 
+     for (int i = 0; i < g_nsensors; i++) {
+         double v;
+-        if (!skey_read(&g_sensors[i], &v) || !sensor_plausible(v)) continue;
++        if (!skey_read(&g_sensors[i], &v) || !sensor_plausible(v)) return false;
+         if (v > mx) { mx = v; hot = g_sensors[i].name; }
+ 
+         uint32_t fam = g_sensors[i].key >> 16;   /* first two chars */
+@@ -489,6 +496,20 @@
+     return down;
+ }
+ 
++static int policy_step(const cfg_t *c, double temp, double tick, double gap,
++                       int level, double below_since[MAX_STEPS]) {
++    int want = step_for(c, temp, level);
++    for (int i = 1; i < c->nsteps; i++) {
++        if (gap > c->poll * 3 || temp >= c->steps[i].temp - c->hysteresis)
++            below_since[i] = -1;
++        else if (below_since[i] < 0) below_since[i] = tick;
++    }
++    if (want > level) return want; /* This deployment specifies up_delay=0. */
++    while (level > want && below_since[level] >= 0 &&
++           tick - below_since[level] >= c->down_delay) level--;
++    return level;
++}
++
+ static double clampd(double v, double lo, double hi) {
+     return v < lo ? lo : (v > hi ? hi : v);
+ }
+@@ -498,6 +519,7 @@
+ /* `mode = auto` picks whichever method this machine actually supports, so the
+  * same config works on a Mac where F0Mn is writable and one where it is not. */
+ static int resolve_mode(const fan_t *f, int mode, bool verbose) {
++    if (mode == MODE_FORCE || g_dry) return mode == MODE_AUTO ? MODE_FORCE : mode;
+     bool floor_ok = f->has_fmin && skey_writable(&f->fmin);
+     if (mode == MODE_AUTO) {
+         if (verbose)
+@@ -542,6 +564,7 @@
+         return ok;
+     }
+ 
++    if (!f->has_mode) return false;
+     if (rpm <= c->min_rpm + 1) {
+         if (f->has_mode && (!skey_read(&f->mode, &cur) || cur != 0)) {
+             ok &= skey_write_confirm(&f->mode, 0, 2.0);
+@@ -551,7 +574,7 @@
+     }
+ 
+     if (f->has_mode && (!skey_read(&f->mode, &cur) || cur != 1)) {
+-        ok &= skey_write_confirm(&f->mode, 1, 2.0);
++        if (!skey_write_confirm(&f->mode, 1, 2.0)) return false;
+         *wrote = true;
+     }
+     if (!skey_read(&f->target, &cur) || fabs(cur - rpm) > 1.0) {
+@@ -579,9 +602,10 @@
+ 
+ static bool fan_release(const fan_t *f, const cfg_t *c) {
+     bool ok = true;
+-    if (f->has_fmin && skey_writable(&f->fmin))
++    if (c->mode == MODE_FLOOR && f->has_fmin && skey_writable(&f->fmin))
+         ok &= skey_write_confirm(&f->fmin, c->min_rpm, 2.0);
+-    if (f->has_mode) ok &= skey_write_confirm(&f->mode, 0, 2.0);
++    if (!f->has_mode) return false;
++    ok &= skey_write_confirm(&f->mode, 0, 2.0);
+     return ok;
+ }
+ 
+@@ -619,7 +643,15 @@
+ static int run_daemon(const char *conf) {
+     cfg_t cfg;
+     cfg_defaults(&cfg);
+-    cfg_load(&cfg, conf, false);
++    if (!cfg_load(&cfg, conf, false)) {
++        logf_("error: configuration is required"); return 1;
++    }
++    if (cfg.mode != MODE_FORCE || cfg.up_delay != 0 || strcmp(cfg.sensors, "auto") == 0) {
++        logf_("error: this build requires force mode, immediate rise and explicit sensors"); return 1;
++    }
++    signal(SIGTERM, on_signal);
++    signal(SIGINT, on_signal);
++    signal(SIGHUP, on_signal);
+ 
+     if (smc_open() != 0) { logf_("error: cannot open AppleSMC"); return 1; }
+ 
+@@ -632,6 +664,12 @@
+      * same writability, and resolving per fan would allow a split that the rest
+      * of the loop has no way to represent. */
+     cfg.mode = resolve_mode(&fans.f[0], cfg.mode, true);
++    for (int i = 0; i < fans.n; i++) {
++        if (!fans.f[i].has_mode) { logf_("error: no fan mode key"); smc_close(); return 1; }
++    }
++    if (!g_dry && !fanset_release(&fans, &cfg)) {
++        logf_("error: cannot restore system control at startup"); smc_close(); return 1;
++    }
+ 
+     /* Ceiling is the most capable fan's; each is clamped to its own on write. */
+     double hw_max = 0;
+@@ -639,7 +677,7 @@
+     if (hw_max > 100) cfg.max_rpm = fmin(cfg.max_rpm, hw_max);
+ 
+     sensors_setup(&cfg);
+-    if (g_nsensors == 0) { logf_("error: no usable temperature sensors"); return 1; }
++    if (g_nsensors == 0 || !g_sensor_setup_ok) { logf_("error: configured sensors unavailable"); smc_close(); return 1; }
+ 
+     logf_("fanctl %s starting (%d fan%s, max_rpm=%.0f)", VERSION,
+           fans.n, fans.n == 1 ? "" : "s", cfg.max_rpm);
+@@ -653,8 +691,10 @@
+     time_t conf_mtime = (stat(conf, &st) == 0) ? st.st_mtime : 0;
+ 
+     double ewma = -1, last_tick = now_mono();
+-    int    level = 0, pending_dir = 0;
+-    double pending_since = 0, applied = -1, rpm = -1;
++    int    level = 0, pending_dir = 0, exit_code = 0;
++    double below_since[MAX_STEPS];
++    for (int i = 0; i < MAX_STEPS; i++) below_since[i] = -1;
++    double applied = -1, rpm = -1;
+     int    logged_level = -1;
+     bool   was_paused = false;
+     int    fail_streak = 0, ticks = 0, write_fails = 0;
+@@ -665,19 +705,8 @@
+         last_tick = tick;
+ 
+         if (g_reload || (++ticks % 20 == 0 && stat(conf, &st) == 0 && st.st_mtime != conf_mtime)) {
+-            g_reload = 0;
+-            conf_mtime = (stat(conf, &st) == 0) ? st.st_mtime : conf_mtime;
+-            cfg_t nc;
+-            cfg_defaults(&nc);
+-            cfg_load(&nc, conf, true);
+-            nc.mode = resolve_mode(&fans.f[0], nc.mode, false);
+-            nc.max_rpm = fmin(nc.max_rpm, cfg.max_rpm);
+-            bool resensor = strcmp(nc.sensors, cfg.sensors) != 0;
+-            cfg = nc;
+-            if (resensor) sensors_setup(&cfg);
+-            applied = -1;   /* force a re-assert under the new config */
+-            logf_("config reloaded");
+-            describe_setup(&cfg);
++            logf_("configuration changed; returning control before restart");
++            exit_code = 1; break;
+         }
+ 
+         /* Paused: hand the fan back and idle until the flag clears. The
+@@ -691,6 +720,7 @@
+             if (paused && !g_dry) fanset_release(&fans, &cfg);
+             applied = -1; rpm = -1; ewma = -1;
+             level = 0; pending_dir = 0; logged_level = -1;
++            for (int i = 0; i < MAX_STEPS; i++) below_since[i] = -1;
+         }
+         if (paused) { sleep_sec(cfg.poll); continue; }
+ 
+@@ -699,9 +729,9 @@
+         if (!sensors_sample(cfg.aggregate, &temp, &peak, &hot)) {
+             if (++fail_streak == 3) {
+                 logf_("error: sensors unreadable, returning fan to SMC control");
+-                fanset_release(&fans, &cfg);
+-                applied = -1;
++                exit_code = 1; break;
+             }
++            for (int i = 0; i < MAX_STEPS; i++) below_since[i] = -1;
+             sleep_sec(cfg.poll);
+             continue;
+         }
+@@ -719,19 +749,8 @@
+             ewma += a * (temp - ewma);
+         }
+ 
+-        /* Dwell is timed per direction, not per target step. A steadily
+-         * falling temperature keeps moving `want` (3, then 2, then 1) while we
+-         * wait; timing the exact value would restart the clock on every one of
+-         * those and stretch a 30s delay into a minute or more. */
+-        int want = step_for(&cfg, ewma, level);
+-        int dir = (want > level) - (want < level);
+-        if (dir == 0) {
+-            pending_dir = 0;
+-        } else {
+-            if (dir != pending_dir) { pending_dir = dir; pending_since = tick; }
+-            double delay = (dir > 0) ? cfg.up_delay : cfg.down_delay;
+-            if (tick - pending_since >= delay) { level = want; pending_dir = 0; }
+-        }
++        level = policy_step(&cfg, ewma, tick, gap, level, below_since);
++        pending_dir = step_for(&cfg, ewma, level) < level ? -1 : 0;
+ 
+         double want_rpm = clampd(cfg.steps[level].rpm, cfg.min_rpm, cfg.max_rpm);
+         bool emergency = (peak >= cfg.critical_temp);   /* raw, unsmoothed */
+@@ -751,8 +770,8 @@
+ 
+         bool wrote = false;
+         if (!g_dry && !fanset_apply(&fans, &cfg, rpm, &wrote)) {
+-            if (write_fails++ % 100 == 0)
+-                logf_("error: SMC write failed (running as root?) [%d]", write_fails);
++            logf_("error: SMC write failed [%d]", ++write_fails);
++            if (write_fails >= 3) { exit_code = 1; break; }
+         } else if (wrote || rpm != applied) {
+             write_fails = 0;
+             /* Log the ends of a ramp - the level change that started it and the
+@@ -783,10 +802,11 @@
+     }
+ 
+     logf_("stopping, returning fan to SMC control");
+-    if (!g_dry && !fanset_release(&fans, &cfg))
+-        logf_("warn: could not restore SMC control");
++    if (!g_dry && !fanset_release(&fans, &cfg)) {
++        logf_("error: could not restore SMC control"); exit_code = 1;
++    }
+     smc_close();
+-    return 0;
++    return exit_code;
+ }
+ 
+ /* ----------------------------------------------------------- calibration */
+@@ -1259,7 +1279,7 @@
+         fprintf(stderr, "SMC write failed - run as root\n");
+         return 1;
+     }
+-    printf("fan returned to SMC control (F0Md=0, F0Mn=%.0f)\n", cfg.min_rpm);
++    printf("fan returned to SMC automatic control\n");
+     return 0;
+ }
+ 

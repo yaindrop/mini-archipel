@@ -1,0 +1,17 @@
+# Base M6 Mac mini (Mac18,5) only. Percentage uses the 1000..4900 RPM range.
+curve = 0:1000,40:2170,50:2950,60:3730,70:4900
+mode = force
+fans = 0
+aggregate = max
+poll_interval = 1
+alpha_up = 1
+alpha_down = 1
+hysteresis = 3
+down_delay = 20
+up_delay = 0
+slew_up = 0
+slew_down = 0
+min_rpm = 1000
+max_rpm = 4900
+critical_temp = 70
+sensors = Te07,Te08,Te09,Te0c,Te0e,Te0f,Te0g,Te0h,Te0i,Tg01,Tg07,Tg08,Tg09,Tg0a,Tg0b,Tg0c,Tg0d,Tg10,Tg17,Tg1a,Tg1b,Tg1c,Tg1d,Tg1e,Tg1f,Tg1g,Tg1h,Tp05,Tp07,Tp09,Tp0A,Tp0E,Tp0G,Tp0I,Tp0L,Tp0b,Tp0d,Tp0g,Tp0j,Tp0m,Tp0o,Tp0r,Tp0t,Tp0u,Tp0w,Tp0x,Tp0y,Tp0z
