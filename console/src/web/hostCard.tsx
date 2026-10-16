@@ -2,6 +2,7 @@ import { DiskPanel } from "./diskPanel.tsx";
 import { HistoryView } from "./historyView.tsx";
 import { RunnerPanel } from "./runnerPanel.tsx";
 import { Spark } from "./spark.tsx";
+import { SortableTable } from "./sortableTable.tsx";
 
 interface HostView {
   name: string;
@@ -119,7 +120,7 @@ export function HostCard({ host }: { host: HostView }) {
         <div className="metric">
           <div className="label">存储容量</div>
           <div
-            className={`value${diskAvailGiB !== null && diskAvailGiB < 40 ? " critical" : ""}`}
+            className={`value${diskAvailGiB !== null && diskAvailGiB < 40 ? " disk-watermark" : ""}`}
           >
             {diskAvailGiB !== null ? `${diskAvailGiB.toFixed(0)} GiB` : "—"}
           </div>
@@ -158,9 +159,9 @@ export function HostCard({ host }: { host: HostView }) {
               <span
                 className={
                   thermal.state >= 2
-                    ? "critical"
+                    ? "thermal-critical"
                     : thermal.state === 1
-                      ? "warn"
+                      ? "thermal-warn"
                       : ""
                 }
               >
@@ -193,24 +194,45 @@ export function HostCard({ host }: { host: HostView }) {
 
       <HistoryView host={host.name} />
 
-      <table className="proc-table">
-        <thead>
-          <tr>
-            <th>活跃进程</th>
-            <th style={{ textAlign: "right" }}>CPU%</th>
-            <th style={{ textAlign: "right" }}>内存</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(sys.procs ?? []).map((proc: any) => (
-            <tr key={proc.pid}>
-              <td title={proc.name}>{proc.name.slice(0, 28)}</td>
-              <td className="num">{proc.cpu_pct.toFixed(1)}</td>
-              <td className="num">{fmtBytes(proc.mem_bytes)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <SortableTable
+        items={(sys.procs ?? []) as any[]}
+        rowKey={(proc: any) => proc.pid}
+        columns={[
+          {
+            key: "name",
+            label: "活跃进程",
+            sortValue: (proc: any) => proc.name,
+            render: (proc: any) => (
+              <span
+                title={proc.name}
+                style={{
+                  maxWidth: 200,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {proc.name}
+              </span>
+            ),
+          },
+          {
+            key: "cpu",
+            label: "CPU%",
+            align: "right",
+            default: true,
+            sortValue: (proc: any) => proc.cpu_pct,
+            render: (proc: any) => proc.cpu_pct.toFixed(1),
+          },
+          {
+            key: "mem",
+            label: "内存",
+            align: "right",
+            sortValue: (proc: any) => proc.mem_bytes,
+            render: (proc: any) => fmtBytes(proc.mem_bytes),
+          },
+        ]}
+      />
     </div>
   );
 }

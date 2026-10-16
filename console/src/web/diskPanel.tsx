@@ -1,3 +1,4 @@
+import { SortableTable } from "./sortableTable.tsx";
 import { useState } from "react";
 
 interface ScanNode {
@@ -144,11 +145,18 @@ export function DiskPanel({
                   ));
               })()}
             </div>
-            <table className="proc-table">
-              <tbody>
-                {rows.slice(1, 20).map(({ depth, node }) => (
-                  <tr key={`${depth}-${node.root}-${node.bytes}`}>
-                    <td style={{ paddingLeft: depth * 14 }}>
+            <SortableTable
+              items={rows.slice(1)}
+              rowKey={({ depth, node }) =>
+                `${depth}-${node.root}-${node.bytes}`
+              }
+              columns={[
+                {
+                  key: "name",
+                  label: "目录",
+                  sortValue: ({ node }) => node.root,
+                  render: ({ depth, node }) => (
+                    <span style={{ paddingLeft: depth * 14 }}>
                       <span
                         className="disk-dot"
                         style={{
@@ -156,13 +164,27 @@ export function DiskPanel({
                         }}
                       />
                       {node.root}
-                    </td>
-                    <td className="num">{fmtGiB(node.bytes)}</td>
-                    <td className="num muted">{node.class}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  ),
+                },
+                {
+                  key: "size",
+                  label: "大小",
+                  align: "right",
+                  default: true,
+                  sortValue: ({ node }) => node.bytes,
+                  render: ({ node }) => fmtGiB(node.bytes),
+                },
+                {
+                  key: "class",
+                  label: "类别",
+                  sortValue: ({ node }) => node.class,
+                  render: ({ node }) => (
+                    <span className="muted">{node.class}</span>
+                  ),
+                },
+              ]}
+            />
           </div>
         );
       })}

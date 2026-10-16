@@ -117,15 +117,20 @@ function App() {
     <>
       <div className="fleet-header">
         <h1>mini-fleet</h1>
+        <span className={`conn-badge ${state ? "" : "connecting"}`}>
+          {state ? "●" : "○"}
+        </span>
         <span className="muted">
           {state
             ? `${state.hosts.filter((host) => host.online).length}/${state.hosts.length} 在线`
             : "连接中…"}
-          {" · "}
-          <span ref={clockRef} />
         </span>
+        <span className="muted">·</span>
+        <span ref={clockRef} className="muted" />
       </div>
-      <div className="host-grid">
+      <div
+        className={`host-grid${(state?.hosts?.length ?? 0) > 3 ? " compact" : ""}`}
+      >
         {(state?.hosts ?? []).map((host) => (
           <HostCard key={host.name} host={host} />
         ))}

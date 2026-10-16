@@ -38,6 +38,46 @@ body {
   padding: 16px 24px 32px;
 }
 
+@media (max-width: 900px) {
+  .host-grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+  .fleet-header {
+    padding: 12px 12px 4px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .host-grid {
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+  }
+}
+
+/* Compact mode when 4+ hosts: smaller metric cells */
+.host-grid.compact .metric {
+  padding: 5px 8px;
+}
+.host-grid.compact .metric .value {
+  font-size: 14px;
+}
+.host-grid.compact .metric .sub {
+  font-size: 10px;
+}
+.host-grid.compact .core-bars {
+  height: 22px;
+}
+.host-grid.compact .spark {
+  height: 28px;
+}
+.host-grid.compact .proc-table {
+  font-size: 11px;
+}
+.host-grid.compact .proc-table th,
+.host-grid.compact .proc-table td {
+  padding: 2px 4px;
+}
+
 .host-card {
   background: #161b22;
   border: 1px solid #30363d;
@@ -286,4 +326,50 @@ body {
 .runner-toggle:not(:disabled):hover {
   border-color: #f85149;
   color: #f85149;
+}
+
+.conn-badge {
+  font-size: 10px;
+  margin: 0 2px 0 8px;
+  color: #3fb950;
+  animation: pulse 2s infinite;
+}
+.conn-badge.connecting {
+  color: #e3b341;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.host-card.offline {
+  border-color: rgba(248, 81, 73, 0.3);
+  animation: offline-glow 3s infinite;
+}
+@keyframes offline-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(248, 81, 73, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(248, 81, 73, 0.12);
+  }
+}
+
+.disk-watermark {
+  color: #f85149 !important;
+  font-weight: 600;
+}
+.thermal-warn {
+  color: #e3b341;
+}
+.thermal-critical {
+  color: #f85149;
+  font-weight: 600;
+  animation: pulse 1s infinite;
 }
