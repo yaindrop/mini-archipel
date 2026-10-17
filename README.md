@@ -1,4 +1,4 @@
-# mac-mini-fan-control
+# mini-fan-control
 
 基础款 Apple M6 Mac mini（Mac18,5）的自适应风扇控制守护进程：空闲安静、
 负载升温时提前散热、降温带独立滞回、低温交还 Apple 自动控制。
