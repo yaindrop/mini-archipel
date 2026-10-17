@@ -104,9 +104,7 @@ pub async fn run(state: Shared, binary: String) {
         }
 
         let status = child.wait().await;
-        eprintln!(
-            "macmon stream ended after {seen_lines} lines, status={status:?}; respawning"
-        );
+        eprintln!("macmon stream ended after {seen_lines} lines, status={status:?}; respawning");
         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     }
 }

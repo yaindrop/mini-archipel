@@ -1,180 +1,52 @@
+import { i18n } from "@lingui/core";
+import { I18nProvider } from "@lingui/react";
+import { syncPreferences } from "./preferences.tsx";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { useEffect, useRef, useState } from "react";
-
-import { HostCard } from "./hostCard.tsx";
-
-interface FleetState {
-  ts: number;
-  hosts: Array<{
-    name: string;
-    online: boolean;
-    lastError: string | null;
-    lastTs: number;
-    snapshot: any;
-    history: Record<string, Array<{ ts: number; value: number }>>;
-  }>;
+import { BrowserRouter } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PluginProvider } from "./plugins.tsx";
+import { workbenchPlugins } from "../plugins/catalog.web.tsx";
+import { App } from "./App.tsx";
+import "@fontsource/manrope/latin-400.css";
+import "@fontsource/manrope/latin-600.css";
+import "@fontsource/manrope/latin-700.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "antd/dist/reset.css";
+import "./styles.css";
+const client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5000,
+      retry: 1,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
+// Remove the previous console's persistent credential; sessions are now HttpOnly cookies.
+try {
+  localStorage.removeItem("fleet-token");
+  localStorage.removeItem("fleet-theme");
+} catch {
+  /* Storage is optional. */
 }
-
-function useFleetState(token: string): FleetState | null {
-  const [state, setState] = useState<FleetState | null>(null);
-  const [fallbackTick, setFallbackTick] = useState(0);
-
-  useEffect(() => {
-    let socket: WebSocket | null = null;
-    let closed = false;
-    let retry: ReturnType<typeof setTimeout> | null = null;
-
-    const connect = () => {
-      const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-      const suffix = token ? `?token=${encodeURIComponent(token)}` : "";
-      socket = new WebSocket(`${protocol}//${location.host}/ws${suffix}`);
-      socket.onmessage = (event) => setState(JSON.parse(event.data));
-      socket.onclose = () => {
-        if (closed) return;
-        retry = setTimeout(connect, 2000);
-      };
-    };
-    connect();
-
-    const poll = setInterval(async () => {
-      if (document.hidden) return;
-      try {
-        const response = await fetch(`/api/state`, {
-          headers: token ? { authorization: `Bearer ${token}` } : undefined,
-        });
-        if (response.ok) setState(await response.json());
-      } catch {
-        /* WebSocket remains the primary feed. */
-      }
-    }, 2000);
-    const visibility = () => setFallbackTick((tick) => tick + 1);
-    document.addEventListener("visibilitychange", visibility);
-
-    return () => {
-      closed = true;
-      if (retry) clearTimeout(retry);
-      clearInterval(poll);
-      document.removeEventListener("visibilitychange", visibility);
-      socket?.close();
-    };
-  }, [token, fallbackTick]);
-
-  return state;
-}
-
-function TokenGate({ onToken }: { onToken: (token: string) => void }) {
-  const [value, setValue] = useState("");
-  return (
-    <div className="token-gate">
-      <input
-        placeholder="访问令牌"
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") onToken(value);
-        }}
-      />
-      <button onClick={() => onToken(value)}>进入</button>
-    </div>
-  );
-}
-
-function App() {
-  const [token, setToken] = useState(() => {
-    const fromUrl = new URLSearchParams(location.search).get("token");
-    if (fromUrl) return fromUrl;
-    return localStorage.getItem("fleet-token") ?? "";
-  });
-  const state = useFleetState(token);
-  const clockRef = useRef<HTMLSpanElement | null>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (clockRef.current)
-        clockRef.current.textContent = new Date().toLocaleTimeString();
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (token && location.search.includes("token=")) {
-      localStorage.setItem("fleet-token", token);
-      history.replaceState(null, "", location.pathname);
-    }
-  }, [token]);
-
-  if (state === null && token === "")
-    return (
-      <TokenGate
-        onToken={(value) => {
-          localStorage.setItem("fleet-token", value);
-          setToken(value);
-        }}
-      />
-    );
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
-      const cards = document.querySelectorAll(".host-card");
-      const num = parseInt(e.key);
-      if (num >= 1 && num <= cards.length) {
-        (cards[num - 1] as HTMLElement).scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  useEffect(() => {
-    if (state) {
-      const online = state.hosts.filter((h) => h.online).length;
-      const total = state.hosts.length;
-      document.title = `mini-fleet (${online}/${total})`;
-    }
-  }, [state?.hosts.map((h) => h.online).join(","), state]);
-
-  return (
-    <>
-      <div className="fleet-header">
-        <h1>mini-fleet</h1>
-        <span className={`conn-badge ${state ? "" : "connecting"}`}>
-          {state ? "●" : "○"}
-        </span>
-        <span className="muted">
-          {state
-            ? `${state.hosts.filter((host) => host.online).length}/${state.hosts.length} 在线`
-            : "连接中…"}
-        </span>
-        <span className="muted">·</span>
-        <span ref={clockRef} className="muted" />
-      </div>
-      {state ? (
-        <div className="fleet-summary">
-          <span>总计 {state.hosts.length} 台</span>
-          <span>·</span>
-          <span className="ok">
-            {state.hosts.filter((h) => h.online).length} 在线
-          </span>
-          <span>·</span>
-          <span className="err">
-            {state.hosts.filter((h) => !h.online).length} 离线
-          </span>
-        </div>
-      ) : null}
-      <div
-        className={`host-grid${(state?.hosts?.length ?? 0) > 3 ? " compact" : ""}`}
-      >
-        {(state?.hosts ?? []).map((host) => (
-          <HostCard key={host.name} host={host} />
-        ))}
-      </div>
-    </>
-  );
-}
-
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+if (new URLSearchParams(location.search).has("token"))
+  history.replaceState(null, "", location.pathname);
+const root = document.getElementById("root");
+if (!root) throw new Error("Missing workbench root");
+syncPreferences();
+createRoot(root).render(
+  <StrictMode>
+    <I18nProvider i18n={i18n}>
+      <QueryClientProvider client={client}>
+        <BrowserRouter>
+          <PluginProvider plugins={workbenchPlugins}>
+            <App />
+          </PluginProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </I18nProvider>
+  </StrictMode>,
+);

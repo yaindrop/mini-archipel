@@ -1,0 +1,160 @@
+.runner-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+.runner-repo-tabs > .ant-tabs-nav .ant-tag {
+  margin-inline-end: 0;
+}
+.runner-repo-tabs > .ant-tabs-nav .ant-tabs-tab {
+  padding-block: 12px;
+}
+.github-repository {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.github-repository .ant-typography {
+  overflow-wrap: anywhere;
+}
+.runner-card .ant-card-head {
+  min-height: 78px;
+  padding: 0 18px;
+}
+.runner-card .ant-card-body {
+  padding: 18px 18px 0;
+}
+.runner-card-name h3 {
+  margin: 0 0 5px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.runner-card-name .ant-space {
+  font-size: 11px;
+  font-weight: 400;
+}
+.runner-glyph {
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  border: 1px solid #c4e5e5;
+  background: #eaf7f7;
+  color: #08727e;
+  border-radius: 7px;
+}
+.runner-glyph-busy {
+  background: #edf0fc;
+  color: #5261a8;
+  border-color: #dce0f4;
+}
+.runner-card .ant-descriptions-item-label,
+.runner-card .ant-descriptions-item-content {
+  font-size: 12px;
+}
+.runner-card .ant-descriptions .num {
+  font-size: 13px;
+}
+.runner-card .ant-card-extra .ant-tag {
+  margin: 0;
+}
+.runner-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 18px;
+  margin: 13px -18px 0;
+  background: var(--subtle);
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+}
+.runner-card-footer > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+}
+.runner-log {
+  font: 10px var(--mono);
+  overflow-wrap: anywhere;
+}
+.runner-labels {
+  padding: 12px 0;
+}
+.confirm-target {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--subtle);
+  border-radius: 7px;
+  padding: 16px;
+  margin: 18px 0;
+  color: var(--accent);
+}
+.confirm-target > span {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.confirm-target strong {
+  color: var(--text);
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.confirm-target .ant-typography {
+  font-size: 11px;
+}
+.github-connection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+.github-connection > svg {
+  color: var(--muted);
+}
+.github-connection .ant-typography {
+  font-size: 12px;
+  margin: 0;
+}
+@media (width <= 760px) {
+  .runner-card .ant-card-head {
+    padding-inline: 13px;
+  }
+  .runner-card .ant-card-head-wrapper {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-block: 15px;
+  }
+  .runner-card .ant-card-extra {
+    margin-left: 48px;
+  }
+  .runner-card .ant-card-extra .ant-space {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .runner-card-name h3 {
+    font-size: 12px;
+  }
+  .runner-card .ant-card-body {
+    padding: 15px 13px 0;
+  }
+  .runner-card .ant-descriptions-item-label,
+  .runner-card .ant-descriptions-item-content {
+    font-size: 11px;
+  }
+  .runner-card-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-inline: -13px;
+    padding-inline: 13px;
+  }
+  .runner-log {
+    flex-basis: 100%;
+    font-size: 9px;
+  }
+}

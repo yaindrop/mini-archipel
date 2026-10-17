@@ -6,3 +6,9 @@ target/
 console/console.db*
 agent/agent.toml
 *.tmp
+console/coverage/
+console/playwright-report/
+console/test-results/
+console/.preview/
+
+console/src/locales/**/*.ts

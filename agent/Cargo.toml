@@ -1,8 +1,8 @@
 [package]
-name = "mini-fleet-agent"
-version = "0.1.0"
+name = "mini-archipel-agent"
+version = "0.4.0"
 edition = "2021"
-description = "Metrics collection agent for the mini-fleet console"
+description = "Metrics collection agent for the mini-archipel console"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }

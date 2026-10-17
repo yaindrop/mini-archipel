@@ -104,7 +104,11 @@ pub async fn run(state: Shared, proc_interval_ms: u64) {
                     mem_bytes: p.memory(),
                 })
                 .collect();
-            collected.sort_by(|a, b| b.cpu_pct.partial_cmp(&a.cpu_pct).unwrap_or(std::cmp::Ordering::Equal));
+            collected.sort_by(|a, b| {
+                b.cpu_pct
+                    .partial_cmp(&a.cpu_pct)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
             collected.truncate(TOP_COUNT);
             procs = collected;
             last_proc_refresh = now;

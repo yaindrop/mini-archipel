@@ -1,7 +1,6 @@
 pub mod disk;
 pub mod fan;
 pub mod host;
-pub mod runner;
 pub mod macmon;
 pub mod sys;
 pub mod thermal;
@@ -23,7 +22,7 @@ pub struct SharedState {
     pub fan: Option<serde_json::Value>,
     pub disk_scans: std::collections::HashMap<String, disk::TreeScan>,
     pub disk_rescan_flag: std::sync::atomic::AtomicBool,
-    pub runners: Vec<runner::RunnerInstall>,
+    pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
     pub started_at: u64,
 }
 
@@ -49,7 +48,7 @@ impl SharedState {
             thermal: self.thermal.clone(),
             fan: self.fan.clone(),
             disk_scans: self.disk_scans.values().cloned().collect(),
-            runners: self.runners.clone(),
+            plugins: self.plugins.clone(),
         }
     }
 }
@@ -70,7 +69,7 @@ pub struct Snapshot {
     pub thermal: Option<thermal::ThermalInfo>,
     pub fan: Option<serde_json::Value>,
     pub disk_scans: Vec<disk::TreeScan>,
-    pub runners: Vec<runner::RunnerInstall>,
+    pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
 }
 
 #[derive(Serialize)]
@@ -107,8 +106,4 @@ pub async fn spawn_all(state: Shared, config: CollectorConfig) {
     let roots = config.disk_roots.clone();
     let disk_interval = config.disk_interval_ms;
     tokio::spawn(async move { disk::run(disk_state, roots, disk_interval).await });
-
-    let runner_state = Arc::clone(&state);
-    let runner_interval = config.runner_interval_ms;
-    tokio::spawn(async move { runner::run(runner_state, runner_interval).await });
 }

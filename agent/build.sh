@@ -3,5 +3,5 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 cargo build --release
-./target/release/mini-fleet-agent --version 2>/dev/null || true
-ls -lh target/release/mini-fleet-agent
+./target/release/mini-archipel-agent --version 2>/dev/null || true
+ls -lh target/release/mini-archipel-agent

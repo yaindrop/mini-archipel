@@ -1,14 +1,17 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Config {
     pub bind: String,
     pub token: String,
     #[serde(default)]
     pub collectors: CollectorConfig,
+    #[serde(default)]
+    pub plugins: BTreeMap<String, PluginConfig>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CollectorConfig {
     /// Top-process refresh cadence; sysinfo cpu/mem/disk run at 1s.
     #[serde(default = "default_proc_interval")]
@@ -26,8 +29,6 @@ pub struct CollectorConfig {
     pub disk_interval_ms: u64,
     #[serde(default = "default_disk_roots")]
     pub disk_roots: Vec<String>,
-    #[serde(default = "default_runner_interval")]
-    pub runner_interval_ms: u64,
 }
 
 impl Default for CollectorConfig {
@@ -40,23 +41,33 @@ impl Default for CollectorConfig {
             fanctl: default_fanctl(),
             disk_interval_ms: default_disk_interval(),
             disk_roots: default_disk_roots(),
-            runner_interval_ms: default_runner_interval(),
         }
     }
 }
 
-fn default_proc_interval() -> u64 { 2000 }
-fn default_thermal_interval() -> u64 { 5000 }
-fn default_fan_interval() -> u64 { 2000 }
-fn default_macmon() -> String { "/opt/homebrew/bin/macmon".to_string() }
-fn default_fanctl() -> String { "/Library/MacMiniFanControl/fanctl".to_string() }
-fn default_disk_interval() -> u64 { 21_600_000 }
+fn default_proc_interval() -> u64 {
+    2000
+}
+fn default_thermal_interval() -> u64 {
+    5000
+}
+fn default_fan_interval() -> u64 {
+    2000
+}
+fn default_macmon() -> String {
+    "/opt/homebrew/bin/macmon".to_string()
+}
+fn default_fanctl() -> String {
+    "/Library/MacMiniFanControl/fanctl".to_string()
+}
+fn default_disk_interval() -> u64 {
+    21_600_000
+}
 fn default_disk_roots() -> Vec<String> {
     // One tree from home: first-level breakdown, with known-worthwhile
-    // subtrees (github-runners workspaces) classified deeper by the scanner.
+    // larger workspace subtrees classified deeper by the scanner.
     vec![std::env::var("HOME").unwrap_or_else(|_| "/Users/unknown".to_string())]
 }
-fn default_runner_interval() -> u64 { 5000 }
 
 pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
     let raw = std::fs::read_to_string(path)?;
@@ -70,4 +81,38 @@ pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
         }
     }
     Ok(config)
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
+pub struct PluginConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub options: BTreeMap<String, toml::Value>,
+}
+
+pub fn save(path: &std::path::Path, config: &Config) -> Result<(), String> {
+    use std::io::Write;
+    use std::os::unix::fs::OpenOptionsExt;
+    let temp = path.with_extension(format!("tmp-{}", std::process::id()));
+    let result = (|| {
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&temp)
+            .map_err(|e| e.to_string())?;
+        file.write_all(
+            toml::to_string_pretty(config)
+                .map_err(|e| e.to_string())?
+                .as_bytes(),
+        )
+        .map_err(|e| e.to_string())?;
+        file.sync_all().map_err(|e| e.to_string())?;
+        std::fs::rename(&temp, path).map_err(|e| e.to_string())
+    })();
+    if result.is_err() {
+        let _ = std::fs::remove_file(&temp);
+    }
+    result
 }

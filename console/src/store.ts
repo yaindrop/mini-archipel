@@ -1,46 +1,22 @@
 import { DatabaseSync } from "node:sqlite";
-
-/**
- * Three-tier time-series tables: raw (1s, 24h), mid (10s, 30d), coarse
- * (1m, 1y). New agent namespaces land in the same narrow schema with no
- * migration; queryRange picks the tier from the requested window.
- */
-const RAW_TTL = 86_400_000;
-const MID_TTL = 30 * 86_400_000;
-
+import { PointSchema, type Point } from "./contracts.ts";
+const DAY = 86_400_000;
 export class Store {
-  private db: DatabaseSync;
-
+  private readonly db: DatabaseSync;
   constructor(path: string) {
     this.db = new DatabaseSync(path);
-    this.db.exec("PRAGMA journal_mode = WAL");
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS samples_raw (
-        host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL
-      );
+    this.db.exec(`PRAGMA journal_mode = WAL;
+      CREATE TABLE IF NOT EXISTS samples_raw (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL);
       CREATE INDEX IF NOT EXISTS raw_lookup ON samples_raw(host, key, ts);
-      CREATE TABLE IF NOT EXISTS samples_mid (
-        host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL,
-        PRIMARY KEY (host, key, ts)
-      );
-      CREATE TABLE IF NOT EXISTS samples_coarse (
-        host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL,
-        PRIMARY KEY (host, key, ts)
-      );
-      CREATE TABLE IF NOT EXISTS scan_docs (
-        host TEXT NOT NULL, ns TEXT NOT NULL, ts INTEGER NOT NULL, doc TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS scan_lookup ON scan_docs(host, ns, ts);
-      CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
-    `);
+      CREATE TABLE IF NOT EXISTS samples_mid (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(host,key,ts));
+      CREATE TABLE IF NOT EXISTS samples_coarse (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(host,key,ts));`);
   }
-
   insertSamples(
-    rows: Array<{ host: string; key: string; ts: number; value: number }>,
+    rows: { host: string; key: string; ts: number; value: number }[],
   ): void {
-    if (rows.length === 0) return;
+    if (!rows.length) return;
     const insert = this.db.prepare(
-      "INSERT INTO samples_raw (host, key, ts, value) VALUES (?, ?, ?, ?)",
+      "INSERT INTO samples_raw (host,key,ts,value) VALUES (?,?,?,?)",
     );
     this.db.exec("BEGIN");
     try {
@@ -51,70 +27,63 @@ export class Store {
       throw error;
     }
   }
-
-  insertScanDoc(host: string, ns: string, ts: number, doc: unknown): void {
-    this.db
-      .prepare("INSERT INTO scan_docs (host, ns, ts, doc) VALUES (?, ?, ?, ?)")
-      .run(host, ns, ts, JSON.stringify(doc));
-  }
-
-  queryRange(
-    host: string,
-    key: string,
-    fromTs: number,
-    toTs: number,
-  ): Array<{ ts: number; value: number }> {
-    const table =
-      toTs - fromTs > 6 * 86_400_000 ? "samples_coarse" : "samples_mid";
-    const mid = this.db.prepare(
-      `SELECT ts, value FROM ${table} WHERE host = ? AND key = ? AND ts BETWEEN ? AND ? ORDER BY ts`,
+  queryRange(host: string, key: string, fromTs: number, toTs: number): Point[] {
+    // Include every retention tier: a 7-day query still needs the last day of raw samples.
+    const bucket = Math.max(1, Math.ceil((toTs - fromTs) / 1200));
+    return PointSchema.array().parse(
+      this.db
+        .prepare(
+          `SELECT CAST(ts / ? AS INTEGER) * ? AS ts, AVG(value) AS value FROM (
+      SELECT ts,value FROM samples_coarse WHERE host=? AND key=? AND ts BETWEEN ? AND ?
+      UNION ALL SELECT ts,value FROM samples_mid WHERE host=? AND key=? AND ts BETWEEN ? AND ?
+      UNION ALL SELECT ts,value FROM samples_raw WHERE host=? AND key=? AND ts BETWEEN ? AND ?
+    ) GROUP BY CAST(ts / ? AS INTEGER) ORDER BY ts`,
+        )
+        .all(
+          bucket,
+          bucket,
+          host,
+          key,
+          fromTs,
+          toTs,
+          host,
+          key,
+          fromTs,
+          toTs,
+          host,
+          key,
+          fromTs,
+          toTs,
+          bucket,
+        ),
     );
-    const rows = mid.all(host, key, fromTs, toTs) as Array<{
-      ts: number;
-      value: number;
-    }>;
-    const raw = this.db.prepare(
-      `SELECT ts, value FROM samples_raw WHERE host = ? AND key = ? AND ts BETWEEN ? AND ? ORDER BY ts`,
-    );
-    return [
-      ...rows,
-      ...(raw.all(host, key, fromTs, toTs) as Array<{
-        ts: number;
-        value: number;
-      }>),
-    ];
   }
-
-  downsampleAndPrune(): void {
-    const now = Date.now();
-    const rawKeep = now - RAW_TTL;
-    const midKeep = now - MID_TTL;
+  downsampleAndPrune(now = Date.now()): void {
+    const rawCutoff = Math.floor((now - DAY) / 10_000) * 10_000;
+    const midCutoff = Math.floor((now - 30 * DAY) / 60_000) * 60_000;
     this.db.exec("BEGIN");
     try {
-      this.db.exec(`
-        INSERT OR IGNORE INTO samples_mid (host, key, ts, value)
-        SELECT host, key, (ts / 10000) * 10000, AVG(value)
-        FROM samples_raw WHERE ts < ${rawKeep}
-        GROUP BY host, key, (ts / 10000) * 10000`);
-      this.db.exec(`DELETE FROM samples_raw WHERE ts < ${rawKeep}`);
-      this.db.exec(`
-        INSERT OR IGNORE INTO samples_coarse (host, key, ts, value)
-        SELECT host, key, (ts / 60000) * 60000, AVG(value)
-        FROM samples_mid WHERE ts < ${midKeep}
-        GROUP BY host, key, (ts / 60000) * 60000`);
-      this.db.exec(`DELETE FROM samples_mid WHERE ts < ${midKeep}`);
+      this.db
+        .prepare(
+          `INSERT OR IGNORE INTO samples_mid SELECT host,key,CAST(ts / 10000 AS INTEGER)*10000,AVG(value) FROM samples_raw WHERE ts < ? GROUP BY host,key,CAST(ts / 10000 AS INTEGER)`,
+        )
+        .run(rawCutoff);
+      this.db.prepare("DELETE FROM samples_raw WHERE ts < ?").run(rawCutoff);
+      this.db
+        .prepare(
+          `INSERT OR IGNORE INTO samples_coarse SELECT host,key,CAST(ts / 60000 AS INTEGER)*60000,AVG(value) FROM samples_mid WHERE ts < ? GROUP BY host,key,CAST(ts / 60000 AS INTEGER)`,
+        )
+        .run(midCutoff);
+      this.db.prepare("DELETE FROM samples_mid WHERE ts < ?").run(midCutoff);
+      this.db
+        .prepare("DELETE FROM samples_coarse WHERE ts < ?")
+        .run(now - 365 * DAY);
       this.db.exec("COMMIT");
     } catch (error) {
       this.db.exec("ROLLBACK");
       throw error;
     }
-    this.db
-      .prepare(
-        "INSERT INTO meta (key, value) VALUES ('last_downsample', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-      )
-      .run(String(now));
   }
-
   close(): void {
     this.db.close();
   }

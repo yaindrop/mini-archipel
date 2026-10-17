@@ -23,6 +23,9 @@ fn now_unix() -> u64 {
 }
 
 fn classify(name: &str) -> &'static str {
+    if name.to_ascii_lowercase().ends_with(".app") {
+        return "apps";
+    }
     match name {
         // System: OS components, untouchable
         "System" | "usr" | "bin" | "sbin" | "private" | "etc" | "var" | "Volumes" | "dev"
@@ -38,7 +41,8 @@ fn classify(name: &str) -> &'static str {
         // Library: mixed system/user
         "Library" => "library",
         // Reclaimable: purely rebuildable caches
-        "opt" | ".cache" | "node_modules" | ".pnpm-store" | "Caches" | "target" | ".venv" | "test-results" => "reclaimable",
+        "opt" | ".cache" | "node_modules" | ".pnpm-store" | "Caches" | "target" | ".venv"
+        | "test-results" => "reclaimable",
         _ => "user", // default: user-created content in home
     }
 }
@@ -50,7 +54,7 @@ fn du_children(path: &str, depth: u8) -> (Vec<TreeScan>, bool) {
     // Via SSH loopback: launchd agents get IO-throttled children; SSH
     // sessions run at normal priority (proven by every ops command).
     let key = format!(
-        "{}/.ssh/id_mini_fleet",
+        "{}/.ssh/id_mini_archipel",
         std::env::var("HOME").unwrap_or_default()
     );
     let cmd = format!(
@@ -67,10 +71,16 @@ fn du_children(path: &str, depth: u8) -> (Vec<TreeScan>, bool) {
     let mut children = Vec::new();
     let prefix = format!("{}/", path.trim_end_matches('/'));
     for line in raw.lines() {
-        let Some((size, p)) = line.split_once('\t') else { continue };
-        let Ok(kib) = size.trim().parse::<u64>() else { continue };
+        let Some((size, p)) = line.split_once('\t') else {
+            continue;
+        };
+        let Ok(kib) = size.trim().parse::<u64>() else {
+            continue;
+        };
         let p = p.trim_matches('\'');
-        let Some(rel) = p.strip_prefix(&prefix) else { continue };
+        let Some(rel) = p.strip_prefix(&prefix) else {
+            continue;
+        };
         let rel = rel.trim_end_matches('/');
         if rel.is_empty() || rel.contains('/') {
             continue; // direct children only
@@ -88,7 +98,7 @@ fn du_children(path: &str, depth: u8) -> (Vec<TreeScan>, bool) {
             partial: false,
         });
     }
-    children.sort_by(|a, b| b.bytes.cmp(&a.bytes));
+    children.sort_by_key(|entry| std::cmp::Reverse(entry.bytes));
     let partial = children.is_empty();
     (children, partial)
 }
@@ -156,7 +166,11 @@ pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
             "disk / : {} bytes in {}ms partial={}",
             slash.bytes, slash.duration_ms, slash.partial
         );
-        state.write().await.disk_scans.insert("/".to_string(), slash);
+        state
+            .write()
+            .await
+            .disk_scans
+            .insert("/".to_string(), slash);
 
         let user = scan_tree(&home, "Applications");
         eprintln!(
@@ -168,13 +182,42 @@ pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
         let _ = interval_ms; // cadence policy: 6h or manual trigger
         let mut elapsed = 0u64;
         loop {
-            if state.read().await.disk_rescan_flag.swap(false, std::sync::atomic::Ordering::Relaxed) {
+            if state
+                .read()
+                .await
+                .disk_rescan_flag
+                .swap(false, std::sync::atomic::Ordering::Relaxed)
+            {
                 eprintln!("disk scan: manual trigger received");
                 break;
             }
-            if elapsed >= 6 * 3600 { break; }
+            if elapsed >= 6 * 3600 {
+                break;
+            }
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
             elapsed += 1;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::classify;
+
+    #[test]
+    fn app_bundles_are_applications() {
+        for name in [
+            "ChatGPT.app",
+            "ZCode.app",
+            "v2rayN.app",
+            "Tool.APP",
+            "Mixed.aPp",
+            "Applications",
+        ] {
+            assert_eq!(classify(name), "apps", "{name}");
+        }
+        for name in ["app", "app-data", "app.backup"] {
+            assert_eq!(classify(name), "user", "{name}");
         }
     }
 }

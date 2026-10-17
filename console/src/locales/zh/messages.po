@@ -1,0 +1,1719 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-17 16:53+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: zh\n"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "不允许跨站操作"
+msgstr "不允许跨站操作"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "请先登录工作台"
+msgstr "请先登录工作台"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "访问令牌不正确"
+msgstr "访问令牌不正确"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "请选择有效的节点、指标与时间范围"
+msgstr "请选择有效的节点、指标与时间范围"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "缺少有效的插件开关"
+msgstr "缺少有效的插件开关"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+#: src/fleet.ts
+#: src/plugins/runners/server.ts
+msgid "节点不存在"
+msgstr "节点不存在"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，扫描未执行"
+msgstr "节点离线，扫描未执行"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "服务暂时无法完成请求"
+msgstr "服务暂时无法完成请求"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "接口不存在"
+msgstr "接口不存在"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "路径无效"
+msgstr "路径无效"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "页面资源不存在"
+msgstr "页面资源不存在"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 占用"
+msgstr "CPU 占用"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "内存已用"
+msgstr "内存已用"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用存储容量"
+msgstr "可用存储容量"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "GPU 占用"
+msgstr "GPU 占用"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "芯片功耗"
+msgstr "芯片功耗"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "最高温度"
+msgstr "最高温度"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "风扇转速"
+msgstr "风扇转速"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "P 核频率"
+msgstr "P 核频率"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "E 核频率"
+msgstr "E 核频率"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 功耗"
+msgstr "CPU 功耗"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "1 分钟负载"
+msgstr "1 分钟负载"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "无法连接节点，或请求已超时"
+msgstr "无法连接节点，或请求已超时"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "节点返回了无效数据"
+msgstr "节点返回了无效数据"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "节点数据校验失败"
+msgstr "节点数据校验失败"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置无效或初始化失败"
+msgstr "插件配置无效或初始化失败"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件状态暂不可用"
+msgstr "插件状态暂不可用"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件启动失败"
+msgstr "插件启动失败"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件未安装"
+msgstr "插件未安装"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置无效，请检查配置后重试"
+msgstr "插件配置无效，请检查配置后重试"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置未保存，原状态保持不变"
+msgstr "插件配置未保存，原状态保持不变"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件未启用"
+msgstr "插件未启用"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件暂不可用，请检查插件状态"
+msgstr "插件暂不可用，请检查插件状态"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
+msgstr "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "GitHub 状态暂不可用，当前展示本地采集结果"
+msgstr "GitHub 状态暂不可用，当前展示本地采集结果"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "插件操作不存在"
+msgstr "插件操作不存在"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "缺少有效的节点、仓库、安装目录或操作"
+msgstr "缺少有效的节点、仓库、安装目录或操作"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点或插件数据不可用，操作未执行"
+msgstr "节点或插件数据不可用，操作未执行"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "此节点只启用了监控，尚未授权 Runner 服务控制"
+msgstr "此节点只启用了监控，尚未授权 Runner 服务控制"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "runner 不存在"
+msgstr "runner 不存在"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "runner 正在执行作业，请等待作业结束"
+msgstr "runner 正在执行作业，请等待作业结束"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点插件未启用"
+msgstr "节点插件未启用"
+
+#: src/web/App.tsx
+msgid " 从资源状态，到每一次接单。 "
+msgstr " 从资源状态，到每一次接单。 "
+
+#: src/web/storage.tsx
+msgid " 可用容量低于 40 GiB 时显示提醒。"
+msgstr " 可用容量低于 40 GiB 时显示提醒。"
+
+#: src/web/overview.tsx
+msgid " 持续检查节点状态 "
+msgstr " 持续检查节点状态 "
+
+#: src/web/App.tsx
+msgid " 数据来自节点实际采集 "
+msgstr " 数据来自节点实际采集 "
+
+#: src/web/App.tsx
+msgid " 清楚看见每台节点。 "
+msgstr " 清楚看见每台节点。 "
+
+#: src/web/App.tsx
+msgid " 私有网络 · HttpOnly 会话 "
+msgstr " 私有网络 · HttpOnly 会话 "
+
+#: src/web/App.tsx
+msgid " 群岛"
+msgstr " 群岛"
+
+#: src/web/App.tsx
+msgid " 节点"
+msgstr " 节点"
+
+#: src/web/App.tsx
+msgid " 采集与连接 "
+msgstr " 采集与连接 "
+
+#: src/web/App.tsx
+msgid " 页面不存在，"
+msgstr " 页面不存在，"
+
+#. placeholder {0}: nodeIdentityLabel(host, _)
+#. placeholder {1}: String(host.snapshot.host.cores)
+#. placeholder {2}: formatBytes(host.snapshot.host.memory_bytes)
+#: src/web/ui.tsx
+msgid "{0} · {1} 核 · {2}"
+msgstr "{0} · {1} 核 · {2}"
+
+#. placeholder {0}: displayName(host)
+#. placeholder {1}: plugin.label
+#: src/web/plugin-settings.tsx
+msgid "{0} {1} 插件"
+msgstr "{0} {1} 插件"
+
+#. placeholder {0}: displayName(host)
+#. placeholder {1}: metric === "cpu" ? "CPU" : t`内存`
+#: src/web/node.tsx
+msgid "{0} {1}走势"
+msgstr "{0} {1}走势"
+
+#. placeholder {0}: plugins.length
+#: src/web/overview.tsx
+msgid "{0} 个 ↗"
+msgstr "{0} 个 ↗"
+
+#. placeholder {0}: String(host.snapshot.host.cores)
+#. placeholder {1}: formatNumber(host.snapshot.host.load[0], 2)
+#: src/web/node.tsx
+msgid "{0} 个核心 · 负载 {1}"
+msgstr "{0} 个核心 · 负载 {1}"
+
+#. placeholder {0}: fleet.hosts.length
+#: src/web/overview.tsx
+msgid "{0} 个节点"
+msgstr "{0} 个节点"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "{0} 内存占用"
+msgstr "{0} 内存占用"
+
+#. placeholder {0}: displayName(h)
+#: src/web/storage.tsx
+msgid "{0} 卷已用比例"
+msgstr "{0} 卷已用比例"
+
+#. placeholder {0}: String(fleet.hosts.filter((h) => h.snapshot?.fan).length)
+#: src/web/overview.tsx
+msgid "{0} 台已上报"
+msgstr "{0} 台已上报"
+
+#. placeholder {0}: String(physical)
+#. placeholder {1}: String(virtual)
+#: src/web/overview.tsx
+msgid "{0} 台物理机 · {1} 台虚拟机"
+msgstr "{0} 台物理机 · {1} 台虚拟机"
+
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已停止接单"
+msgstr "{0} 已停止接单"
+
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已启动接单"
+msgstr "{0} 已启动接单"
+
+#. placeholder {0}: String(cores)
+#: src/web/overview.tsx
+msgid "{0} 核 · 按在线节点核心数加权"
+msgstr "{0} 核 · 按在线节点核心数加权"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "{0} 磁盘已用比例"
+msgstr "{0} 磁盘已用比例"
+
+#. placeholder {0}: node.root
+#: src/web/storage.tsx
+msgid "{0} 空间比例"
+msgstr "{0} 空间比例"
+
+#. placeholder {0}: fleet?.hosts.length ?? "—"
+#: src/web/App.tsx
+msgid "{0} 节点"
+msgstr "{0} 节点"
+
+#. placeholder {0}: String(alerts.length)
+#: src/web/overview.tsx
+msgid "{0} 项需要关注"
+msgstr "{0} 项需要关注"
+
+#. placeholder {0}: unavailable.map(displayName).join("、")
+#: src/plugins/runners/workbench.tsx
+msgid "{0}：Runner 插件数据不可用"
+msgstr "{0}：Runner 插件数据不可用"
+
+#. placeholder {0}: message(feed.error, _)
+#: src/web/App.tsx
+msgid "{0}。正在尝试重新连接。"
+msgstr "{0}。正在尝试重新连接。"
+
+#. placeholder {0}: scan.partial ? t`部分目录不可读取 · ` : ""
+#. placeholder {1}: timeLabel(scan.ts)
+#. placeholder {2}: (scan.duration_ms / 1000).toFixed(1)
+#: src/web/storage.tsx
+msgid "{0}{1} 更新 · 耗时 {2} 秒"
+msgstr "{0}{1} 更新 · 耗时 {2} 秒"
+
+#. placeholder {0}: metric.label
+#: src/web/history.tsx
+msgid "{0}历史趋势"
+msgstr "{0}历史趋势"
+
+#: src/plugins/runners/workbench.tsx
+msgid "{busy} 个作业运行中"
+msgstr "{busy} 个作业运行中"
+
+#: src/web/plugins.tsx
+msgid "{label} 插件暂时无法显示"
+msgstr "{label} 插件暂时无法显示"
+
+#. placeholder {0}: String(data.length)
+#: src/web/chart.tsx
+msgid "{label}，{0} 条序列"
+msgstr "{label}，{0} 条序列"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 分钟"
+msgstr "{v0} 分钟"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 天 {v1} 小时"
+msgstr "{v0} 天 {v1} 小时"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 小时 {v1} 分钟"
+msgstr "{v0} 小时 {v1} 分钟"
+
+#: src/web/history.tsx
+msgid "1 小时"
+msgstr "1 小时"
+
+#: src/web/history.tsx
+msgid "10 分钟"
+msgstr "10 分钟"
+
+#: src/web/App.tsx
+msgid "10 秒未更新"
+msgstr "10 秒未更新"
+
+#: src/web/App.tsx
+msgid "2 秒"
+msgstr "2 秒"
+
+#: src/web/history.tsx
+msgid "24 小时"
+msgstr "24 小时"
+
+#: src/web/history.tsx
+msgid "30 天"
+msgstr "30 天"
+
+#: src/web/App.tsx
+msgid "6 小时或手动"
+msgstr "6 小时或手动"
+
+#: src/web/history.tsx
+msgid "7 天"
+msgstr "7 天"
+
+#: src/web/storage.tsx
+msgid "AI 工具"
+msgstr "AI 工具"
+
+#: src/plugins/runners/workbench.tsx
+msgid "CI OPERATIONS"
+msgstr "持续集成"
+
+#: src/web/App.tsx
+msgid "CONNECTIONS"
+msgstr "连接诊断"
+
+#: src/web/overview.tsx
+msgid "CPU 从高到低"
+msgstr "CPU 从高到低"
+
+#: src/web/node.tsx
+msgid "CPU 占用"
+msgstr "CPU 占用"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 占用偏高"
+msgstr "CPU 占用偏高"
+
+#: src/web/overview.tsx
+msgid "CPU 占用走势"
+msgstr "CPU 占用走势"
+
+#: src/web/plugin-settings.tsx
+msgid "EXTENSIONS"
+msgstr "扩展能力"
+
+#: src/web/App.tsx
+msgid "Fleet operations"
+msgstr "节点运维"
+
+#: src/web/overview.tsx
+msgid "FLEET OVERVIEW"
+msgstr "集群概览"
+
+#: src/web/node.tsx
+msgid "GPU 占用"
+msgstr "GPU 占用"
+
+#: src/web/history.tsx
+msgid "HISTORICAL METRICS"
+msgstr "历史指标"
+
+#: src/web/node.tsx
+msgid "NODE"
+msgstr "节点"
+
+#: src/web/node.tsx
+msgid "P / E 核频率"
+msgstr "P / E 核频率"
+
+#: src/web/storage.tsx
+msgid "STORAGE"
+msgstr "存储空间"
+
+#: src/web/node.tsx
+msgid "Swap 已用"
+msgstr "Swap 已用"
+
+#: src/web/App.tsx
+msgid "WELCOME BACK"
+msgstr "欢迎回来"
+
+#: src/web/node.tsx
+msgid "严重"
+msgstr "严重"
+
+#: src/web/App.tsx
+msgid "主导航"
+msgstr "主导航"
+
+#: src/web/preferences.tsx
+msgid "主题：{themeLabel}"
+msgstr "主题：{themeLabel}"
+
+#: src/web/overview.tsx
+msgid "从全局状态到每台节点，掌握资源与运行情况。"
+msgstr "从全局状态到每台节点，掌握资源与运行情况。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
+msgstr "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
+
+#: src/web/App.tsx
+msgid "令牌由集群管理员提供，仅用于建立当前会话。"
+msgstr "令牌由集群管理员提供，仅用于建立当前会话。"
+
+#: src/web/node.tsx
+msgid "传感器"
+msgstr "传感器"
+
+#: src/plugins/runners/status.tsx
+msgid "作业运行中"
+msgstr "作业运行中"
+
+#: src/plugins/runners/workbench.tsx
+msgid "作业运行中，暂时不能切换"
+msgstr "作业运行中，暂时不能切换"
+
+#: src/plugins/runners/workbench.tsx
+msgid "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
+msgstr "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "停止接单"
+msgstr "停止接单"
+
+#: src/web/storage.tsx
+msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
+msgstr "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
+
+#: src/web/overview.tsx
+msgid "全部类型"
+msgstr "全部类型"
+
+#: src/web/history.tsx
+#: src/web/overview.tsx
+msgid "全部节点"
+msgstr "全部节点"
+
+#. placeholder {0}: formatBytes(disk?.total_bytes)
+#: src/web/storage.tsx
+msgid "共 {0}"
+msgstr "共 {0}"
+
+#. placeholder {0}: rows.length
+#. placeholder {1}: fleet.hosts.length
+#: src/web/overview.tsx
+msgid "共 {0} / {1} 台"
+msgstr "共 {0} / {1} 台"
+
+#: src/web/App.tsx
+msgid "关闭导航菜单"
+msgstr "关闭导航菜单"
+
+#: src/web/plugin-settings.tsx
+msgid "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
+msgstr "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
+
+#: src/web/storage.tsx
+msgid "其他"
+msgstr "其他"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "内存"
+msgstr "内存"
+
+#: src/web/chart.tsx
+msgid "内存 / 容量以二进制单位显示"
+msgstr "内存 / 容量以二进制单位显示"
+
+#: src/web/overview.tsx
+msgid "内存从高到低"
+msgstr "内存从高到低"
+
+#: src/web/overview.tsx
+msgid "内存占用走势"
+msgstr "内存占用走势"
+
+#: src/web/node.tsx
+msgid "内存已用"
+msgstr "内存已用"
+
+#: src/web/App.tsx
+msgid "最后一次"
+msgstr "最后一次"
+
+#: src/web/node.tsx
+msgid "最近 10 分钟"
+msgstr "最近 10 分钟"
+
+#. placeholder {0}: timeLabel(fleet.ts)
+#: src/web/App.tsx
+msgid "最近采集 {0}"
+msgstr "最近采集 {0}"
+
+#: src/web/node.tsx
+msgid "最高温度"
+msgstr "最高温度"
+
+#: src/web/storage.tsx
+msgid "占当前目录"
+msgstr "占当前目录"
+
+#: src/web/node.tsx
+msgid "危急"
+msgstr "危急"
+
+#: src/web/history.tsx
+msgid "历史指标"
+msgstr "历史指标"
+
+#: src/web/history.tsx
+msgid "历史时间范围"
+msgstr "历史时间范围"
+
+#: src/web/history.tsx
+msgid "历史节点"
+msgstr "历史节点"
+
+#: src/web/App.tsx
+#: src/web/history.tsx
+msgid "历史趋势"
+msgstr "历史趋势"
+
+#: src/plugins/runners/workbench.tsx
+msgid "取消"
+msgstr "取消"
+
+#: src/plugins/runners/workbench.tsx
+msgid "可在下方确认后恢复接单"
+msgstr "可在下方确认后恢复接单"
+
+#: src/plugins/runners/status.tsx
+msgid "可接单"
+msgstr "可接单"
+
+#: src/web/storage.tsx
+msgid "可用"
+msgstr "可用"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用 {v0}，水位线 40 GiB"
+msgstr "可用 {v0}，水位线 40 GiB"
+
+#. placeholder {0}: formatBytes(mem?.available_bytes)
+#: src/web/node.tsx
+msgid "可用内存 {0}"
+msgstr "可用内存 {0}"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用内存不足 1 GiB"
+msgstr "可用内存不足 1 GiB"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "可用存储容量"
+msgstr "可用存储容量"
+
+#: src/web/overview.tsx
+msgid "可用容量从低到高"
+msgstr "可用容量从低到高"
+
+#: src/web/storage.tsx
+msgid "可重建缓存"
+msgstr "可重建缓存"
+
+#: src/web/overview.tsx
+msgid "各在线节点报告的卷可用空间之和"
+msgstr "各在线节点报告的卷可用空间之和"
+
+#: src/web/node.tsx
+msgid "各核心占用"
+msgstr "各核心占用"
+
+#: src/web/overview.tsx
+msgid "名称排序"
+msgstr "名称排序"
+
+#: src/web/App.tsx
+msgid "后台待机"
+msgstr "后台待机"
+
+#: src/web/plugin-settings.tsx
+msgid "启动中"
+msgstr "启动中"
+
+#: src/plugins/runners/workbench.tsx
+msgid "启动后，该 runner 会连接 GitHub 并接受新的作业。"
+msgstr "启动后，该 runner 会连接 GitHub 并接受新的作业。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "启动接单"
+msgstr "启动接单"
+
+#: src/plugins/runners/workbench.tsx
+msgid "启用插件"
+msgstr "启用插件"
+
+#: src/web/overview.tsx
+msgid "在线节点"
+msgstr "在线节点"
+
+#: src/web/storage.tsx
+msgid "大小"
+msgstr "大小"
+
+#: src/web/App.tsx
+msgid "失效判定"
+msgstr "失效判定"
+
+#: src/web/node.tsx
+msgid "存储分析"
+msgstr "存储分析"
+
+#: src/web/App.tsx
+#: src/web/storage.tsx
+msgid "存储空间"
+msgstr "存储空间"
+
+#: src/web/App.tsx
+msgid "实时更新"
+msgstr "实时更新"
+
+#. placeholder {0}: fleet ? new Date(fleet.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
+#: src/web/App.tsx
+msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
+msgstr "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
+
+#: src/web/App.tsx
+msgid "实时资源"
+msgstr "实时资源"
+
+#: src/web/App.tsx
+msgid "实时采集已连接"
+msgstr "实时采集已连接"
+
+#: src/web/history.tsx
+msgid "导出 CSV"
+msgstr "导出 CSV"
+
+#: src/web/storage.tsx
+msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
+msgstr "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
+msgstr "尚未发现 runner，节点上报安装信息后会自动显示。"
+
+#: src/web/storage.tsx
+msgid "尚未配置节点"
+msgstr "尚未配置节点"
+
+#: src/web/node.tsx
+msgid "展示节点上报的核心顺序，不推测核心类型。"
+msgstr "展示节点上报的核心顺序，不推测核心类型。"
+
+#: src/web/history.tsx
+msgid "峰值"
+msgstr "峰值"
+
+#: src/plugins/runners/workbench.tsx
+msgid "工作区"
+msgstr "工作区"
+
+#: src/web/App.tsx
+msgid "工作区位置"
+msgstr "工作区位置"
+
+#: src/web/App.tsx
+msgid "工作台导航"
+msgstr "工作台导航"
+
+#: src/web/App.tsx
+msgid "工作台暂时无法显示"
+msgstr "工作台暂时无法显示"
+
+#: src/web/App.tsx
+msgid "工作台版本"
+msgstr "工作台版本"
+
+#: src/web/storage.tsx
+msgid "工具链"
+msgstr "工具链"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已停止"
+msgstr "已停止"
+
+#: src/plugins/runners/status.tsx
+msgid "已停止接单"
+msgstr "已停止接单"
+
+#. placeholder {0}: rows.length
+#: src/plugins/runners/workbench.tsx
+msgid "已发现 {0} 个 Runner"
+msgstr "已发现 {0} 个 Runner"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已发现 runner"
+msgstr "已发现 runner"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已启动本地监听进程"
+msgstr "已启动本地监听进程"
+
+#: src/web/plugin-settings.tsx
+msgid "已启用"
+msgstr "已启用"
+
+#: src/web/overview.tsx
+msgid "已启用插件"
+msgstr "已启用插件"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已接入"
+msgstr "已接入"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+msgid "已暂停"
+msgstr "已暂停"
+
+#. placeholder {0}: formatBytes(memoryUsed)
+#. placeholder {1}: formatBytes(memoryTotal)
+#: src/web/overview.tsx
+msgid "已用 {0} / {1}"
+msgstr "已用 {0} / {1}"
+
+#. placeholder {0}: " "
+#. placeholder {1}: formatBytes(disk ? disk.total_bytes - disk.available_bytes : undefined)
+#: src/web/storage.tsx
+msgid "已用{0} {1}"
+msgstr "已用{0} {1}"
+
+#: src/web/plugin-settings.tsx
+msgid "已禁用"
+msgstr "已禁用"
+
+#: src/web/storage.tsx
+msgid "已统计目录"
+msgstr "已统计目录"
+
+#: src/web/history.tsx
+msgid "平均"
+msgstr "平均"
+
+#: src/web/storage.tsx
+msgid "应用"
+msgstr "应用"
+
+#: src/web/plugin-settings.tsx
+msgid "异常"
+msgstr "异常"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "当前 {v0}%"
+msgstr "当前 {v0}%"
+
+#: src/plugins/runners/workbench.tsx
+msgid "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
+msgstr "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
+
+#: src/web/plugin-settings.tsx
+msgid "当前未安装插件"
+msgstr "当前未安装插件"
+
+#: src/web/overview.tsx
+msgid "当前运行平稳"
+msgstr "当前运行平稳"
+
+#. placeholder {0}: formatBytes(disk?.total_bytes)
+#: src/web/node.tsx
+msgid "总容量 {0}"
+msgstr "总容量 {0}"
+
+#: src/web/App.tsx
+msgid "恢复实时更新"
+msgstr "恢复实时更新"
+
+#: src/web/App.tsx
+msgid "我的集群"
+msgstr "我的集群"
+
+#: src/web/App.tsx
+msgid "打开导航菜单"
+msgstr "打开导航菜单"
+
+#: src/plugins/runners/workbench.tsx
+msgid "执行操作前，工作台和节点都会重新检查作业状态。"
+msgstr "执行操作前，工作台和节点都会重新检查作业状态。"
+
+#: src/web/storage.tsx
+msgid "扫描中…"
+msgstr "扫描中…"
+
+#: src/web/storage.tsx
+msgid "扫描范围"
+msgstr "扫描范围"
+
+#: src/web/storage.tsx
+msgid "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
+msgstr "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
+
+#: src/web/history.tsx
+msgid "指标"
+msgstr "指标"
+
+#: src/web/history.tsx
+msgid "指标分析"
+msgstr "指标分析"
+
+#: src/plugins/runners/workbench.tsx
+msgid "按仓库、节点分别注册"
+msgstr "按仓库、节点分别注册"
+
+#: src/web/storage.tsx
+msgid "按目录与用途定位空间占用，扫描完成后自动更新。"
+msgstr "按目录与用途定位空间占用，扫描完成后自动更新。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "接单进程"
+msgstr "接单进程"
+
+#: src/web/plugin-settings.tsx
+msgid "控制台"
+msgstr "控制台"
+
+#. placeholder {0}: plugin.label
+#: src/web/plugin-settings.tsx
+msgid "控制台 {0}"
+msgstr "控制台 {0}"
+
+#: src/web/node.tsx
+msgid "控制模式"
+msgstr "控制模式"
+
+#: src/web/storage.tsx
+msgid "提交中…"
+msgstr "提交中…"
+
+#: src/web/App.tsx
+msgid "插件异常"
+msgstr "插件异常"
+
+#: src/plugins/runners/workbench.tsx
+msgid "插件提供的 CI 作业与接单状态"
+msgstr "插件提供的 CI 作业与接单状态"
+
+#: src/web/App.tsx
+msgid "插件未启用"
+msgstr "插件未启用"
+
+#: src/web/App.tsx
+#: src/web/plugin-settings.tsx
+msgid "插件管理"
+msgstr "插件管理"
+
+#: src/plugins/runners/workbench.tsx
+msgid "插件设置"
+msgstr "插件设置"
+
+#: src/web/plugin-settings.tsx
+msgid "插件配置已保存"
+msgstr "插件配置已保存"
+
+#: src/web/overview.tsx
+msgid "搜索节点"
+msgstr "搜索节点"
+
+#: src/web/overview.tsx
+msgid "搜索节点名称"
+msgstr "搜索节点名称"
+
+#: src/web/node.tsx
+msgid "搜索进程"
+msgstr "搜索进程"
+
+#: src/web/api.ts
+msgid "收到的数据不符合接口约定，请刷新后重试"
+msgstr "收到的数据不符合接口约定，请刷新后重试"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "散热状态异常"
+msgstr "散热状态异常"
+
+#: src/web/ui.tsx
+msgid "数据已过期"
+msgstr "数据已过期"
+
+#: src/web/storage.tsx
+msgid "数据过期"
+msgstr "数据过期"
+
+#: src/web/App.tsx
+msgid "无法连接工作台"
+msgstr "无法连接工作台"
+
+#: src/web/history.tsx
+msgid "早期数据不足时仅展示已有样本；传感器未上报的指标保持空白。"
+msgstr "早期数据不足时仅展示已有样本；传感器未上报的指标保持空白。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "暂不可用"
+msgstr "暂不可用"
+
+#: src/web/App.tsx
+msgid "暂停实时更新"
+msgstr "暂停实时更新"
+
+#: src/web/chart.tsx
+msgid "暂无可用的采样数据"
+msgstr "暂无可用的采样数据"
+
+#: src/plugins/runners/workbench.tsx
+msgid "暂无诊断日志"
+msgstr "暂无诊断日志"
+
+#: src/web/storage.tsx
+msgid "暂未收到新的扫描结果，节点繁忙时可能延后。"
+msgstr "暂未收到新的扫描结果，节点繁忙时可能延后。"
+
+#: src/web/App.tsx
+#: src/web/history.tsx
+msgid "更新已暂停"
+msgstr "更新已暂停"
+
+#: src/web/node.tsx
+msgid "未上报"
+msgstr "未上报"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未取得远端状态"
+msgstr "未取得远端状态"
+
+#: src/web/node.tsx
+msgid "未收到传感器数据"
+msgstr "未收到传感器数据"
+
+#: src/web/overview.tsx
+msgid "未检测到节点失联、低磁盘余量或散热告警。"
+msgstr "未检测到节点失联、低磁盘余量或散热告警。"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "未识别仓库 · {directory}"
+msgstr "未识别仓库 · {directory}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未识别注册仓库，无法执行服务操作"
+msgstr "未识别注册仓库，无法执行服务操作"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未运行"
+msgstr "未运行"
+
+#: src/plugins/runners/status.tsx
+msgid "本地监听中"
+msgstr "本地监听中"
+
+#: src/plugins/runners/workbench.tsx
+msgid "本地进程"
+msgstr "本地进程"
+
+#: src/web/overview.tsx
+msgid "查看"
+msgstr "查看"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "查看 {0}"
+msgstr "查看 {0}"
+
+#. placeholder {0}: displayName(h)
+#: src/web/storage.tsx
+msgid "查看 {0} 的存储空间"
+msgstr "查看 {0} 的存储空间"
+
+#: src/web/node.tsx
+msgid "查看历史趋势"
+msgstr "查看历史趋势"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "查看节点 {0}"
+msgstr "查看节点 {0}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "查看连接"
+msgstr "查看连接"
+
+#. placeholder {0}: String(i + 1).padStart(2, "0")
+#: src/web/node.tsx
+msgid "核心 {0}"
+msgstr "核心 {0}"
+
+#. placeholder {0}: String(i + 1)
+#: src/web/node.tsx
+msgid "核心 {0} 占用"
+msgstr "核心 {0} 占用"
+
+#: src/web/plugins.tsx
+msgid "检查插件设置；基础监控仍可使用。"
+msgstr "检查插件设置；基础监控仍可使用。"
+
+#: src/web/App.tsx
+msgid "检查节点采集通道与插件接入状态。"
+msgstr "检查节点采集通道与插件接入状态。"
+
+#: src/web/App.tsx
+msgid "正在加载工作区"
+msgstr "正在加载工作区"
+
+#: src/web/App.tsx
+msgid "正在恢复连接"
+msgstr "正在恢复连接"
+
+#: src/plugins/runners/workbench.tsx
+msgid "正在执行作业"
+msgstr "正在执行作业"
+
+#: src/web/App.tsx
+msgid "正在等待节点上报"
+msgstr "正在等待节点上报"
+
+#: src/web/App.tsx
+msgid "正在读取连接地址"
+msgstr "正在读取连接地址"
+
+#: src/plugins/runners/status.tsx
+msgid "正在连接 GitHub"
+msgstr "正在连接 GitHub"
+
+#: src/web/App.tsx
+msgid "正在连接集群"
+msgstr "正在连接集群"
+
+#: src/web/node.tsx
+msgid "正常"
+msgstr "正常"
+
+#: src/plugins/runners/workbench.tsx
+msgid "此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。"
+msgstr "此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。"
+
+#: src/web/App.tsx
+msgid "此功能由可选插件提供。"
+msgstr "此功能由可选插件提供。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "此节点尚未授权 Runner 服务控制"
+msgstr "此节点尚未授权 Runner 服务控制"
+
+#: src/plugins/runners/workbench.tsx
+msgid "此节点的 Runner 插件未启用"
+msgstr "此节点的 Runner 插件未启用"
+
+#: src/web/storage.tsx
+msgid "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
+msgstr "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
+
+#: src/web/history.tsx
+msgid "每 15 秒更新"
+msgstr "每 15 秒更新"
+
+#: src/web/App.tsx
+msgid "每秒"
+msgstr "每秒"
+
+#: src/web/overview.tsx
+msgid "每秒采集 · 数据超过 10 秒未更新时标记过期"
+msgstr "每秒采集 · 数据超过 10 秒未更新时标记过期"
+
+#: src/web/history.tsx
+msgid "比较不同节点，沿时间检查资源变化。"
+msgstr "比较不同节点，沿时间检查资源变化。"
+
+#: src/web/overview.tsx
+msgid "没有匹配的节点，调整名称或类型筛选后重试。"
+msgstr "没有匹配的节点，调整名称或类型筛选后重试。"
+
+#: src/web/node.tsx
+msgid "没有匹配的进程"
+msgstr "没有匹配的进程"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+msgid "活跃进程"
+msgstr "活跃进程"
+
+#: src/web/preferences.tsx
+msgid "浅色"
+msgstr "浅色"
+
+#: src/web/preferences.tsx
+msgid "深色"
+msgstr "深色"
+
+#: src/web/node.tsx
+msgid "温暖"
+msgstr "温暖"
+
+#: src/web/node.tsx
+msgid "热状态"
+msgstr "热状态"
+
+#: src/web/overview.tsx
+msgid "物理传感器"
+msgstr "物理传感器"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "物理机"
+msgstr "物理机"
+
+#: src/web/overview.tsx
+msgid "物理机"
+msgstr "物理机"
+
+#: src/web/overview.tsx
+msgid "状态"
+msgstr "状态"
+
+#: src/plugins/runners/status.tsx
+msgid "状态未知"
+msgstr "状态未知"
+
+#: src/web/plugin-settings.tsx
+msgid "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
+msgstr "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
+
+#: src/web/storage.tsx
+msgid "用户数据"
+msgstr "用户数据"
+
+#: src/web/storage.tsx
+msgid "用户目录"
+msgstr "用户目录"
+
+#: src/web/storage.tsx
+msgid "用途"
+msgstr "用途"
+
+#: src/plugins/runners/workbench.tsx
+msgid "监听 / 可接单"
+msgstr "监听 / 可接单"
+
+#: src/web/storage.tsx
+msgid "目录"
+msgstr "目录"
+
+#. placeholder {0}: formatBytes(scan.bytes)
+#: src/web/storage.tsx
+msgid "目录分类，共 {0}"
+msgstr "目录分类，共 {0}"
+
+#: src/web/App.tsx
+msgid "目录扫描"
+msgstr "目录扫描"
+
+#: src/web/storage.tsx
+msgid "目录扫描已更新。"
+msgstr "目录扫描已更新。"
+
+#: src/web/storage.tsx
+msgid "目录空间分析"
+msgstr "目录空间分析"
+
+#: src/web/storage.tsx
+msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
+msgstr "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认停止"
+msgstr "确认停止"
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认启动"
+msgstr "确认启动"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "磁盘余量低于水位线"
+msgstr "磁盘余量低于水位线"
+
+#: src/web/App.tsx
+msgid "私有工作空间"
+msgstr "私有工作空间"
+
+#: src/web/node.tsx
+msgid "等待 CPU 信息"
+msgstr "等待 CPU 信息"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "等待节点重新上报"
+msgstr "等待节点重新上报"
+
+#: src/web/chart.tsx
+msgid "等待采样"
+msgstr "等待采样"
+
+#: src/web/overview.tsx
+msgid "等待采集"
+msgstr "等待采集"
+
+#: src/web/overview.tsx
+msgid "筛选节点类型"
+msgstr "筛选节点类型"
+
+#: src/plugins/runners/workbench.tsx
+msgid "管理接单进程 ↗"
+msgstr "管理接单进程 ↗"
+
+#: src/plugins/runners/workbench.tsx
+#: src/web/App.tsx
+msgid "管理插件"
+msgstr "管理插件"
+
+#: src/web/node.tsx
+msgid "类型"
+msgstr "类型"
+
+#: src/web/node.tsx
+#: src/web/preferences.tsx
+#: src/web/storage.tsx
+msgid "系统"
+msgstr "系统"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统报告 critical"
+msgstr "系统报告 critical"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统报告 serious"
+msgstr "系统报告 serious"
+
+#: src/web/storage.tsx
+msgid "系统根目录"
+msgstr "系统根目录"
+
+#: src/web/node.tsx
+msgid "系统自动"
+msgstr "系统自动"
+
+#: src/web/node.tsx
+msgid "系统资源采集仍正常工作。"
+msgstr "系统资源采集仍正常工作。"
+
+#: src/web/chart.tsx
+msgid "纵轴 0–100%"
+msgstr "纵轴 0–100%"
+
+#: src/plugins/runners/workbench.tsx
+msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
+msgstr "统一管理接单进程，核对本地状态与 GitHub 连接。"
+
+#: src/web/ui.tsx
+msgid "群岛"
+msgstr "群岛"
+
+#: src/web/App.tsx
+#: src/web/preferences.tsx
+msgid "群岛 · 节点工作台"
+msgstr "群岛 · 节点工作台"
+
+#. placeholder {0}: String(fleet.hosts.filter((h) => !stale(h, now)).length)
+#. placeholder {1}: String(fleet.hosts.length)
+#: src/web/App.tsx
+msgid "群岛 · 节点工作台（{0}/{1}）"
+msgstr "群岛 · 节点工作台（{0}/{1}）"
+
+#. placeholder {0}: metric.key
+#. placeholder {1}: new Date().toISOString().slice(0, 10)
+#: src/web/history.tsx
+msgid "群岛-{0}-{1}.csv"
+msgstr "群岛-{0}-{1}.csv"
+
+#: src/web/node.tsx
+msgid "自定义曲线"
+msgstr "自定义曲线"
+
+#: src/web/history.tsx
+msgid "节点"
+msgstr "节点"
+
+#: src/web/overview.tsx
+msgid "节点 / 规格"
+msgstr "节点 / 规格"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。"
+msgstr "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点 Runners"
+msgstr "节点 Runners"
+
+#: src/web/node.tsx
+msgid "节点不存在"
+msgstr "节点不存在"
+
+#: src/web/node.tsx
+msgid "节点位置"
+msgstr "节点位置"
+
+#: src/web/node.tsx
+msgid "节点信息"
+msgstr "节点信息"
+
+#: src/web/node.tsx
+msgid "节点可能已从集群配置中移除。"
+msgstr "节点可能已从集群配置中移除。"
+
+#: src/web/ui.tsx
+msgid "节点在线"
+msgstr "节点在线"
+
+#: src/web/App.tsx
+msgid "节点导航"
+msgstr "节点导航"
+
+#: src/web/ui.tsx
+msgid "节点工作台"
+msgstr "节点工作台"
+
+#: src/web/node.tsx
+msgid "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心。"
+msgstr "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心。"
+
+#: src/web/overview.tsx
+msgid "节点排序"
+msgstr "节点排序"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点数据过期，操作不可用"
+msgstr "节点数据过期，操作不可用"
+
+#: src/web/plugin-settings.tsx
+msgid "节点未安装此插件"
+msgstr "节点未安装此插件"
+
+#: src/web/overview.tsx
+msgid "节点架构"
+msgstr "节点架构"
+
+#: src/web/node.tsx
+msgid "节点概览"
+msgstr "节点概览"
+
+#: src/web/plugin-settings.tsx
+#: src/web/ui.tsx
+msgid "节点离线"
+msgstr "节点离线"
+
+#: src/web/App.tsx
+msgid "节点详情"
+msgstr "节点详情"
+
+#. js-lingui-explicit-id
+#: src/messages.ts
+msgid "节点请求失败（HTTP {status}）"
+msgstr "节点请求失败（HTTP {status}）"
+
+#: src/web/node.tsx
+msgid "节点资源指标"
+msgstr "节点资源指标"
+
+#: src/web/node.tsx
+msgid "节点超过 10 秒未更新。下方保留最后一次采集结果，运维操作暂不可用。"
+msgstr "节点超过 10 秒未更新。下方保留最后一次采集结果，运维操作暂不可用。"
+
+#: src/web/App.tsx
+msgid "节点连接"
+msgstr "节点连接"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "节点连接中断"
+msgstr "节点连接中断"
+
+#: src/web/overview.tsx
+msgid "节点间的同尺度比较 · 最近 10 分钟"
+msgstr "节点间的同尺度比较 · 最近 10 分钟"
+
+#: src/web/node.tsx
+msgid "芯片功耗"
+msgstr "芯片功耗"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "虚拟机"
+msgstr "虚拟机"
+
+#: src/web/overview.tsx
+msgid "虚拟机"
+msgstr "虚拟机"
+
+#: src/web/node.tsx
+msgid "虚拟机无硬件传感器"
+msgstr "虚拟机无硬件传感器"
+
+#: src/web/overview.tsx
+msgid "虚拟机由宿主机负责散热，节点详情按实际能力展示传感器。"
+msgstr "虚拟机由宿主机负责散热，节点详情按实际能力展示传感器。"
+
+#: src/web/App.tsx
+msgid "访问令牌"
+msgstr "访问令牌"
+
+#: src/plugins/runners/workbench.tsx
+msgid "诊断日志"
+msgstr "诊断日志"
+
+#: src/web/preferences.tsx
+msgid "语言：{languageLabel}"
+msgstr "语言：{languageLabel}"
+
+#. placeholder {0}: String(response.status)
+#: src/web/api.ts
+msgid "请求失败（{0}）"
+msgstr "请求失败（{0}）"
+
+#: src/web/api.ts
+msgid "请求未完成，请重试"
+msgstr "请求未完成，请重试"
+
+#: src/web/App.tsx
+msgid "请输入访问令牌"
+msgstr "请输入访问令牌"
+
+#: src/web/App.tsx
+msgid "请重新加载。节点上的任务不受影响。"
+msgstr "请重新加载。节点上的任务不受影响。"
+
+#: src/web/storage.tsx
+msgid "资料库"
+msgstr "资料库"
+
+#: src/web/overview.tsx
+msgid "资源指标"
+msgstr "资源指标"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "资源走势"
+msgstr "资源走势"
+
+#: src/web/App.tsx
+msgid "跳到工作区"
+msgstr "跳到工作区"
+
+#: src/web/node.tsx
+msgid "身份"
+msgstr "身份"
+
+#: src/web/App.tsx
+msgid "轮询 / 重连"
+msgstr "轮询 / 重连"
+
+#: src/web/App.tsx
+msgid "输入工作台访问令牌，查看节点并执行运维操作。"
+msgstr "输入工作台访问令牌，查看节点并执行运维操作。"
+
+#: src/web/App.tsx
+msgid "输入访问令牌"
+msgstr "输入访问令牌"
+
+#. placeholder {0}: uptime(host.snapshot?.host?.uptime_s, _)
+#: src/web/node.tsx
+msgid "运行 {0}"
+msgstr "运行 {0}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "运行中的作业受到启停保护"
+msgstr "运行中的作业受到启停保护"
+
+#: src/web/node.tsx
+msgid "运行时间"
+msgstr "运行时间"
+
+#: src/web/overview.tsx
+msgid "运行概况"
+msgstr "运行概况"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+#: src/web/storage.tsx
+msgid "返回集群概览"
+msgstr "返回集群概览"
+
+#: src/web/App.tsx
+msgid "进入工作台"
+msgstr "进入工作台"
+
+#: src/web/node.tsx
+msgid "进程"
+msgstr "进程"
+
+#: src/web/node.tsx
+msgid "进程名称或 PID"
+msgstr "进程名称或 PID"
+
+#: src/plugins/runners/workbench.tsx
+msgid "连接中"
+msgstr "连接中"
+
+#: src/web/App.tsx
+msgid "连接你的集群"
+msgstr "连接你的集群"
+
+#: src/web/App.tsx
+msgid "连接诊断"
+msgstr "连接诊断"
+
+#: src/web/App.tsx
+msgid "退出工作台"
+msgstr "退出工作台"
+
+#: src/web/storage.tsx
+msgid "部分目录不可读取 · "
+msgstr "部分目录不可读取 · "
+
+#: src/web/history.tsx
+msgid "采样数据按时间范围聚合，保留最近一年的历史。"
+msgstr "采样数据按时间范围聚合，保留最近一年的历史。"
+
+#: src/web/history.tsx
+msgid "采样点"
+msgstr "采样点"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "采集数据已过期"
+msgstr "采集数据已过期"
+
+#: src/web/chart.tsx
+msgid "采集结果到达后，趋势会出现在这里"
+msgstr "采集结果到达后，趋势会出现在这里"
+
+#: src/web/App.tsx
+msgid "采集说明"
+msgstr "采集说明"
+
+#: src/web/App.tsx
+msgid "重新加载"
+msgstr "重新加载"
+
+#: src/web/storage.tsx
+msgid "重新扫描"
+msgstr "重新扫描"
+
+#: src/web/App.tsx
+msgid "重试连接"
+msgstr "重试连接"
+
+#: src/web/node.tsx
+msgid "集群"
+msgstr "集群"
+
+#: src/web/overview.tsx
+msgid "集群内存负载"
+msgstr "集群内存负载"
+
+#: src/web/overview.tsx
+msgid "集群可用存储容量"
+msgstr "集群可用存储容量"
+
+#: src/web/overview.tsx
+msgid "集群核心负载"
+msgstr "集群核心负载"
+
+#: src/web/App.tsx
+#: src/web/overview.tsx
+msgid "集群概览"
+msgstr "集群概览"
+
+#: src/web/overview.tsx
+msgid "集群运行正常"
+msgstr "集群运行正常"
+
+#: src/web/overview.tsx
+msgid "需要关注"
+msgstr "需要关注"
+
+#: src/web/plugin-settings.tsx
+msgid "页面、概览扩展、远端集成和控制操作"
+msgstr "页面、概览扩展、远端集成和控制操作"
+
+#: src/web/node.tsx
+msgid "风扇转速"
+msgstr "风扇转速"

@@ -1,6 +1,6 @@
 use super::Shared;
 
-/// Reads the mac-mini-fan-control daemon status; absent binary leaves fan empty.
+/// Reads the mini-fan-control daemon status; absent binary leaves fan empty.
 pub async fn run(state: Shared, fanctl: String, interval_ms: u64) {
     let status_path = format!("{fanctl} -c /Library/MacMiniFanControl/fanctl.conf -j status");
     loop {

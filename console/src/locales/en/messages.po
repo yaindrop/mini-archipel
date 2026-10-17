@@ -1,0 +1,1719 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-17 16:53+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "不允许跨站操作"
+msgstr "Cross-site operations are not allowed"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "请先登录工作台"
+msgstr "Sign in to the workbench first"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "访问令牌不正确"
+msgstr "Incorrect access token"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "请选择有效的节点、指标与时间范围"
+msgstr "Select a valid node, metric, and time range"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "缺少有效的插件开关"
+msgstr "A valid plugin setting is required"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+#: src/fleet.ts
+#: src/plugins/runners/server.ts
+msgid "节点不存在"
+msgstr "Node not found"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，扫描未执行"
+msgstr "The node is offline. The scan was not started."
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "服务暂时无法完成请求"
+msgstr "The service could not complete the request"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "接口不存在"
+msgstr "Endpoint not found"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "路径无效"
+msgstr "Invalid path"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "页面资源不存在"
+msgstr "Page resource not found"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 占用"
+msgstr "CPU usage"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "内存已用"
+msgstr "Memory used"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用存储容量"
+msgstr "Available storage"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "GPU 占用"
+msgstr "GPU usage"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "芯片功耗"
+msgstr "Chip power"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "最高温度"
+msgstr "Peak temperature"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "风扇转速"
+msgstr "Fan speed"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "P 核频率"
+msgstr "P-core frequency"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "E 核频率"
+msgstr "E-core frequency"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 功耗"
+msgstr "CPU power"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "1 分钟负载"
+msgstr "1-minute load"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "无法连接节点，或请求已超时"
+msgstr "Cannot reach the node, or the request timed out"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "节点返回了无效数据"
+msgstr "The node returned invalid data"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "节点数据校验失败"
+msgstr "Node data validation failed"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置无效或初始化失败"
+msgstr "Plugin settings are invalid or initialization failed"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件状态暂不可用"
+msgstr "Plugin status unavailable"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件启动失败"
+msgstr "Plugin failed to start"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件未安装"
+msgstr "Plugin not installed"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置无效，请检查配置后重试"
+msgstr "Plugin settings are invalid. Check the configuration and try again."
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件配置未保存，原状态保持不变"
+msgstr "Plugin settings were not saved. The previous state is unchanged."
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件未启用"
+msgstr "Plugin disabled"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件暂不可用，请检查插件状态"
+msgstr "The plugin is unavailable. Check its status."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
+msgstr "GitHub Actions runners, job protection, workspaces, and diagnostic logs."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "GitHub 状态暂不可用，当前展示本地采集结果"
+msgstr "GitHub status is unavailable. Showing local measurements."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "插件操作不存在"
+msgstr "Plugin action not found"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "缺少有效的节点、仓库、安装目录或操作"
+msgstr "A valid node, repository, installation directory, and action are required"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点或插件数据不可用，操作未执行"
+msgstr "Node or plugin data is unavailable. No change was made."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "此节点只启用了监控，尚未授权 Runner 服务控制"
+msgstr "This node allows monitoring only. Runner service control has not been authorized."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "runner 不存在"
+msgstr "Runner not found"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "runner 正在执行作业，请等待作业结束"
+msgstr "The runner is executing a job. Wait for it to finish."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点插件未启用"
+msgstr "Node plugin disabled"
+
+#: src/web/App.tsx
+msgid " 从资源状态，到每一次接单。 "
+msgstr "From resource usage to every CI job."
+
+#: src/web/storage.tsx
+msgid " 可用容量低于 40 GiB 时显示提醒。"
+msgstr "Alerts appear below 40 GiB of available storage."
+
+#: src/web/overview.tsx
+msgid " 持续检查节点状态 "
+msgstr "Continuously monitoring node health"
+
+#: src/web/App.tsx
+msgid " 数据来自节点实际采集 "
+msgstr "Live measurements from your nodes"
+
+#: src/web/App.tsx
+msgid " 清楚看见每台节点。 "
+msgstr "Every node, clearly in view."
+
+#: src/web/App.tsx
+msgid " 私有网络 · HttpOnly 会话 "
+msgstr "Private network · HttpOnly session"
+
+#: src/web/App.tsx
+msgid " 群岛"
+msgstr "Mini Archipel"
+
+#: src/web/App.tsx
+msgid " 节点"
+msgstr "Nodes"
+
+#: src/web/App.tsx
+msgid " 采集与连接 "
+msgstr "Collection & connections"
+
+#: src/web/App.tsx
+msgid " 页面不存在，"
+msgstr "Page not found. "
+
+#. placeholder {0}: nodeIdentityLabel(host, _)
+#. placeholder {1}: String(host.snapshot.host.cores)
+#. placeholder {2}: formatBytes(host.snapshot.host.memory_bytes)
+#: src/web/ui.tsx
+msgid "{0} · {1} 核 · {2}"
+msgstr "{0} · {1} cores · {2}"
+
+#. placeholder {0}: displayName(host)
+#. placeholder {1}: plugin.label
+#: src/web/plugin-settings.tsx
+msgid "{0} {1} 插件"
+msgstr "{0} · {1} plugin"
+
+#. placeholder {0}: displayName(host)
+#. placeholder {1}: metric === "cpu" ? "CPU" : t`内存`
+#: src/web/node.tsx
+msgid "{0} {1}走势"
+msgstr "{0} {1} trend"
+
+#. placeholder {0}: plugins.length
+#: src/web/overview.tsx
+msgid "{0} 个 ↗"
+msgstr "{0} ↗"
+
+#. placeholder {0}: String(host.snapshot.host.cores)
+#. placeholder {1}: formatNumber(host.snapshot.host.load[0], 2)
+#: src/web/node.tsx
+msgid "{0} 个核心 · 负载 {1}"
+msgstr "{0} cores · Load {1}"
+
+#. placeholder {0}: fleet.hosts.length
+#: src/web/overview.tsx
+msgid "{0} 个节点"
+msgstr "{0, plural, one {# NODE} other {# NODES}}"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "{0} 内存占用"
+msgstr "{0} memory usage"
+
+#. placeholder {0}: displayName(h)
+#: src/web/storage.tsx
+msgid "{0} 卷已用比例"
+msgstr "{0} volume usage"
+
+#. placeholder {0}: String(fleet.hosts.filter((h) => h.snapshot?.fan).length)
+#: src/web/overview.tsx
+msgid "{0} 台已上报"
+msgstr "{0} reporting"
+
+#. placeholder {0}: String(physical)
+#. placeholder {1}: String(virtual)
+#: src/web/overview.tsx
+msgid "{0} 台物理机 · {1} 台虚拟机"
+msgstr "{0} physical · {1} virtual"
+
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已停止接单"
+msgstr "{0} stopped accepting jobs"
+
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已启动接单"
+msgstr "{0} started accepting jobs"
+
+#. placeholder {0}: String(cores)
+#: src/web/overview.tsx
+msgid "{0} 核 · 按在线节点核心数加权"
+msgstr "{0} cores · Weighted by online core count"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "{0} 磁盘已用比例"
+msgstr "{0} storage usage"
+
+#. placeholder {0}: node.root
+#: src/web/storage.tsx
+msgid "{0} 空间比例"
+msgstr "{0} storage share"
+
+#. placeholder {0}: fleet?.hosts.length ?? "—"
+#: src/web/App.tsx
+msgid "{0} 节点"
+msgstr "{0} nodes"
+
+#. placeholder {0}: String(alerts.length)
+#: src/web/overview.tsx
+msgid "{0} 项需要关注"
+msgstr "{0, plural, one {# alert} other {# alerts}}"
+
+#. placeholder {0}: unavailable.map(displayName).join("、")
+#: src/plugins/runners/workbench.tsx
+msgid "{0}：Runner 插件数据不可用"
+msgstr "{0}: Runner plugin data unavailable"
+
+#. placeholder {0}: message(feed.error, _)
+#: src/web/App.tsx
+msgid "{0}。正在尝试重新连接。"
+msgstr "{0} Reconnecting…"
+
+#. placeholder {0}: scan.partial ? t`部分目录不可读取 · ` : ""
+#. placeholder {1}: timeLabel(scan.ts)
+#. placeholder {2}: (scan.duration_ms / 1000).toFixed(1)
+#: src/web/storage.tsx
+msgid "{0}{1} 更新 · 耗时 {2} 秒"
+msgstr "{0}Updated {1} · {2} s"
+
+#. placeholder {0}: metric.label
+#: src/web/history.tsx
+msgid "{0}历史趋势"
+msgstr "{0} history"
+
+#: src/plugins/runners/workbench.tsx
+msgid "{busy} 个作业运行中"
+msgstr "{busy, plural, one {# active job} other {# active jobs}}"
+
+#: src/web/plugins.tsx
+msgid "{label} 插件暂时无法显示"
+msgstr "The {label} plugin could not be displayed"
+
+#. placeholder {0}: String(data.length)
+#: src/web/chart.tsx
+msgid "{label}，{0} 条序列"
+msgstr "{label}, {0} series"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 分钟"
+msgstr "{v0} min"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 天 {v1} 小时"
+msgstr "{v0} d {v1} h"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "{v0} 小时 {v1} 分钟"
+msgstr "{v0} h {v1} min"
+
+#: src/web/history.tsx
+msgid "1 小时"
+msgstr "1 hour"
+
+#: src/web/history.tsx
+msgid "10 分钟"
+msgstr "10 minutes"
+
+#: src/web/App.tsx
+msgid "10 秒未更新"
+msgstr "No update for 10 seconds"
+
+#: src/web/App.tsx
+msgid "2 秒"
+msgstr "Every 2 seconds"
+
+#: src/web/history.tsx
+msgid "24 小时"
+msgstr "24 hours"
+
+#: src/web/history.tsx
+msgid "30 天"
+msgstr "30 days"
+
+#: src/web/App.tsx
+msgid "6 小时或手动"
+msgstr "Every 6 hours or manually"
+
+#: src/web/history.tsx
+msgid "7 天"
+msgstr "7 days"
+
+#: src/web/storage.tsx
+msgid "AI 工具"
+msgstr "AI tools"
+
+#: src/plugins/runners/workbench.tsx
+msgid "CI OPERATIONS"
+msgstr "CI OPERATIONS"
+
+#: src/web/App.tsx
+msgid "CONNECTIONS"
+msgstr "CONNECTIONS"
+
+#: src/web/overview.tsx
+msgid "CPU 从高到低"
+msgstr "CPU: high to low"
+
+#: src/web/node.tsx
+msgid "CPU 占用"
+msgstr "CPU usage"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "CPU 占用偏高"
+msgstr "High CPU usage"
+
+#: src/web/overview.tsx
+msgid "CPU 占用走势"
+msgstr "CPU usage trend"
+
+#: src/web/plugin-settings.tsx
+msgid "EXTENSIONS"
+msgstr "EXTENSIONS"
+
+#: src/web/App.tsx
+msgid "Fleet operations"
+msgstr "Node operations"
+
+#: src/web/overview.tsx
+msgid "FLEET OVERVIEW"
+msgstr "CLUSTER OVERVIEW"
+
+#: src/web/node.tsx
+msgid "GPU 占用"
+msgstr "GPU usage"
+
+#: src/web/history.tsx
+msgid "HISTORICAL METRICS"
+msgstr "HISTORICAL METRICS"
+
+#: src/web/node.tsx
+msgid "NODE"
+msgstr "NODE"
+
+#: src/web/node.tsx
+msgid "P / E 核频率"
+msgstr "P / E-core frequency"
+
+#: src/web/storage.tsx
+msgid "STORAGE"
+msgstr "STORAGE"
+
+#: src/web/node.tsx
+msgid "Swap 已用"
+msgstr "Swap used"
+
+#: src/web/App.tsx
+msgid "WELCOME BACK"
+msgstr "WELCOME BACK"
+
+#: src/web/node.tsx
+msgid "严重"
+msgstr "Serious"
+
+#: src/web/App.tsx
+msgid "主导航"
+msgstr "Main navigation"
+
+#: src/web/preferences.tsx
+msgid "主题：{themeLabel}"
+msgstr "Theme: {themeLabel}"
+
+#: src/web/overview.tsx
+msgid "从全局状态到每台节点，掌握资源与运行情况。"
+msgstr "A clear view of your cluster, from resources to individual nodes."
+
+#: src/plugins/runners/workbench.tsx
+msgid "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
+msgstr "Repository connections are independent. A failed connection does not affect other repositories or local runner management."
+
+#: src/web/App.tsx
+msgid "令牌由集群管理员提供，仅用于建立当前会话。"
+msgstr "Your cluster administrator provides this token. It is only used to establish this session."
+
+#: src/web/node.tsx
+msgid "传感器"
+msgstr "Sensors"
+
+#: src/plugins/runners/status.tsx
+msgid "作业运行中"
+msgstr "Job running"
+
+#: src/plugins/runners/workbench.tsx
+msgid "作业运行中，暂时不能切换"
+msgstr "A job is running. Wait for it to finish before changing the service."
+
+#: src/plugins/runners/workbench.tsx
+msgid "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
+msgstr "This runner will stop accepting jobs and remain stopped after a node restart. Its workspace and registration will be retained."
+
+#: src/plugins/runners/workbench.tsx
+msgid "停止接单"
+msgstr "Stop runner"
+
+#: src/web/storage.tsx
+msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
+msgstr "Check volume capacity, then explore directory usage. Volume capacity and directory totals are measured separately."
+
+#: src/web/overview.tsx
+msgid "全部类型"
+msgstr "All types"
+
+#: src/web/history.tsx
+#: src/web/overview.tsx
+msgid "全部节点"
+msgstr "All nodes"
+
+#. placeholder {0}: formatBytes(disk?.total_bytes)
+#: src/web/storage.tsx
+msgid "共 {0}"
+msgstr "Total {0}"
+
+#. placeholder {0}: rows.length
+#. placeholder {1}: fleet.hosts.length
+#: src/web/overview.tsx
+msgid "共 {0} / {1} 台"
+msgstr "{0} / {1} nodes"
+
+#: src/web/App.tsx
+msgid "关闭导航菜单"
+msgstr "Close navigation"
+
+#: src/web/plugin-settings.tsx
+msgid "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
+msgstr "Disabling a plugin stops its monitoring and controls. External services and running jobs keep working."
+
+#: src/web/storage.tsx
+msgid "其他"
+msgstr "Other"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "内存"
+msgstr "Memory"
+
+#: src/web/chart.tsx
+msgid "内存 / 容量以二进制单位显示"
+msgstr "Memory and storage use binary units"
+
+#: src/web/overview.tsx
+msgid "内存从高到低"
+msgstr "Memory: high to low"
+
+#: src/web/overview.tsx
+msgid "内存占用走势"
+msgstr "Memory usage trend"
+
+#: src/web/node.tsx
+msgid "内存已用"
+msgstr "Memory used"
+
+#: src/web/App.tsx
+msgid "最后一次"
+msgstr "the last update"
+
+#: src/web/node.tsx
+msgid "最近 10 分钟"
+msgstr "Last 10 minutes"
+
+#. placeholder {0}: timeLabel(fleet.ts)
+#: src/web/App.tsx
+msgid "最近采集 {0}"
+msgstr "Last collected {0}"
+
+#: src/web/node.tsx
+msgid "最高温度"
+msgstr "Peak temperature"
+
+#: src/web/storage.tsx
+msgid "占当前目录"
+msgstr "Share of directory"
+
+#: src/web/node.tsx
+msgid "危急"
+msgstr "Critical"
+
+#: src/web/history.tsx
+msgid "历史指标"
+msgstr "History metric"
+
+#: src/web/history.tsx
+msgid "历史时间范围"
+msgstr "History time range"
+
+#: src/web/history.tsx
+msgid "历史节点"
+msgstr "History node"
+
+#: src/web/App.tsx
+#: src/web/history.tsx
+msgid "历史趋势"
+msgstr "History"
+
+#: src/plugins/runners/workbench.tsx
+msgid "取消"
+msgstr "Cancel"
+
+#: src/plugins/runners/workbench.tsx
+msgid "可在下方确认后恢复接单"
+msgstr "Start a runner below to accept jobs again"
+
+#: src/plugins/runners/status.tsx
+msgid "可接单"
+msgstr "Ready"
+
+#: src/web/storage.tsx
+msgid "可用"
+msgstr "available"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用 {v0}，水位线 40 GiB"
+msgstr "{v0} available · 40 GiB threshold"
+
+#. placeholder {0}: formatBytes(mem?.available_bytes)
+#: src/web/node.tsx
+msgid "可用内存 {0}"
+msgstr "{0} memory available"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "可用内存不足 1 GiB"
+msgstr "Less than 1 GiB of memory available"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "可用存储容量"
+msgstr "Available storage"
+
+#: src/web/overview.tsx
+msgid "可用容量从低到高"
+msgstr "Storage available: low to high"
+
+#: src/web/storage.tsx
+msgid "可重建缓存"
+msgstr "Rebuildable caches"
+
+#: src/web/overview.tsx
+msgid "各在线节点报告的卷可用空间之和"
+msgstr "Sum of available volume space reported by online nodes"
+
+#: src/web/node.tsx
+msgid "各核心占用"
+msgstr "Per-core usage"
+
+#: src/web/overview.tsx
+msgid "名称排序"
+msgstr "Sort by name"
+
+#: src/web/App.tsx
+msgid "后台待机"
+msgstr "Background standby"
+
+#: src/web/plugin-settings.tsx
+msgid "启动中"
+msgstr "Starting"
+
+#: src/plugins/runners/workbench.tsx
+msgid "启动后，该 runner 会连接 GitHub 并接受新的作业。"
+msgstr "This runner will connect to GitHub and accept new jobs."
+
+#: src/plugins/runners/workbench.tsx
+msgid "启动接单"
+msgstr "Start runner"
+
+#: src/plugins/runners/workbench.tsx
+msgid "启用插件"
+msgstr "Enable plugin"
+
+#: src/web/overview.tsx
+msgid "在线节点"
+msgstr "Online nodes"
+
+#: src/web/storage.tsx
+msgid "大小"
+msgstr "Size"
+
+#: src/web/App.tsx
+msgid "失效判定"
+msgstr "Stale after"
+
+#: src/web/node.tsx
+msgid "存储分析"
+msgstr "Storage analysis"
+
+#: src/web/App.tsx
+#: src/web/storage.tsx
+msgid "存储空间"
+msgstr "Storage"
+
+#: src/web/App.tsx
+msgid "实时更新"
+msgstr "Live"
+
+#. placeholder {0}: fleet ? new Date(fleet.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
+#: src/web/App.tsx
+msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
+msgstr "Live updates are paused. Showing measurements from {0}. Resume to see the latest state."
+
+#: src/web/App.tsx
+msgid "实时资源"
+msgstr "Resource metrics"
+
+#: src/web/App.tsx
+msgid "实时采集已连接"
+msgstr "Live feed connected"
+
+#: src/web/history.tsx
+msgid "导出 CSV"
+msgstr "Export CSV"
+
+#: src/web/storage.tsx
+msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
+msgstr "No directory scan yet. Select Rescan to collect directory usage."
+
+#: src/plugins/runners/workbench.tsx
+msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
+msgstr "No runners found yet. Installed runners appear when nodes report them."
+
+#: src/web/storage.tsx
+msgid "尚未配置节点"
+msgstr "No nodes configured"
+
+#: src/web/node.tsx
+msgid "展示节点上报的核心顺序，不推测核心类型。"
+msgstr "Cores appear in the order reported by the node. Core types are not inferred."
+
+#: src/web/history.tsx
+msgid "峰值"
+msgstr "Peak"
+
+#: src/plugins/runners/workbench.tsx
+msgid "工作区"
+msgstr "Workspace"
+
+#: src/web/App.tsx
+msgid "工作区位置"
+msgstr "Workspace location"
+
+#: src/web/App.tsx
+msgid "工作台导航"
+msgstr "Workbench navigation"
+
+#: src/web/App.tsx
+msgid "工作台暂时无法显示"
+msgstr "The workbench could not be displayed"
+
+#: src/web/App.tsx
+msgid "工作台版本"
+msgstr "Workbench version"
+
+#: src/web/storage.tsx
+msgid "工具链"
+msgstr "Toolchains"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已停止"
+msgstr "Stopped"
+
+#: src/plugins/runners/status.tsx
+msgid "已停止接单"
+msgstr "Stopped"
+
+#. placeholder {0}: rows.length
+#: src/plugins/runners/workbench.tsx
+msgid "已发现 {0} 个 Runner"
+msgstr "{0, plural, one {# runner discovered} other {# runners discovered}}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已发现 runner"
+msgstr "Runners discovered"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已启动本地监听进程"
+msgstr "Local listener processes are running"
+
+#: src/web/plugin-settings.tsx
+msgid "已启用"
+msgstr "Enabled"
+
+#: src/web/overview.tsx
+msgid "已启用插件"
+msgstr "Enabled plugins"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已接入"
+msgstr "Connected"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+msgid "已暂停"
+msgstr "Paused"
+
+#. placeholder {0}: formatBytes(memoryUsed)
+#. placeholder {1}: formatBytes(memoryTotal)
+#: src/web/overview.tsx
+msgid "已用 {0} / {1}"
+msgstr "{0} / {1} used"
+
+#. placeholder {0}: " "
+#. placeholder {1}: formatBytes(disk ? disk.total_bytes - disk.available_bytes : undefined)
+#: src/web/storage.tsx
+msgid "已用{0} {1}"
+msgstr "{0}{1} used"
+
+#: src/web/plugin-settings.tsx
+msgid "已禁用"
+msgstr "Disabled"
+
+#: src/web/storage.tsx
+msgid "已统计目录"
+msgstr "Scanned directories"
+
+#: src/web/history.tsx
+msgid "平均"
+msgstr "Average"
+
+#: src/web/storage.tsx
+msgid "应用"
+msgstr "Applications"
+
+#: src/web/plugin-settings.tsx
+msgid "异常"
+msgstr "Error"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "当前 {v0}%"
+msgstr "Currently {v0}%"
+
+#: src/plugins/runners/workbench.tsx
+msgid "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
+msgstr "Showing local runner status. Configure GitHub connections per repository in the Runner plugin."
+
+#: src/web/plugin-settings.tsx
+msgid "当前未安装插件"
+msgstr "No plugins installed"
+
+#: src/web/overview.tsx
+msgid "当前运行平稳"
+msgstr "All clear"
+
+#. placeholder {0}: formatBytes(disk?.total_bytes)
+#: src/web/node.tsx
+msgid "总容量 {0}"
+msgstr "{0} total"
+
+#: src/web/App.tsx
+msgid "恢复实时更新"
+msgstr "Resume live updates"
+
+#: src/web/App.tsx
+msgid "我的集群"
+msgstr "My cluster"
+
+#: src/web/App.tsx
+msgid "打开导航菜单"
+msgstr "Open navigation"
+
+#: src/plugins/runners/workbench.tsx
+msgid "执行操作前，工作台和节点都会重新检查作业状态。"
+msgstr "Both the workbench and the node recheck job status before applying a change."
+
+#: src/web/storage.tsx
+msgid "扫描中…"
+msgstr "Scanning…"
+
+#: src/web/storage.tsx
+msgid "扫描范围"
+msgstr "Scan scope"
+
+#: src/web/storage.tsx
+msgid "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
+msgstr "Scan requested. Directory totals will update when the node finishes."
+
+#: src/web/history.tsx
+msgid "指标"
+msgstr "Metric"
+
+#: src/web/history.tsx
+msgid "指标分析"
+msgstr "Metric analysis"
+
+#: src/plugins/runners/workbench.tsx
+msgid "按仓库、节点分别注册"
+msgstr "Registered independently per repository and node"
+
+#: src/web/storage.tsx
+msgid "按目录与用途定位空间占用，扫描完成后自动更新。"
+msgstr "Explore usage by directory and category. Results update after each scan."
+
+#: src/plugins/runners/workbench.tsx
+msgid "接单进程"
+msgstr "Runner services"
+
+#: src/web/plugin-settings.tsx
+msgid "控制台"
+msgstr "Console"
+
+#. placeholder {0}: plugin.label
+#: src/web/plugin-settings.tsx
+msgid "控制台 {0}"
+msgstr "Console {0}"
+
+#: src/web/node.tsx
+msgid "控制模式"
+msgstr "Control mode"
+
+#: src/web/storage.tsx
+msgid "提交中…"
+msgstr "Submitting…"
+
+#: src/web/App.tsx
+msgid "插件异常"
+msgstr "Plugin error"
+
+#: src/plugins/runners/workbench.tsx
+msgid "插件提供的 CI 作业与接单状态"
+msgstr "CI jobs and runner status from the plugin"
+
+#: src/web/App.tsx
+msgid "插件未启用"
+msgstr "Plugin disabled"
+
+#: src/web/App.tsx
+#: src/web/plugin-settings.tsx
+msgid "插件管理"
+msgstr "Plugins"
+
+#: src/plugins/runners/workbench.tsx
+msgid "插件设置"
+msgstr "Plugin settings"
+
+#: src/web/plugin-settings.tsx
+msgid "插件配置已保存"
+msgstr "Plugin settings saved"
+
+#: src/web/overview.tsx
+msgid "搜索节点"
+msgstr "Search nodes"
+
+#: src/web/overview.tsx
+msgid "搜索节点名称"
+msgstr "Search node names"
+
+#: src/web/node.tsx
+msgid "搜索进程"
+msgstr "Search processes"
+
+#: src/web/api.ts
+msgid "收到的数据不符合接口约定，请刷新后重试"
+msgstr "The response did not match the expected format. Refresh and try again."
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "散热状态异常"
+msgstr "Thermal warning"
+
+#: src/web/ui.tsx
+msgid "数据已过期"
+msgstr "Data stale"
+
+#: src/web/storage.tsx
+msgid "数据过期"
+msgstr "Stale"
+
+#: src/web/App.tsx
+msgid "无法连接工作台"
+msgstr "Cannot connect to the workbench"
+
+#: src/web/history.tsx
+msgid "早期数据不足时仅展示已有样本；传感器未上报的指标保持空白。"
+msgstr "Only collected samples are shown. Metrics that a sensor has not reported remain empty."
+
+#: src/plugins/runners/workbench.tsx
+msgid "暂不可用"
+msgstr "Unavailable"
+
+#: src/web/App.tsx
+msgid "暂停实时更新"
+msgstr "Pause live updates"
+
+#: src/web/chart.tsx
+msgid "暂无可用的采样数据"
+msgstr "No samples available"
+
+#: src/plugins/runners/workbench.tsx
+msgid "暂无诊断日志"
+msgstr "No diagnostic logs yet"
+
+#: src/web/storage.tsx
+msgid "暂未收到新的扫描结果，节点繁忙时可能延后。"
+msgstr "No new scan results yet. A busy node may delay the scan."
+
+#: src/web/App.tsx
+#: src/web/history.tsx
+msgid "更新已暂停"
+msgstr "Updates paused"
+
+#: src/web/node.tsx
+msgid "未上报"
+msgstr "Not reported"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未取得远端状态"
+msgstr "Remote status unavailable"
+
+#: src/web/node.tsx
+msgid "未收到传感器数据"
+msgstr "No sensor readings received"
+
+#: src/web/overview.tsx
+msgid "未检测到节点失联、低磁盘余量或散热告警。"
+msgstr "No disconnected nodes, low-storage alerts, or thermal warnings."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "未识别仓库 · {directory}"
+msgstr "Unknown repository · {directory}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未识别注册仓库，无法执行服务操作"
+msgstr "The registered repository is unknown. Service controls are unavailable."
+
+#: src/plugins/runners/workbench.tsx
+msgid "未运行"
+msgstr "Not running"
+
+#: src/plugins/runners/status.tsx
+msgid "本地监听中"
+msgstr "Listening locally"
+
+#: src/plugins/runners/workbench.tsx
+msgid "本地进程"
+msgstr "Local process"
+
+#: src/web/overview.tsx
+msgid "查看"
+msgstr "View"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "查看 {0}"
+msgstr "View {0}"
+
+#. placeholder {0}: displayName(h)
+#: src/web/storage.tsx
+msgid "查看 {0} 的存储空间"
+msgstr "View storage on {0}"
+
+#: src/web/node.tsx
+msgid "查看历史趋势"
+msgstr "View history"
+
+#. placeholder {0}: displayName(h)
+#: src/web/overview.tsx
+msgid "查看节点 {0}"
+msgstr "View node {0}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "查看连接"
+msgstr "View connections"
+
+#. placeholder {0}: String(i + 1).padStart(2, "0")
+#: src/web/node.tsx
+msgid "核心 {0}"
+msgstr "CORE {0}"
+
+#. placeholder {0}: String(i + 1)
+#: src/web/node.tsx
+msgid "核心 {0} 占用"
+msgstr "Core {0} usage"
+
+#: src/web/plugins.tsx
+msgid "检查插件设置；基础监控仍可使用。"
+msgstr "Check plugin settings. Core monitoring is still available."
+
+#: src/web/App.tsx
+msgid "检查节点采集通道与插件接入状态。"
+msgstr "Check node collection channels and plugin connections."
+
+#: src/web/App.tsx
+msgid "正在加载工作区"
+msgstr "Loading workspace…"
+
+#: src/web/App.tsx
+msgid "正在恢复连接"
+msgstr "Reconnecting…"
+
+#: src/plugins/runners/workbench.tsx
+msgid "正在执行作业"
+msgstr "Running jobs"
+
+#: src/web/App.tsx
+msgid "正在等待节点上报"
+msgstr "Waiting for nodes to report"
+
+#: src/web/App.tsx
+msgid "正在读取连接地址"
+msgstr "Loading endpoint…"
+
+#: src/plugins/runners/status.tsx
+msgid "正在连接 GitHub"
+msgstr "Connecting to GitHub"
+
+#: src/web/App.tsx
+msgid "正在连接集群"
+msgstr "Connecting to cluster…"
+
+#: src/web/node.tsx
+msgid "正常"
+msgstr "Normal"
+
+#: src/plugins/runners/workbench.tsx
+msgid "此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。"
+msgstr "Showing local process status for this repository. Connect GitHub to verify remote availability and job status."
+
+#: src/web/App.tsx
+msgid "此功能由可选插件提供。"
+msgstr "This feature is provided by an optional plugin."
+
+#: src/plugins/runners/workbench.tsx
+msgid "此节点尚未授权 Runner 服务控制"
+msgstr "Runner service control has not been authorized on this node"
+
+#: src/plugins/runners/workbench.tsx
+msgid "此节点的 Runner 插件未启用"
+msgstr "The Runner plugin is disabled on this node"
+
+#: src/web/storage.tsx
+msgid "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
+msgstr "No directories collected in this scope. Select Rescan to collect them."
+
+#: src/web/history.tsx
+msgid "每 15 秒更新"
+msgstr "Updates every 15 seconds"
+
+#: src/web/App.tsx
+msgid "每秒"
+msgstr "Every second"
+
+#: src/web/overview.tsx
+msgid "每秒采集 · 数据超过 10 秒未更新时标记过期"
+msgstr "Collected every second · Data is marked stale after 10 seconds"
+
+#: src/web/history.tsx
+msgid "比较不同节点，沿时间检查资源变化。"
+msgstr "Compare resource changes across nodes over time."
+
+#: src/web/overview.tsx
+msgid "没有匹配的节点，调整名称或类型筛选后重试。"
+msgstr "No matching nodes. Adjust the name or type filter."
+
+#: src/web/node.tsx
+msgid "没有匹配的进程"
+msgstr "No matching processes"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+msgid "活跃进程"
+msgstr "Processes"
+
+#: src/web/preferences.tsx
+msgid "浅色"
+msgstr "Light"
+
+#: src/web/preferences.tsx
+msgid "深色"
+msgstr "Dark"
+
+#: src/web/node.tsx
+msgid "温暖"
+msgstr "Warm"
+
+#: src/web/node.tsx
+msgid "热状态"
+msgstr "Thermal state"
+
+#: src/web/overview.tsx
+msgid "物理传感器"
+msgstr "Hardware sensors"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "物理机"
+msgstr "Physical machine"
+
+#: src/web/overview.tsx
+msgid "物理机"
+msgstr "Physical machine"
+
+#: src/web/overview.tsx
+msgid "状态"
+msgstr "Status"
+
+#: src/plugins/runners/status.tsx
+msgid "状态未知"
+msgstr "Unknown"
+
+#: src/web/plugin-settings.tsx
+msgid "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
+msgstr "Manage console features and node plugins independently. Your settings are saved."
+
+#: src/web/storage.tsx
+msgid "用户数据"
+msgstr "User data"
+
+#: src/web/storage.tsx
+msgid "用户目录"
+msgstr "Home directory"
+
+#: src/web/storage.tsx
+msgid "用途"
+msgstr "Category"
+
+#: src/plugins/runners/workbench.tsx
+msgid "监听 / 可接单"
+msgstr "Listening / ready"
+
+#: src/web/storage.tsx
+msgid "目录"
+msgstr "Directory"
+
+#. placeholder {0}: formatBytes(scan.bytes)
+#: src/web/storage.tsx
+msgid "目录分类，共 {0}"
+msgstr "Directory categories, {0} total"
+
+#: src/web/App.tsx
+msgid "目录扫描"
+msgstr "Directory scans"
+
+#: src/web/storage.tsx
+msgid "目录扫描已更新。"
+msgstr "Directory scan updated."
+
+#: src/web/storage.tsx
+msgid "目录空间分析"
+msgstr "Directory usage"
+
+#: src/web/storage.tsx
+msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
+msgstr "Directory totals and APFS volume capacity are measured differently. “Rebuildable caches” is a category; no data is deleted automatically."
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认停止"
+msgstr "Confirm stop"
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认启动"
+msgstr "Confirm start"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "磁盘余量低于水位线"
+msgstr "Low available storage"
+
+#: src/web/App.tsx
+msgid "私有工作空间"
+msgstr "Private workspace"
+
+#: src/web/node.tsx
+msgid "等待 CPU 信息"
+msgstr "Waiting for CPU data"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "等待节点重新上报"
+msgstr "Waiting for the node to report again"
+
+#: src/web/chart.tsx
+msgid "等待采样"
+msgstr "Awaiting samples"
+
+#: src/web/overview.tsx
+msgid "等待采集"
+msgstr "Awaiting data"
+
+#: src/web/overview.tsx
+msgid "筛选节点类型"
+msgstr "Filter node type"
+
+#: src/plugins/runners/workbench.tsx
+msgid "管理接单进程 ↗"
+msgstr "Manage runners ↗"
+
+#: src/plugins/runners/workbench.tsx
+#: src/web/App.tsx
+msgid "管理插件"
+msgstr "Manage plugins"
+
+#: src/web/node.tsx
+msgid "类型"
+msgstr "Type"
+
+#: src/web/node.tsx
+#: src/web/preferences.tsx
+#: src/web/storage.tsx
+msgid "系统"
+msgstr "System"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统报告 critical"
+msgstr "System reports critical thermal state"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统报告 serious"
+msgstr "System reports serious thermal state"
+
+#: src/web/storage.tsx
+msgid "系统根目录"
+msgstr "System root"
+
+#: src/web/node.tsx
+msgid "系统自动"
+msgstr "System automatic"
+
+#: src/web/node.tsx
+msgid "系统资源采集仍正常工作。"
+msgstr "Core resource monitoring is still running."
+
+#: src/web/chart.tsx
+msgid "纵轴 0–100%"
+msgstr "Y-axis: 0–100%"
+
+#: src/plugins/runners/workbench.tsx
+msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
+msgstr "Manage runners by repository and verify local status against GitHub."
+
+#: src/web/ui.tsx
+msgid "群岛"
+msgstr "Mini Archipel"
+
+#: src/web/App.tsx
+#: src/web/preferences.tsx
+msgid "群岛 · 节点工作台"
+msgstr "Mini Archipel · Node workbench"
+
+#. placeholder {0}: String(fleet.hosts.filter((h) => !stale(h, now)).length)
+#. placeholder {1}: String(fleet.hosts.length)
+#: src/web/App.tsx
+msgid "群岛 · 节点工作台（{0}/{1}）"
+msgstr "Mini Archipel · Node workbench ({0}/{1})"
+
+#. placeholder {0}: metric.key
+#. placeholder {1}: new Date().toISOString().slice(0, 10)
+#: src/web/history.tsx
+msgid "群岛-{0}-{1}.csv"
+msgstr "mini-archipel-{0}-{1}.csv"
+
+#: src/web/node.tsx
+msgid "自定义曲线"
+msgstr "Custom curve"
+
+#: src/web/history.tsx
+msgid "节点"
+msgstr "Nodes"
+
+#: src/web/overview.tsx
+msgid "节点 / 规格"
+msgstr "Node / specifications"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。"
+msgstr "The node's Runner plugin is disabled, not ready, or has an incompatible data version. Check Plugins."
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点 Runners"
+msgstr "Node runners"
+
+#: src/web/node.tsx
+msgid "节点不存在"
+msgstr "Node not found"
+
+#: src/web/node.tsx
+msgid "节点位置"
+msgstr "Node location"
+
+#: src/web/node.tsx
+msgid "节点信息"
+msgstr "Node information"
+
+#: src/web/node.tsx
+msgid "节点可能已从集群配置中移除。"
+msgstr "This node may have been removed from the cluster configuration."
+
+#: src/web/ui.tsx
+msgid "节点在线"
+msgstr "Online"
+
+#: src/web/App.tsx
+msgid "节点导航"
+msgstr "Node navigation"
+
+#: src/web/ui.tsx
+msgid "节点工作台"
+msgstr "Node workbench"
+
+#: src/web/node.tsx
+msgid "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心。"
+msgstr "The node's top 15 processes by CPU usage. A process can use multiple cores."
+
+#: src/web/overview.tsx
+msgid "节点排序"
+msgstr "Sort nodes"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点数据过期，操作不可用"
+msgstr "Node data is stale. Controls are unavailable."
+
+#: src/web/plugin-settings.tsx
+msgid "节点未安装此插件"
+msgstr "Plugin not installed on this node"
+
+#: src/web/overview.tsx
+msgid "节点架构"
+msgstr "Architecture"
+
+#: src/web/node.tsx
+msgid "节点概览"
+msgstr "Overview"
+
+#: src/web/plugin-settings.tsx
+#: src/web/ui.tsx
+msgid "节点离线"
+msgstr "Offline"
+
+#: src/web/App.tsx
+msgid "节点详情"
+msgstr "Node details"
+
+#. js-lingui-explicit-id
+#: src/messages.ts
+msgid "节点请求失败（HTTP {status}）"
+msgstr "Node request failed (HTTP {status})"
+
+#: src/web/node.tsx
+msgid "节点资源指标"
+msgstr "Node resource metrics"
+
+#: src/web/node.tsx
+msgid "节点超过 10 秒未更新。下方保留最后一次采集结果，运维操作暂不可用。"
+msgstr "No node update for over 10 seconds. The last measurements remain visible; controls are unavailable."
+
+#: src/web/App.tsx
+msgid "节点连接"
+msgstr "Node connections"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "节点连接中断"
+msgstr "Node disconnected"
+
+#: src/web/overview.tsx
+msgid "节点间的同尺度比较 · 最近 10 分钟"
+msgstr "Nodes compared on the same scale · Last 10 minutes"
+
+#: src/web/node.tsx
+msgid "芯片功耗"
+msgstr "Chip power"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "虚拟机"
+msgstr "Virtual machine"
+
+#: src/web/overview.tsx
+msgid "虚拟机"
+msgstr "Virtual machine"
+
+#: src/web/node.tsx
+msgid "虚拟机无硬件传感器"
+msgstr "Virtual machines have no hardware sensors"
+
+#: src/web/overview.tsx
+msgid "虚拟机由宿主机负责散热，节点详情按实际能力展示传感器。"
+msgstr "Virtual machine cooling is managed by the host. Node details show sensors according to available capabilities."
+
+#: src/web/App.tsx
+msgid "访问令牌"
+msgstr "Access token"
+
+#: src/plugins/runners/workbench.tsx
+msgid "诊断日志"
+msgstr "Diagnostic logs"
+
+#: src/web/preferences.tsx
+msgid "语言：{languageLabel}"
+msgstr "Language: {languageLabel}"
+
+#. placeholder {0}: String(response.status)
+#: src/web/api.ts
+msgid "请求失败（{0}）"
+msgstr "Request failed ({0})"
+
+#: src/web/api.ts
+msgid "请求未完成，请重试"
+msgstr "The request could not be completed. Try again."
+
+#: src/web/App.tsx
+msgid "请输入访问令牌"
+msgstr "Enter your access token"
+
+#: src/web/App.tsx
+msgid "请重新加载。节点上的任务不受影响。"
+msgstr "Reload the page. Tasks on your nodes are unaffected."
+
+#: src/web/storage.tsx
+msgid "资料库"
+msgstr "Library"
+
+#: src/web/overview.tsx
+msgid "资源指标"
+msgstr "Resource metrics"
+
+#: src/web/node.tsx
+#: src/web/overview.tsx
+msgid "资源走势"
+msgstr "Resource trends"
+
+#: src/web/App.tsx
+msgid "跳到工作区"
+msgstr "Skip to workspace"
+
+#: src/web/node.tsx
+msgid "身份"
+msgstr "Identity"
+
+#: src/web/App.tsx
+msgid "轮询 / 重连"
+msgstr "Polling / reconnecting"
+
+#: src/web/App.tsx
+msgid "输入工作台访问令牌，查看节点并执行运维操作。"
+msgstr "Enter your access token to view nodes and manage your cluster."
+
+#: src/web/App.tsx
+msgid "输入访问令牌"
+msgstr "Enter access token"
+
+#. placeholder {0}: uptime(host.snapshot?.host?.uptime_s, _)
+#: src/web/node.tsx
+msgid "运行 {0}"
+msgstr "Uptime {0}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "运行中的作业受到启停保护"
+msgstr "Runners with active jobs cannot be stopped"
+
+#: src/web/node.tsx
+msgid "运行时间"
+msgstr "Uptime"
+
+#: src/web/overview.tsx
+msgid "运行概况"
+msgstr "Activity"
+
+#: src/web/App.tsx
+#: src/web/node.tsx
+#: src/web/storage.tsx
+msgid "返回集群概览"
+msgstr "Return to overview"
+
+#: src/web/App.tsx
+msgid "进入工作台"
+msgstr "Open workbench"
+
+#: src/web/node.tsx
+msgid "进程"
+msgstr "Process"
+
+#: src/web/node.tsx
+msgid "进程名称或 PID"
+msgstr "Process name or PID"
+
+#: src/plugins/runners/workbench.tsx
+msgid "连接中"
+msgstr "Connecting"
+
+#: src/web/App.tsx
+msgid "连接你的集群"
+msgstr "Connect to your cluster"
+
+#: src/web/App.tsx
+msgid "连接诊断"
+msgstr "Connections"
+
+#: src/web/App.tsx
+msgid "退出工作台"
+msgstr "Sign out"
+
+#: src/web/storage.tsx
+msgid "部分目录不可读取 · "
+msgstr "Some directories are unreadable · "
+
+#: src/web/history.tsx
+msgid "采样数据按时间范围聚合，保留最近一年的历史。"
+msgstr "Samples are aggregated for the selected range. History is retained for one year."
+
+#: src/web/history.tsx
+msgid "采样点"
+msgstr "Samples"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "采集数据已过期"
+msgstr "Collection data stale"
+
+#: src/web/chart.tsx
+msgid "采集结果到达后，趋势会出现在这里"
+msgstr "Trends appear when measurements arrive"
+
+#: src/web/App.tsx
+msgid "采集说明"
+msgstr "Collection details"
+
+#: src/web/App.tsx
+msgid "重新加载"
+msgstr "Reload"
+
+#: src/web/storage.tsx
+msgid "重新扫描"
+msgstr "Rescan"
+
+#: src/web/App.tsx
+msgid "重试连接"
+msgstr "Retry connection"
+
+#: src/web/node.tsx
+msgid "集群"
+msgstr "Cluster"
+
+#: src/web/overview.tsx
+msgid "集群内存负载"
+msgstr "Cluster memory load"
+
+#: src/web/overview.tsx
+msgid "集群可用存储容量"
+msgstr "Cluster available storage"
+
+#: src/web/overview.tsx
+msgid "集群核心负载"
+msgstr "Cluster core load"
+
+#: src/web/App.tsx
+#: src/web/overview.tsx
+msgid "集群概览"
+msgstr "Overview"
+
+#: src/web/overview.tsx
+msgid "集群运行正常"
+msgstr "Cluster healthy"
+
+#: src/web/overview.tsx
+msgid "需要关注"
+msgstr "Needs attention"
+
+#: src/web/plugin-settings.tsx
+msgid "页面、概览扩展、远端集成和控制操作"
+msgstr "Pages, overview extensions, remote integrations, and controls"
+
+#: src/web/node.tsx
+msgid "风扇转速"
+msgstr "Fan speed"

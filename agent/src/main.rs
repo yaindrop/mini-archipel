@@ -1,154 +1,146 @@
 mod collectors;
 mod config;
+mod plugins;
 
+use axum::{
+    extract::{Path, State},
+    http::{HeaderMap, StatusCode},
+    response::IntoResponse,
+    routing::{get, post, put},
+    Json, Router,
+};
+use collectors::{Shared, SharedState};
+use serde_json::{json, Value};
 use std::sync::Arc;
-
-use axum::extract::State;
-use axum::http::{HeaderMap, StatusCode};
-use axum::response::IntoResponse;
-use axum::routing::{get, post};
-use axum::Json;
-use axum::Router;
 use tokio::sync::RwLock;
-
-use collectors::SharedState;
 
 pub const AGENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+#[derive(Clone)]
+struct AppState {
+    core: Shared,
+    token: String,
+    plugins: Arc<plugins::Manager>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = std::env::args()
+    let args: Vec<String> = std::env::args().collect();
+    if args.get(1).is_some_and(|arg| arg == "configure-plugin") {
+        if args.len() != 5 {
+            return Err("usage: mini-archipel-agent configure-plugin <config> <plugin-id> <true|false>; options JSON on stdin".into());
+        }
+        return plugins::cli::configure(&args[2], &args[3], &args[4]);
+    }
+    if args.get(1).is_some_and(|arg| arg == "check-config") {
+        return plugins::cli::check(args.get(2).ok_or("missing config path")?);
+    }
+    if std::env::args().nth(1).as_deref() == Some("--version") {
+        println!("{AGENT_VERSION}");
+        return Ok(());
+    }
+    let path = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| "agent.toml".to_string());
-    let config = config::load(&config_path)?;
+        .unwrap_or_else(|| "agent.toml".into());
+    let config = config::load(&path)?;
     let bind = config.bind.clone();
-    let token = config.token.clone();
-
-    let state = Arc::new(RwLock::new(SharedState::new()));
-    collectors::spawn_all(Arc::clone(&state), config.collectors).await;
-
+    let core = Arc::new(RwLock::new(SharedState::new()));
+    let plugins = plugins::Manager::new(
+        config.clone(),
+        path.into(),
+        Arc::clone(&core),
+        plugins::catalog::installed(),
+    )
+    .await?;
+    collectors::spawn_all(Arc::clone(&core), config.collectors).await;
+    let state = AppState {
+        core,
+        token: config.token,
+        plugins: Arc::new(plugins),
+    };
     let app = Router::new()
-        .route("/health", get(health))
+        .route("/health", get(|| async { AGENT_VERSION }))
         .route("/snapshot", get(snapshot))
-        .route("/runner-service", post(runner_service))
+        .route("/plugins/{id}", put(set_plugin))
+        .route("/plugins/{id}/actions/{action}", post(plugin_action))
         .route("/rescan-disk", post(rescan_disk))
-        .with_state((state, token));
-
+        .with_state(state);
     let listener = tokio::net::TcpListener::bind(&bind).await?;
-    eprintln!("mini-fleet-agent {AGENT_VERSION} listening on {bind}");
+    eprintln!("mini-archipel-agent {AGENT_VERSION} listening on {bind}");
     axum::serve(listener, app).await?;
     Ok(())
 }
 
-async fn health() -> impl IntoResponse {
-    (StatusCode::OK, AGENT_VERSION)
+fn authorized(headers: &HeaderMap, token: &str) -> bool {
+    headers.get("authorization").and_then(|v| v.to_str().ok())
+        == Some(format!("Bearer {token}").as_str())
+}
+fn response(result: Result<Value, plugins::Failure>) -> (StatusCode, Json<Value>) {
+    match result {
+        Ok(value) => (StatusCode::OK, Json(value)),
+        Err((status, error)) => (status, Json(json!({ "error": error }))),
+    }
 }
 
 #[derive(serde::Deserialize)]
-struct RunnerServiceRequest {
-    runner: String,
-    enable: bool,
+#[serde(deny_unknown_fields)]
+struct Enabled {
+    enabled: bool,
 }
 
-/// Enables or disables the launchd job of one installed runner.
-/// macOS only; uses launchctl enable/disable + bootout/bootstrap.
-async fn runner_service(
-    State((state, token)): State<(Arc<RwLock<SharedState>>, String)>,
+async fn set_plugin(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
     headers: HeaderMap,
-    Json(body): Json<RunnerServiceRequest>,
+    Json(body): Json<Enabled>,
 ) -> impl IntoResponse {
-    let auth = headers
-        .get("authorization")
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or("");
-    if auth != format!("Bearer {token}") {
-        return (StatusCode::UNAUTHORIZED, String::new());
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    if std::env::var("MINIFLEET_ALLOW_RUNNER_CONTROL").is_err() {
-        return (
-            StatusCode::FORBIDDEN,
-            "runner control disabled; set MINIFLEET_ALLOW_RUNNER_CONTROL=1 to enable".to_string(),
-        );
-    }
-    // Refuse while a job is active.
-    {
-        let shared = state.read().await;
-        let active = shared.runners.iter().any(|r| {
-            (r.agent_name.as_deref() == Some(body.runner.as_str())
-                || r.repo_dir == body.runner)
-                && r.worker_pid.is_some()
-        });
-        if active {
-            return (StatusCode::CONFLICT, "runner is running a job".to_string());
-        }
-    }
-
-    let label = format!("actions.runner.yaindrop-flow-bit.{}", body.runner);
-    let domain = format!("gui/{}", libc_getuid());
-    let plist = format!(
-        "{}/Library/LaunchAgents/{label}.plist",
-        std::env::var("HOME").unwrap_or_default()
-    );
-    let result = if body.enable {
-        run("launchctl", &["enable", &format!("{domain}/{label}")])
-            .and_then(|_| run("launchctl", &["bootstrap", &domain, &plist]))
-    } else {
-        let _ = run("launchctl", &["bootout", &format!("{domain}/{label}")]);
-        run("launchctl", &["disable", &format!("{domain}/{label}")])
-    };
-    match result {
-        Ok(()) => (StatusCode::OK, "{\"ok\":true}".to_string()),
-        Err(error) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("{{\"ok\":false,\"error\":\"{error}\"}}"),
-        ),
-    }
+    response(
+        state
+            .plugins
+            .set_enabled(&id, body.enabled)
+            .await
+            .map(|_| json!({ "ok": true })),
+    )
 }
 
-fn libc_getuid() -> u32 {
-    unsafe { u32::try_from(libc::getuid()).unwrap_or(0) }
-}
-
-fn run(program: &str, args: &[&str]) -> Result<(), String> {
-    let status = std::process::Command::new(program)
-        .args(args)
-        .status()
-        .map_err(|e| format!("spawn {program}: {e}"))?;
-    if status.success() {
-        Ok(())
-    } else {
-        Err(format!("{program} exited with {status}"))
-    }
-}
-
-/// Trigger an immediate disk-tree rescan (fire-and-forget; token required).
-async fn rescan_disk(
-    State((state, token)): State<(Arc<RwLock<SharedState>>, String)>,
+async fn plugin_action(
+    State(state): State<AppState>,
+    Path((id, action)): Path<(String, String)>,
     headers: HeaderMap,
+    Json(body): Json<Value>,
 ) -> impl IntoResponse {
-    let auth = headers
-        .get("authorization")
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or("");
-    if auth != format!("Bearer {token}") {
-        return (StatusCode::UNAUTHORIZED, String::new());
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    // Tell the disk collector to run now by bumping a generation counter.
-    state.read().await.disk_rescan_flag.store(true, std::sync::atomic::Ordering::Relaxed);
-    (StatusCode::OK, "{\"ok\":true}".to_string())
+    response(state.plugins.action(&id, action, body).await)
 }
 
-async fn snapshot(
-    State((state, token)): State<(Arc<RwLock<SharedState>>, String)>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
-    let auth = headers
-        .get("authorization")
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or("");
-    if auth != format!("Bearer {token}") {
-        return (StatusCode::UNAUTHORIZED, String::new());
+async fn rescan_disk(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    let snapshot = state.read().await.render();
-    (StatusCode::OK, serde_json::to_string(&snapshot).unwrap())
+    state
+        .core
+        .read()
+        .await
+        .disk_rescan_flag
+        .store(true, std::sync::atomic::Ordering::Relaxed);
+    response(Ok(json!({ "ok": true })))
+}
+
+async fn snapshot(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
+    }
+    response(
+        serde_json::to_value(state.core.read().await.render()).map_err(|_| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "snapshot serialization failed".into(),
+            )
+        }),
+    )
 }
