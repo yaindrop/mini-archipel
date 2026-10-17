@@ -1,0 +1,27 @@
+{
+  "owner": "yaindrop",
+  "repositories": [
+    "flowbit",
+    "flowbit-knowledge",
+    "in-frames",
+    "mini-archipel"
+  ],
+  "nodes": [
+    {
+      "ssh": "yd-mini",
+      "kind": "physical"
+    },
+    {
+      "ssh": "yd-mini-2",
+      "kind": "physical"
+    },
+    {
+      "ssh": "yd-mbp-tart",
+      "kind": "virtual"
+    },
+    {
+      "ssh": "yd-mbp-tart-2",
+      "kind": "virtual"
+    }
+  ]
+}
