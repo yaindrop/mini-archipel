@@ -218,8 +218,18 @@ msgstr "This node allows monitoring only. Runner service control has not been au
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
+msgid "节点接单互斥不可用，请更新共用作业钩子"
+msgstr "Node mutual exclusion is unavailable. Update the shared job hooks."
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
 msgid "runner 不存在"
 msgstr "Runner not found"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点接单互斥中，请等待当前作业结束"
+msgstr "Node mutual exclusion is active. Wait for the current job to finish."
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
@@ -425,6 +435,11 @@ msgstr "{0, plural, one {# NODE} other {# NODES}}"
 msgid "{0} 内存占用"
 msgstr "{0} memory usage"
 
+#. placeholder {0}: policy.active_repo
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 占用节点，其他 Runner 暂停接单"
+msgstr "{0} is using this node; other runners are paused"
+
 #. placeholder {0}: displayName(h)
 #: src/web/storage.tsx
 msgid "{0} 卷已用比例"
@@ -446,10 +461,25 @@ msgstr "{0} physical · {1} virtual"
 msgid "{0} 已停止接单"
 msgstr "{0} stopped accepting jobs"
 
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已关闭接单互斥"
+msgstr "Mutual exclusion disabled on {0}"
+
 #. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
 #: src/plugins/runners/workbench.tsx
 msgid "{0} 已启动接单"
 msgstr "{0} started accepting jobs"
+
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已开启接单互斥"
+msgstr "Mutual exclusion enabled on {0}"
+
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 接单互斥"
+msgstr "{0} mutual exclusion"
 
 #. placeholder {0}: String(cores)
 #: src/web/overview.tsx
@@ -663,6 +693,10 @@ msgstr "Main navigation"
 #: src/web/preferences.tsx
 msgid "主题：{themeLabel}"
 msgstr "Theme: {themeLabel}"
+
+#: src/plugins/runners/status.tsx
+msgid "互斥暂停接单"
+msgstr "Paused by mutual exclusion"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "交还系统自动控制"
@@ -960,6 +994,10 @@ msgstr "Sum of available volume space reported by online nodes"
 msgid "各核心占用"
 msgstr "Per-core usage"
 
+#: src/plugins/runners/workbench.tsx
+msgid "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
+msgstr "When one runner executes a job, pause other runners on the same node and resume them afterward. Manually stopped runners stay stopped."
+
 #: src/web/overview.tsx
 msgid "名称排序"
 msgstr "Sort by name"
@@ -1195,6 +1233,10 @@ msgid "已完成"
 msgstr "Completed"
 
 #: src/plugins/runners/workbench.tsx
+msgid "已开启，空闲时所有 Runner 正常接单"
+msgstr "Enabled; runners accept jobs while the node is idle"
+
+#: src/plugins/runners/workbench.tsx
 msgid "已接入"
 msgstr "Connected"
 
@@ -1379,6 +1421,10 @@ msgid "排队中"
 msgstr "Queued"
 
 #: src/plugins/runners/workbench.tsx
+msgid "接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。"
+msgstr "Mutual exclusion pauses other runners on this node during a job and resumes them afterward."
+
+#: src/plugins/runners/workbench.tsx
 msgid "接单进程"
 msgstr "Runner services"
 
@@ -1533,6 +1579,10 @@ msgstr "Remote status unavailable"
 #: src/plugins/fan-control/workbench.tsx
 msgid "未应用的草稿"
 msgstr "Unapplied draft"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未开启"
+msgstr "Disabled"
 
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
@@ -1894,6 +1944,10 @@ msgstr "Step {0} speed"
 msgid "等待 CPU 信息"
 msgstr "Waiting for CPU data"
 
+#: src/plugins/runners/status.tsx
+msgid "等待节点空闲"
+msgstr "Waiting for the node"
+
 #. js-lingui-explicit-id
 #: src/domain.ts
 msgid "等待节点重新上报"
@@ -2046,6 +2100,22 @@ msgstr "The node's top 15 processes by CPU usage. A process can use multiple cor
 #: src/web/overview.tsx
 msgid "节点排序"
 msgstr "Sort nodes"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥"
+msgstr "Node mutual exclusion"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥不可用，请更新共用作业钩子"
+msgstr "Node mutual exclusion is unavailable. Update the shared job hooks."
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥中，作业结束后自动恢复"
+msgstr "Paused by node mutual exclusion; resumes after the job"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点数据不可用"
+msgstr "Node data unavailable"
 
 #: src/plugins/runners/workbench.tsx
 msgid "节点数据过期，操作不可用"

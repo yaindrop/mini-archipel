@@ -166,6 +166,14 @@ export function makeSnapshot(index = 0): Snapshot {
         data: {
           interval_ms: 5000,
           control_allowed: true,
+          coordination: {
+            available: true,
+            enabled: false,
+            active_repo: null,
+            paused: [],
+            waiting: [],
+            error: null,
+          },
           runners: [
             {
               repo_dir: "flowbit",

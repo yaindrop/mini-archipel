@@ -3,6 +3,40 @@
   gap: 16px;
   margin-top: 18px;
 }
+.runner-coordination-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+.runner-coordination {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--subtle);
+}
+.runner-coordination-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.runner-coordination > .ant-typography {
+  display: block;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.runner-coordination .ant-alert {
+  margin-top: 12px;
+}
+.runner-node-coordination {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 2fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
 .runner-node-repositories {
   display: grid;
   gap: 24px;
@@ -129,6 +163,9 @@
   margin: 0;
 }
 @media (width <= 760px) {
+  .runner-node-coordination {
+    grid-template-columns: 1fr;
+  }
   .runner-card .ant-card-head {
     padding-inline: 13px;
   }

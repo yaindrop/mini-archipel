@@ -77,6 +77,34 @@ Agent 不主动加标签或触发 CI，除非人明确要求验证。等待机�
 `~/.local/state/mini-ci/owner.json`。实际 Actions 的 Set up runner / Complete runner
 日志用于确认生产作业钩子；进程探针只证明平台与脚本接线，不替代真实项目 CI。
 
+## 节点接单互斥
+
+Runners 页的「节点接单互斥」和节点详情 Runners 区域提供同一个按节点保存的开关，
+默认关闭。开启后，开始钩子在取得节点租约、进入作业步骤之前，暂停同节点其他空闲
+Runner 的 Listener；当前作业及维护结束后恢复。注册、工作区和 LaunchAgent 配置保留，
+不调用 GitHub 的取消、禁用或调度接口，不触发 CI。
+
+暂停使用本地 SIGSTOP / SIGCONT，只操作当前用户、准确安装路径和已记录启动时间的
+Listener，不冻结 Worker。已同时分配的作业在共用开始钩子内等待租约，其 Listener
+保持运行以便接收取消；等待作业不能执行 checkout、构建或测试。原有节点租约仍是
+并发保护，关闭本开关只关闭对其他 Listener 的主动暂停，不移除原有作业串行规则。
+
+开关及暂停进程身份以权限 600 原子写入
+`~/.local/state/mini-ci/runner-policy.json`，与作业钩子、手动服务操作共用文件锁。
+信号前保存恢复记录；只恢复本策略暂停且身份仍匹配的进程。手动停止的 Runner 不会
+自动启动，在互斥期间也可手动停止已暂停的 Runner。关闭开关立即恢复策略暂停项；
+插件停用不会更改这项已保存的本地 CI 策略，正常释放仍由完成钩子执行。
+
+Agent 复用该控制端检查遗留状态，Worker 崩溃或本地中断导致完成钩子未执行时，
+下一次采集恢复暂停项；Agent 重启从相同记录恢复。Agent 不可用且完成钩子也未执行时，
+恢复 Agent 或在节点运行 `/usr/bin/python3 ~/.local/libexec/mini-ci/ci-lease.py state`
+执行恢复检查。GitHub online / busy 状态存在延迟，界面的本地互斥标记优先。
+
+此能力要求节点上每个已注册 Runner 都接入本章的共用钩子；安装新仓库时使用
+`install-node-runners.py`，自动沿用同一机制。旧 Agent 或缺少钩子的节点开关不可用。
+本地接口为 `POST /plugins/runners/actions/coordination`，请求体仅含布尔值 `enable`；
+沿用节点鉴权、插件启用及 `allow_control` 授权，不需要仓库凭据。
+
 ## 多机策略
 
 - 每个仓库每个节点一个 Runner，共四仓库 × 四节点 = 16 个实例。

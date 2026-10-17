@@ -13,8 +13,21 @@ export function runnerState(
   runner: Runner,
   remoteRunners: GitHubRunner[] = [],
   now = Date.now(),
-): "unknown" | "busy" | "stopped" | "connecting" | "ready" | "listening" {
+):
+  | "unknown"
+  | "busy"
+  | "stopped"
+  | "connecting"
+  | "ready"
+  | "listening"
+  | "paused"
+  | "waiting" {
   if (!current(host, now)) return "unknown";
+  const coordination = agentData(host)?.coordination;
+  if (coordination?.enabled) {
+    if (coordination.waiting.includes(runner.repo_dir)) return "waiting";
+    if (coordination.paused.includes(runner.repo_dir)) return "paused";
+  }
   const remote = matchingRemote(runner, remoteRunners);
   if (runner.worker_pid !== null || remote?.busy) return "busy";
   if (runner.listener_pid === null) return "stopped";

@@ -8,13 +8,14 @@ import {
   OptionsSchema,
   ToggleSchema,
   InterruptSchema,
+  CoordinationSchema,
   type RepositoryState,
 } from "./contracts.ts";
 import { agentData, current, runnerState, runnersFor } from "./domain.ts";
 export const runnersPlugin: PluginDefinition = {
   id: "runners",
   label: "Runners",
-  version: "2.0.0",
+  version: "2.1.0",
   description: /*i18n*/ "GitHub Actions 接单进程、作业保护、工作区及诊断日志。",
   create(context, rawOptions) {
     const parsed = OptionsSchema.safeParse(rawOptions);
@@ -108,19 +109,25 @@ export const runnersPlugin: PluginDefinition = {
         });
       },
       async action(action, body) {
-        if (action !== "toggle" && action !== "interrupt")
+        if (
+          action !== "toggle" &&
+          action !== "interrupt" &&
+          action !== "coordination"
+        )
           throw new UpstreamError(404, /*i18n*/ "插件操作不存在");
         const input = (
-          action === "interrupt"
-            ? InterruptSchema.extend({ host: z.string() })
-            : ToggleSchema.extend({ host: z.string() })
+          action === "coordination"
+            ? CoordinationSchema
+            : action === "interrupt"
+              ? InterruptSchema.extend({ host: z.string() })
+              : ToggleSchema.extend({ host: z.string() })
         ).safeParse(body);
         if (!input.success)
           throw new UpstreamError(
             400,
             /*i18n*/ "缺少有效的节点、仓库、安装目录或操作",
           );
-        const { host: name, repo, runner: directory } = input.data;
+        const { host: name } = input.data;
         await context.pollHost(name);
         const host = context.hosts().find((h) => h.name === name);
         if (!host) throw new UpstreamError(404, /*i18n*/ "节点不存在");
@@ -134,10 +141,39 @@ export const runnersPlugin: PluginDefinition = {
             403,
             /*i18n*/ "此节点只启用了监控，尚未授权 Runner 服务控制",
           );
+        if (!("repo" in input.data)) {
+          if (!agentData(host)?.coordination?.available)
+            throw new UpstreamError(
+              409,
+              /*i18n*/ "节点接单互斥不可用，请更新共用作业钩子",
+            );
+          OkSchema.parse(
+            await context.command(
+              name,
+              "plugins/runners/actions/coordination",
+              {
+                enable: input.data.enable,
+              },
+            ),
+          );
+          await context.pollHost(name);
+          return { ok: true };
+        }
+        const { repo, runner: directory } = input.data;
         const runner = runnersFor(host).find(
           (r) => r.repo === repo && r.repo_dir === directory,
         );
         if (!runner) throw new UpstreamError(404, /*i18n*/ "runner 不存在");
+        if (
+          action === "toggle" &&
+          "enable" in input.data &&
+          input.data.enable &&
+          agentData(host)?.coordination?.paused.includes(directory)
+        )
+          throw new UpstreamError(
+            409,
+            /*i18n*/ "节点接单互斥中，请等待当前作业结束",
+          );
         const freshRemote = read().repositories.flatMap(
           (state) => state.remote,
         );

@@ -19,6 +19,28 @@ import type { PluginContext } from "../../src/plugins/runtime.ts";
 import { makeHost, makeSnapshot, fixtureRunnerData } from "../fixtures.ts";
 afterEach(() => vi.useRealTimers());
 describe("runner plugin domain", () => {
+  it("shows local mutual exclusion before stale GitHub state", () => {
+    const host = makeHost();
+    if (!host.snapshot) throw Error("fixture");
+    const data = fixtureRunnerData(host.snapshot),
+      runner = data.runners[0];
+    if (!runner) throw Error("fixture");
+    data.coordination = {
+      available: true,
+      enabled: true,
+      active_repo: "owner/other",
+      paused: [runner.repo_dir],
+      waiting: [],
+      error: null,
+    };
+    expect(runnerState(host, runner)).toBe("paused");
+    data.coordination.paused = [];
+    data.coordination.waiting = [runner.repo_dir];
+    runner.worker_pid = 123;
+    expect(runnerState(host, runner)).toBe("waiting");
+    data.coordination.enabled = false;
+    expect(runnerState(host, runner)).toBe("busy");
+  });
   it("translates unknown repository labels using the current render context", () => {
     const host = makeHost();
     if (!host.snapshot) throw Error("fixture");
@@ -200,6 +222,45 @@ function context(): PluginContext {
   };
 }
 describe("runner plugin integration", () => {
+  it("sets a node policy locally, validates input and rejects stale or older nodes", async () => {
+    const ctx = context(),
+      host = makeHost(),
+      other = makeHost(1);
+    ctx.hosts = () => [host, other];
+    const command = vi.fn(ctx.command),
+      transport = vi.fn(ctx.transport);
+    ctx.command = command;
+    ctx.transport = transport;
+    const instance = runnersPlugin.create(ctx, {});
+    for (const enable of [true, false]) {
+      await expect(
+        instance.action("coordination", { host: other.name, enable }),
+      ).resolves.toEqual({ ok: true });
+      expect(command).toHaveBeenLastCalledWith(
+        other.name,
+        "plugins/runners/actions/coordination",
+        { enable },
+      );
+    }
+    expect(transport).not.toHaveBeenCalled();
+    command.mockClear();
+    await expect(
+      instance.action("coordination", { host: other.name, enable: "true" }),
+    ).rejects.toThrow("缺少有效");
+    await expect(
+      instance.action("coordination", {
+        host: other.name,
+        enable: true,
+        repo: "owner/repo",
+      }),
+    ).rejects.toThrow("缺少有效");
+    if (!other.snapshot) throw Error("fixture");
+    delete fixtureRunnerData(other.snapshot).coordination;
+    await expect(
+      instance.action("coordination", { host: other.name, enable: true }),
+    ).rejects.toThrow("更新共用作业钩子");
+    expect(command).not.toHaveBeenCalled();
+  });
   it("paginates each repository independently and contains failures and credentials", async () => {
     vi.useFakeTimers();
     const ctx = context();

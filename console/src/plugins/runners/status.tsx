@@ -5,6 +5,12 @@ import type { Host } from "../../contracts.ts";
 import type { Runner, GitHubRunner } from "./contracts.ts";
 import { runnerState, current, runnersFor } from "./domain.ts";
 const RUNNER_STATUS = {
+  get paused() {
+    return { label: msg`互斥暂停接单`, color: "warning" };
+  },
+  get waiting() {
+    return { label: msg`等待节点空闲`, color: "warning" };
+  },
   get unknown() {
     return {
       label: msg`状态未知`,

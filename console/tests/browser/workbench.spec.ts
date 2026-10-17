@@ -243,6 +243,75 @@ test("repository tabs isolate runners and controls across nodes", async ({
     page.getByRole("button", { name: "启动接单", exact: true }),
   ).toBeEnabled();
 });
+test("node runner mutual exclusion persists and reflects job pause and recovery", async ({
+  page,
+}) => {
+  await page.request.post("/__test/multi-repo");
+  await page.goto("/runners");
+  const toggle = page.getByRole("switch", {
+    name: "yd-mini 接单互斥",
+    exact: true,
+  });
+  await expect(toggle).not.toBeChecked();
+  await toggle.click();
+  await expect(toggle).toBeChecked();
+  await expect(
+    page.getByRole("switch", { name: "yd-mini-2 接单互斥", exact: true }),
+  ).not.toBeChecked();
+  await page.reload();
+  await expect(toggle).toBeChecked();
+  await page.request.post("/__test/runner-job", {
+    data: { host: "yd-mini", runner: "flowbit" },
+  });
+  await page.goto("/nodes/yd-mini?view=runners");
+  await expect(
+    page.getByRole("switch", { name: "yd-mini 接单互斥", exact: true }),
+  ).toBeChecked();
+  await expect(page.getByText("互斥暂停接单", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("yaindrop/flowbit 占用节点，其他 Runner 暂停接单", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.request.post("/__test/runner-job", {
+    data: { host: "yd-mini", runner: null },
+  });
+  await expect(page.getByText("互斥暂停接单", { exact: true })).toHaveCount(0);
+  await page
+    .getByRole("switch", { name: "yd-mini 接单互斥", exact: true })
+    .click();
+  await expect(
+    page.getByRole("switch", { name: "yd-mini 接单互斥", exact: true }),
+  ).not.toBeChecked();
+});
+test("node runner policy reports failures without changing the switch", async ({
+  page,
+}) => {
+  await page.route("**/api/plugins/runners/actions/coordination", (route) =>
+    route.fulfill({
+      status: 409,
+      json: { error: "节点接单互斥不可用，请更新共用作业钩子" },
+    }),
+  );
+  await page.goto("/runners");
+  const toggle = page.getByRole("switch", {
+    name: "yd-mini 接单互斥",
+    exact: true,
+  });
+  await toggle.focus();
+  await page.keyboard.press("Space");
+  await expect(
+    page.locator(".runner-coordination-grid").getByRole("alert"),
+  ).toContainText("节点接单互斥不可用，请更新共用作业钩子");
+  await expect(toggle).not.toBeChecked();
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include(".runner-coordination-grid")
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+});
 test("runner stop confirmation, cancellation, busy protection and restart", async ({
   page,
 }) => {

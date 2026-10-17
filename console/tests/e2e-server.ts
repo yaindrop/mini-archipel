@@ -29,6 +29,8 @@ const offline = new Set<string>(),
   interrupted = new Set<string>(),
   disabledPlugins = new Set<string>();
 const scans = new Map<string, ReturnType<typeof makeSnapshot>["disk_scan"]>();
+const exclusive = new Set<string>(),
+  runnerJobs = new Map<string, string>();
 let multiRepo = false;
 let fanEnabled = false;
 const fans = new Map<string, ReturnType<typeof fanFixture>>();
@@ -149,7 +151,8 @@ const transport: Transport = (url, _token, body) => {
     }
   }
   if (url.endsWith("/snapshot")) {
-    const runners = fixtureRunnerData(snapshot).runners;
+    const runnerData = fixtureRunnerData(snapshot),
+      runners = runnerData.runners;
     if (multiRepo && index === 0 && runners[0])
       runners.push({
         ...runners[0],
@@ -161,7 +164,26 @@ const transport: Transport = (url, _token, body) => {
       if (stopped.has(`${name}:${runner.repo_dir}`)) runner.listener_pid = null;
       if (interrupted.has(`${name}:${runner.repo_dir}`))
         runner.worker_pid = null;
+      if (runnerJobs.get(name) === runner.repo_dir) runner.worker_pid = 1234;
     }
+    runnerData.coordination = {
+      available: true,
+      enabled: exclusive.has(name),
+      active_repo:
+        runners.find((r) => r.repo_dir === runnerJobs.get(name))?.repo ?? null,
+      paused:
+        exclusive.has(name) && runnerJobs.has(name)
+          ? runners
+              .filter(
+                (r) =>
+                  r.repo_dir !== runnerJobs.get(name) &&
+                  r.listener_pid !== null,
+              )
+              .map((r) => r.repo_dir)
+          : [],
+      waiting: [],
+      error: null,
+    };
     if (disabledPlugins.has(name))
       snapshot.plugins.runners = {
         version: 2,
@@ -172,6 +194,15 @@ const transport: Transport = (url, _token, body) => {
         error: null,
       };
     return Promise.resolve(snapshot);
+  }
+  if (
+    url.endsWith("/plugins/runners/actions/coordination") &&
+    typeof body === "object" &&
+    body &&
+    "enable" in body
+  ) {
+    if (body.enable) exclusive.add(name);
+    else exclusive.delete(name);
   }
   if (
     url.endsWith("/plugins/runners/actions/interrupt") &&
@@ -222,6 +253,8 @@ app.post("/__test/reset", async () => {
   fans.clear();
   await plugins.setEnabled("fan-control", false);
   scans.clear();
+  exclusive.clear();
+  runnerJobs.clear();
   offline.clear();
   stopped.clear();
   interrupted.clear();
@@ -235,6 +268,16 @@ app.post("/__test/multi-repo", async () => {
   await monitor.poll();
   return { ok: true };
 });
+app.post<{ Body: { host: string; runner: string | null } }>(
+  "/__test/runner-job",
+  async (request) => {
+    if (request.body.runner)
+      runnerJobs.set(request.body.host, request.body.runner);
+    else runnerJobs.delete(request.body.host);
+    await monitor.poll();
+    return { ok: true };
+  },
+);
 app.post("/__test/fan-control", async () => {
   fanEnabled = true;
   await plugins.setEnabled("fan-control", true);

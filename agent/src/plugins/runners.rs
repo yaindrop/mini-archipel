@@ -205,6 +205,50 @@ fn options(value: Value) -> Result<Options, String> {
     Ok(value)
 }
 
+fn lease_helper() -> PathBuf {
+    dirs_home().join(".local/libexec/mini-ci/ci-lease.py")
+}
+
+async fn lease_command(action: &str, body: Option<Value>) -> Result<Value, Failure> {
+    use std::process::Stdio;
+    use tokio::io::AsyncWriteExt;
+    let unavailable = || {
+        (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "node runner policy unavailable; check shared job hooks".into(),
+        )
+    };
+    let mut child = tokio::process::Command::new("/usr/bin/python3")
+        .arg(lease_helper())
+        .arg(action)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .kill_on_drop(true)
+        .spawn()
+        .map_err(|_| unavailable())?;
+    if let Some(body) = body {
+        let mut input = child.stdin.take().ok_or_else(unavailable)?;
+        input
+            .write_all(body.to_string().as_bytes())
+            .await
+            .map_err(|_| unavailable())?;
+    } else {
+        drop(child.stdin.take());
+    }
+    let output = tokio::time::timeout(std::time::Duration::from_secs(6), child.wait_with_output())
+        .await
+        .map_err(|_| unavailable())?
+        .map_err(|_| unavailable())?;
+    if !output.status.success() {
+        return Err((
+            StatusCode::CONFLICT,
+            "node runner policy rejected the command; refresh and check shared job hooks".into(),
+        ));
+    }
+    serde_json::from_slice(&output.stdout).map_err(|_| unavailable())
+}
+
 pub struct Runners;
 impl Plugin for Runners {
     fn id(&self) -> &'static str {
@@ -223,6 +267,10 @@ impl Plugin for Runners {
         Box::pin(async move {
             let settings = options(value)?;
             loop {
+                let coordination = lease_command("state", None).await.unwrap_or(json!({
+                    "available": false, "enabled": false, "active_repo": null,
+                    "paused": [], "waiting": [], "error": "node runner policy unavailable; check shared job hooks"
+                }));
                 let cancelled = Arc::clone(&context.cancelled);
                 let runners = tokio::task::spawn_blocking(move || discover(&cancelled))
                     .await
@@ -230,7 +278,7 @@ impl Plugin for Runners {
                 context
                     .publish(
                         json!({ "runners": runners, "interval_ms": settings.interval_ms,
-                    "control_allowed": settings.allow_control }),
+                    "control_allowed": settings.allow_control, "coordination": coordination }),
                     )
                     .await;
                 tokio::time::sleep(std::time::Duration::from_millis(settings.interval_ms)).await;
@@ -245,12 +293,31 @@ impl Plugin for Runners {
         body: Value,
     ) -> Task<'_, Result<Value, Failure>> {
         Box::pin(async move {
-            if action != "toggle" && action != "interrupt" {
+            if action != "toggle" && action != "interrupt" && action != "coordination" {
                 return Err((StatusCode::NOT_FOUND, "plugin action not found".into()));
             }
             let settings = options(value).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
             if !settings.allow_control {
                 return Err((StatusCode::FORBIDDEN, "runner control is disabled".into()));
+            }
+            if action == "coordination" {
+                #[derive(Deserialize)]
+                #[serde(deny_unknown_fields)]
+                struct PolicyRequest {
+                    enable: bool,
+                }
+                let request: PolicyRequest = serde_json::from_value(body).map_err(|_| {
+                    (
+                        StatusCode::BAD_REQUEST,
+                        "invalid runner policy command".into(),
+                    )
+                })?;
+                let coordination =
+                    lease_command("policy", Some(json!({"enable": request.enable}))).await?;
+                let mut data = context.state.read().await.plugins["runners"].data.clone();
+                data["coordination"] = coordination;
+                context.publish(data).await;
+                return Ok(json!({"ok": true}));
             }
             #[derive(Deserialize)]
             #[serde(deny_unknown_fields)]
@@ -282,6 +349,20 @@ impl Plugin for Runners {
                     r.repo.as_deref() == Some(request.repo.as_str()) && r.repo_dir == request.runner
                 })
                 .ok_or((StatusCode::NOT_FOUND, "runner not found".into()))?;
+            if action == "toggle" && lease_helper().is_file() {
+                let enable = request
+                    .enable
+                    .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
+                if request.worker_pid.is_some() {
+                    return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
+                }
+                lease_command(
+                    "service",
+                    Some(json!({"repo": request.repo, "runner": request.runner, "enable": enable})),
+                )
+                .await?;
+                return Ok(json!({"ok": true}));
+            }
             let operation = action.clone();
             tokio::task::spawn_blocking(move || {
                 if operation == "interrupt" {

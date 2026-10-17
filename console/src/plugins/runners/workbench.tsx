@@ -14,6 +14,7 @@ import {
   Empty,
   Modal,
   Space,
+  Switch,
   Tag,
   Tabs,
   Tooltip,
@@ -44,6 +45,71 @@ import { readEnvelope } from "../contracts.ts";
 import { displayName, formatBytes } from "../../domain.ts";
 import { api, message } from "../../web/api.ts";
 import { Metric, PageTitle, Section } from "../../web/ui.tsx";
+
+function NodeCoordination({ host, now }: { host: Host; now: number }) {
+  const { _ } = useLingui();
+  const { t } = useLinguiMacro();
+  const client = useQueryClient(),
+    { message: feedback } = App.useApp();
+  const data = agentData(host),
+    policy = data?.coordination;
+  const mutation = useMutation({
+    mutationFn: (enable: boolean) =>
+      api.pluginAction("runners", "coordination", { host: host.name, enable }),
+    onSuccess: async (_data, enable) => {
+      await refreshFleet(client);
+      void feedback.success(
+        enable
+          ? t`${displayName(host)} 已开启接单互斥`
+          : t`${displayName(host)} 已关闭接单互斥`,
+      );
+    },
+  });
+  return (
+    <div className="runner-coordination">
+      <div className="runner-coordination-heading">
+        <Link to={`/nodes/${encodeURIComponent(host.name)}?view=runners`}>
+          {displayName(host)}
+        </Link>
+        <Switch
+          aria-label={t`${displayName(host)} 接单互斥`}
+          checked={policy?.enabled ?? false}
+          loading={mutation.isPending}
+          disabled={
+            !current(host, now) ||
+            !data?.control_allowed ||
+            !policy?.available ||
+            mutation.isPending
+          }
+          onChange={(enable) => {
+            mutation.mutate(enable);
+          }}
+        />
+      </div>
+      <Typography.Text type="secondary">
+        {!current(host, now)
+          ? t`节点数据不可用`
+          : !policy?.available
+            ? t`节点接单互斥不可用，请更新共用作业钩子`
+            : !data?.control_allowed
+              ? t`此节点尚未授权 Runner 服务控制`
+              : policy.enabled && policy.active_repo
+                ? t`${policy.active_repo} 占用节点，其他 Runner 暂停接单`
+                : policy.enabled
+                  ? t`已开启，空闲时所有 Runner 正常接单`
+                  : t`未开启`}
+      </Typography.Text>
+      {mutation.isError ? (
+        <Alert
+          type="error"
+          showIcon
+          title={message(mutation.error, _)}
+          role="alert"
+        />
+      ) : null}
+    </div>
+  );
+}
 export function RunnerList({
   hosts,
   now,
@@ -164,6 +230,7 @@ export function RunnerList({
                   disabled =
                     !runner.repo ||
                     status === "busy" ||
+                    status === "waiting" ||
                     !current(host, now) ||
                     !agentData(host)?.control_allowed ||
                     mutation.isPending;
@@ -226,13 +293,15 @@ export function RunnerList({
                           title={
                             !runner.repo
                               ? t`未识别注册仓库，无法执行服务操作`
-                              : status === "busy"
-                                ? t`作业运行中，暂时不能切换`
-                                : !current(host, now)
-                                  ? t`节点数据过期，操作不可用`
-                                  : !agentData(host)?.control_allowed
-                                    ? t`此节点尚未授权 Runner 服务控制`
-                                    : undefined
+                              : status === "paused" || status === "waiting"
+                                ? t`节点接单互斥中，作业结束后自动恢复`
+                                : status === "busy"
+                                  ? t`作业运行中，暂时不能切换`
+                                  : !current(host, now)
+                                    ? t`节点数据过期，操作不可用`
+                                    : !agentData(host)?.control_allowed
+                                      ? t`此节点尚未授权 Runner 服务控制`
+                                      : undefined
                           }
                         >
                           <Button
@@ -486,6 +555,16 @@ export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
         />
       </div>
       <Section
+        title={t`节点接单互斥`}
+        subtitle={t`同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。`}
+      >
+        <div className="runner-coordination-grid">
+          {fleet.hosts.map((host) => (
+            <NodeCoordination key={host.name} host={host} now={now} />
+          ))}
+        </div>
+      </Section>
+      <Section
         title={t`接单进程`}
         subtitle={t`执行操作前，工作台和节点都会重新检查作业状态。`}
       >
@@ -522,13 +601,19 @@ export function NodePanel({
           action={<Link to="/plugins">{t`启用插件`}</Link>}
         />
       ) : (
-        <RunnerList
-          hosts={[host]}
-          layout="node"
-          now={now}
-          repositories={consoleData(fleet).repositories}
-          remoteRunners={remoteFor(fleet)}
-        />
+        <>
+          <div className="runner-node-coordination">
+            <NodeCoordination host={host} now={now} />
+            <Typography.Text type="secondary">{t`接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。`}</Typography.Text>
+          </div>
+          <RunnerList
+            hosts={[host]}
+            layout="node"
+            now={now}
+            repositories={consoleData(fleet).repositories}
+            remoteRunners={remoteFor(fleet)}
+          />
+        </>
       )}
     </Section>
   );

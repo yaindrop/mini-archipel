@@ -218,8 +218,18 @@ msgstr "此节点只启用了监控，尚未授权 Runner 服务控制"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
+msgid "节点接单互斥不可用，请更新共用作业钩子"
+msgstr "节点接单互斥不可用，请更新共用作业钩子"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
 msgid "runner 不存在"
 msgstr "runner 不存在"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/server.ts
+msgid "节点接单互斥中，请等待当前作业结束"
+msgstr "节点接单互斥中，请等待当前作业结束"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
@@ -425,6 +435,11 @@ msgstr "{0} 个节点"
 msgid "{0} 内存占用"
 msgstr "{0} 内存占用"
 
+#. placeholder {0}: policy.active_repo
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 占用节点，其他 Runner 暂停接单"
+msgstr "{0} 占用节点，其他 Runner 暂停接单"
+
 #. placeholder {0}: displayName(h)
 #: src/web/storage.tsx
 msgid "{0} 卷已用比例"
@@ -446,10 +461,25 @@ msgstr "{0} 台物理机 · {1} 台虚拟机"
 msgid "{0} 已停止接单"
 msgstr "{0} 已停止接单"
 
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已关闭接单互斥"
+msgstr "{0} 已关闭接单互斥"
+
 #. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
 #: src/plugins/runners/workbench.tsx
 msgid "{0} 已启动接单"
 msgstr "{0} 已启动接单"
+
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 已开启接单互斥"
+msgstr "{0} 已开启接单互斥"
+
+#. placeholder {0}: displayName(host)
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 接单互斥"
+msgstr "{0} 接单互斥"
 
 #. placeholder {0}: String(cores)
 #: src/web/overview.tsx
@@ -663,6 +693,10 @@ msgstr "主导航"
 #: src/web/preferences.tsx
 msgid "主题：{themeLabel}"
 msgstr "主题：{themeLabel}"
+
+#: src/plugins/runners/status.tsx
+msgid "互斥暂停接单"
+msgstr "互斥暂停接单"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "交还系统自动控制"
@@ -960,6 +994,10 @@ msgstr "各在线节点报告的卷可用空间之和"
 msgid "各核心占用"
 msgstr "各核心占用"
 
+#: src/plugins/runners/workbench.tsx
+msgid "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
+msgstr "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
+
 #: src/web/overview.tsx
 msgid "名称排序"
 msgstr "名称排序"
@@ -1195,6 +1233,10 @@ msgid "已完成"
 msgstr "已完成"
 
 #: src/plugins/runners/workbench.tsx
+msgid "已开启，空闲时所有 Runner 正常接单"
+msgstr "已开启，空闲时所有 Runner 正常接单"
+
+#: src/plugins/runners/workbench.tsx
 msgid "已接入"
 msgstr "已接入"
 
@@ -1379,6 +1421,10 @@ msgid "排队中"
 msgstr "排队中"
 
 #: src/plugins/runners/workbench.tsx
+msgid "接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。"
+msgstr "接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。"
+
+#: src/plugins/runners/workbench.tsx
 msgid "接单进程"
 msgstr "接单进程"
 
@@ -1533,6 +1579,10 @@ msgstr "未取得远端状态"
 #: src/plugins/fan-control/workbench.tsx
 msgid "未应用的草稿"
 msgstr "未应用的草稿"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未开启"
+msgstr "未开启"
 
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
@@ -1894,6 +1944,10 @@ msgstr "第 {0} 档转速"
 msgid "等待 CPU 信息"
 msgstr "等待 CPU 信息"
 
+#: src/plugins/runners/status.tsx
+msgid "等待节点空闲"
+msgstr "等待节点空闲"
+
 #. js-lingui-explicit-id
 #: src/domain.ts
 msgid "等待节点重新上报"
@@ -2046,6 +2100,22 @@ msgstr "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心
 #: src/web/overview.tsx
 msgid "节点排序"
 msgstr "节点排序"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥"
+msgstr "节点接单互斥"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥不可用，请更新共用作业钩子"
+msgstr "节点接单互斥不可用，请更新共用作业钩子"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点接单互斥中，作业结束后自动恢复"
+msgstr "节点接单互斥中，作业结束后自动恢复"
+
+#: src/plugins/runners/workbench.tsx
+msgid "节点数据不可用"
+msgstr "节点数据不可用"
 
 #: src/plugins/runners/workbench.tsx
 msgid "节点数据过期，操作不可用"

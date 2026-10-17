@@ -36,6 +36,16 @@ export const AgentDataSchema = z.object({
   runners: z.array(RunnerSchema),
   interval_ms: z.number().min(1000).max(60000),
   control_allowed: z.boolean(),
+  coordination: z
+    .object({
+      available: z.boolean(),
+      enabled: z.boolean(),
+      active_repo: RepoSchema.nullable(),
+      paused: z.array(z.string()),
+      waiting: z.array(z.string()),
+      error: z.string().nullable(),
+    })
+    .optional(),
 });
 const RepositoryStateSchema = z.object({
   repo: RepoSchema,
@@ -68,4 +78,8 @@ export const ToggleSchema = z.strictObject({
 });
 export const InterruptSchema = ToggleSchema.omit({ enable: true }).extend({
   worker_pid: z.number().int().positive(),
+});
+export const CoordinationSchema = z.strictObject({
+  host: z.string().min(1),
+  enable: z.boolean(),
 });
