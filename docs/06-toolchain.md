@@ -11,12 +11,14 @@ xcode-select --install
 # Homebrew 装到 /opt/homebrew（Apple Silicon 默认）
 brew install docker docker-compose docker-buildx colima gh git-lfs rustup uv libomp
 brew analytics off
+git lfs install
 ```
 
-`~/.zprofile` 配置 PATH：Homebrew、固定 CI 工具、Cargo。Lima 随 Colima
-依赖安装。
+shell 与 runner 使用相同 PATH 顺序；固定 CI 工具优先，再放 Homebrew
+rustup、Cargo 和 Homebrew。Homebrew 的 rustup 不保证在默认 PATH 中。
+Lima 随 Colima 依赖安装；Tart 的容器能力限制见[第 7 章](07-docker.md)。
 
-## 固定层（示例布局 `~/.local/ci-pinned/bin`）
+## 固定层（当前布局 `~/.local/flowbit-ci-pinned/bin`）
 
 由目标项目决定版本——**先读目标提交的版本声明**（`.node-version`、
 `.python-version`、`package.json`、`rust-toolchain.toml`、锁文件与项目自
@@ -34,8 +36,10 @@ brew analytics off
 - Node 用官方 ARM64 包并校验 SHA-256；Python 全部交给 uv。
 - runner 的 `.path` **显式保存这份顺序**，不依赖交互 shell 配置。
 - libomp 供依赖 OpenMP 的原生库使用。
+- 复用同架构的已验证工具包时，只复制工具文件；重新定位含原用户名的
+  shebang、软链接与 Python 配置。不能复制 runner 身份、SSH 私钥或整份个人目录。
 
-验收：以目标提交为准运行其工具链核对脚本（如 `scripts/ci-toolchain.sh`）
+验收：以目标提交为准运行其工具链核对脚本（Flowbit 为 `testing/scripts/ci-toolchain.sh`）
 返回 0；`pnpm install --frozen-lockfile` 成功。
 
 ## 可选层（按需）

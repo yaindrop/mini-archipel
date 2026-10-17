@@ -1,13 +1,37 @@
-# mac-mini-provisioning
+# mini-provisioning
 
-把一台新 Mac mini（Apple Silicon）配成**无外设 CI 机**的完整实战手册：只接
-电源和网线/Wi-Fi，日常 SSH 管理、屏幕共享备用，跑自托管 CI；空闲安静、
-负载积极散热、磁盘与后台可控。
+把 Apple Silicon Mac mini 或 Tart macOS 虚拟机配成 **CI 节点**的实战手册。
+日常 SSH 管理、远程管理访问桌面，运行自托管 CI。共同对齐运行环境和运维
+接口；电源、磁盘加密、风扇与虚拟化能力按机器类型处理。
 
-内容来自两台基础款 M6 Mac mini（16 GiB / 245 GB SSD，macOS 27）的实际部署
-与验收记录（2026-09 至 2026-10），含走过的弯路和明确不做的尝试。
+远程访问基线：**远程管理、远程登录、远程应用程序脚本三项必须同时开启**，
+并为指定运维账户授权，配置与验证见[第 1 章](docs/01-accounts-and-remote-access.md)。
 
-配套仓库：[mac-mini-fan-control](https://github.com/yaindrop/mac-mini-fan-control)
+内容来自两台 M6 Mac mini 和两台 Tart macOS 客体的实际部署记录
+（2026-09 至 2026-10）。历史测量值是参考，不是新机必须复现的指标。
+
+## 适用范围
+
+| 项目 | 实体 Mac mini | 受信任宿主机上的 Tart macOS |
+| --- | --- | --- |
+| 三项远程访问、代理、工具链、runner | 必须 | 必须 |
+| FileVault | 开启 | 豁免，由宿主机磁盘加密保护镜像 |
+| 自动登录、免密 sudo | 不设置 | 允许，用于 CI 启动与维护 |
+| SIP | 保持系统默认保护开启 | 保持系统默认保护开启 |
+| 防火墙 | 开启，放行指定运维服务和当前 Agent 路径 | 私有 NAT 客体可保持关闭，由宿主机和虚拟网络保护 |
+| 接电启动、网络唤醒、物理散热 | 配置并验证 | 由宿主机负责；客体不适用 |
+| Colima VZ / 本机 Docker 引擎 | 按需，实际验收 | 当前不支持；Docker CLI 可保留 |
+| 黑色静态壁纸、关闭屏保与无用后台 | 配置 | 配置，不追求停光系统进程 |
+
+Tart 豁免的边界与宿主机要求见[安全基线](docs/04-updates-and-security.md)。
+不把“所有设置字面相同”作为对齐目标，也不为通过清单而关闭系统保护。
+
+规则变更必须同时更新对应章节、验收项及四机验收记录，并在四台逐一实施、
+核对。差异只能由上表的机器类型或已验证的硬件能力解释；不保留某台机器
+专属的旧路径、旧服务名或旧调度标签。未完成的实施和验证必须列为待办，
+不能通过增加例外或降低验收条件消掉。
+
+配套仓库：[mini-fan-control](https://github.com/yaindrop/mini-fan-control)
 ——本手册第 9 章部署的自适应风扇控制守护进程。
 
 ## 阶段总览
@@ -27,16 +51,18 @@
 | —   | 新机验收清单                 | [checklist](docs/acceptance-checklist.md)   | —                |
 | —   | 日常运维命令                 | [operations](docs/operations.md)            | —                |
 
-## 两台机器的最终形态（示例名）
+## 当前四机部署（2026-10-17）
 
-| 项目      | mini-1（主力）         | mini-2（备用）         |
-| --------- | ---------------------- | ---------------------- |
-| 硬件      | M6，16 GiB，245 GB SSD | 同                     |
-| 系统      | macOS 27.0.1           | 同                     |
-| CI 接单   | 在线                   | 停用（注册与环境保留） |
-| 风扇控制  | 已部署，30s 降档滞回   | 已部署，同策略         |
-| Docker    | CLI + Colima 按需启动  | 同                     |
-| FileVault | 开启                   | 开启                   |
+| 主机 | 类型 | runner | 接单 |
+| --- | --- | --- | --- |
+| `yd-mini` | M6 / 16 GiB | `flowbit-yd-mini` | 在线 |
+| `yd-mini-2` | M6 / 16 GiB | `flowbit-yd-mini-2` | 在线 |
+| `yd-mbp-tart` | Tart / 6 vCPU / 16 GiB | `flowbit-yd-mbp-tart` | 在线 |
+| `yd-mbp-tart-2` | Tart / 6 vCPU / 16 GiB | `flowbit-yd-mbp-tart-2` | 在线 |
+
+四台均为 macOS 27.0.1；目标仓库为 `yaindrop/flowbit`，安装目录为
+`~/github-runners/flowbit`。在线状态是本次验收快照，日常以 GitHub 为准。
+逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。
 
 ## 标识与路径约定
 
@@ -47,8 +73,8 @@
 | `mini-1` / `mini-2`       | 各机短用户名、主机名与 SSH 别名       |
 | `<owner>/<repo>`          | CI 目标仓库                           |
 | `~/github-runners/<repo>` | runner 安装目录（每仓库一个）         |
-| `~/.local/ci-pinned/bin`  | 项目固定工具链入口（优先于 Homebrew） |
-| `com.example.ci-proxy`    | 独立 CI 代理 LaunchAgent 标识         |
+| `~/.local/flowbit-ci-pinned/bin` | 当前 Flowbit 固定工具链入口（优先于 Homebrew） |
+| `com.flowbit.ci-proxy`    | 当前独立 CI 代理 LaunchAgent 标识    |
 | `192.168.<subnet>`        | 自己的局域网网段                      |
 
 账户密码、SSH 私钥、代理节点凭据、runner 注册令牌**不写入任何文档，不从
