@@ -7,8 +7,8 @@ Linux 客体；不能通过给 macOS 客体加 `--nested` 来启动 Colima VZ。
 2026-10-17 两台客体实测均返回 `Virtualization is not available on this hardware`。
 Docker / Compose / Buildx CLI 可保留，但安装成功不等于容器可运行。
 
-需要容器的作业通过 `flowbit-container` 标签调度到已验收的实体机；不要只依赖四台
-共有的 `flowbit-ci` / `flowbit-primary`。没有容器需求的 macOS 作业仍可在
+需要容器的作业通过通用 `container` 能力标签调度到已验收的实体机；Flowbit 专项保留 `flowbit-container` 标签；不要只依赖四台
+共有的 `ci`。没有容器需求的 macOS 作业仍可在
 Tart 运行。若以后确实需要远程 Docker，引入独立、认证的引擎并单独验收，
 不要默认把宿主机 Docker socket 暴露给客体。
 

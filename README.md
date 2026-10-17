@@ -53,15 +53,20 @@ Tart 豁免的边界与宿主机要求见[安全基线](docs/04-updates-and-secu
 
 ## 当前四机部署（2026-10-17）
 
-| 主机 | 类型 | runner | 接单 |
+| 主机 | 类型 / 身份 | 仓库数 | Runner 数 |
 | --- | --- | --- | --- |
-| `yd-mini` | M6 / 16 GiB | `flowbit-yd-mini` | 在线 |
-| `yd-mini-2` | M6 / 16 GiB | `flowbit-yd-mini-2` | 在线 |
-| `yd-mbp-tart` | Tart / 6 vCPU / 16 GiB | `flowbit-yd-mbp-tart` | 在线 |
-| `yd-mbp-tart-2` | Tart / 6 vCPU / 16 GiB | `flowbit-yd-mbp-tart-2` | 在线 |
+| `yd-mini` | 物理机 / M6 Mac Mini | 4 | 4 |
+| `yd-mini-2` | 物理机 / M6 Mac Mini | 4 | 4 |
+| `yd-mbp-tart` | 虚拟机 / Tart on M4 Max MacBook | 4 | 4 |
+| `yd-mbp-tart-2` | 虚拟机 / Tart on M4 Max MacBook | 4 | 4 |
 
-四台均为 macOS 27.0.1；目标仓库为 `yaindrop/flowbit`，安装目录为
-`~/github-runners/flowbit`。在线状态是本次验收快照，日常以 GitHub 为准。
+四台均为 macOS 27.0.1。`yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
+`yaindrop/in-frames`、`yaindrop/mini-archipel` 各有四个独立注册的 Runner，
+安装在 `~/github-runners/<repo>`。统一采用 PR `run-ci` 标签主动请求质量检查；
+push、普通 PR 活动与定时事件均不运行质量检查。每节点跨仓库只执行一个作业。
+清单和共享脚本见 [scripts](scripts/README.md)，本轮范围与证据见
+[CI 机群验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
+在线状态是验收快照，日常以 GitHub 和群岛 Runner 插件为准。
 逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。
 
 ## 标识与路径约定
