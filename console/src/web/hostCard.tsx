@@ -184,6 +184,7 @@ export function HostCard({ host }: { host: HostView }) {
           </div>
         </div>
         {macmon ? (
+          <>
         <div className="metric">
           <div className="label">GPU</div>
           <div className="value">
@@ -203,6 +204,7 @@ export function HostCard({ host }: { host: HostView }) {
           </div>
           <Spark points={freqHistory} color="#d29922" />
         </div>
+          </>
         ) : null}
         {fan ? (
           <div className="metric">
