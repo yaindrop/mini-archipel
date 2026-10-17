@@ -1,6 +1,6 @@
 # mini-archipel · 群岛 · 节点工作台
 
-群岛是物理机与虚拟机集群的节点工作台。集中查看资源、活跃进程、存储目录、历史趋势及 GitHub Actions Runner。
+群岛是物理机与虚拟机集群的节点工作台。集中查看资源、活跃进程、存储目录、历史趋势、GitHub Actions Runner 及可视化风扇控制。
 
 | 组件         | 技术                                                      | 部署位置                          |
 | ------------ | --------------------------------------------------------- | --------------------------------- |
@@ -11,7 +11,7 @@
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
-装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇服务见 [fan-control](fan-control/README.md)。
+装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](fan-control/README.md)。
 
 ## 工作台
 
@@ -20,12 +20,13 @@
 - **集群概览**：四台节点横向比较、在线与过期状态、CPU 加权占用、Runner 作业、磁盘余量和散热提醒。搜索、类型筛选及排序保存在 URL 中。
 - **节点详情**：资源走势、逐核占用、内存口径、GPU / 功耗 / 温度 / 风扇、进程搜索。虚拟机按实际能力展示，缺失的硬件传感器不显示为零。
 - **Runners**：按 Repo 管理其在各节点上的监听进程、Worker、工作目录与日志占用；节点可安装多个 Repo 的 Runner。启停前确认、服务端重新检查忙碌状态、操作反馈及异常处理。GitHub 未接入时明确只展示本地状态。
+- **风扇控制**：真实循环状态、48 个传感器、可编辑阶梯曲线、版本回退、限时转速和可取消诊断。温控在节点独立运行，关闭页面或插件不停止温控；虚拟机明确显示无硬件风扇。
 - **存储空间**：卷余量、目录分类、目录树展开、手动扫描。扫描是异步任务；目录扫描结果和 APFS 卷余量分别展示，父子目录不重复汇总。
 - **历史趋势**：多节点比较、指标和时间窗口切换、悬停读数、CSV 导出。缺测时不连成连续曲线。
 - **连接诊断**：节点端点、采集异常与 GitHub 接入状态。
 - **交互**：桌面比较表、手机节点卡片、键盘导航与 `/` 搜索、语言与主题均默认跟随系统，支持中文 / English、浅色 / 深色手动选择；暂停更新、后台待机、断线轮询与自动重连。
 
-页面路径为 `/`、`/nodes/:name`、`/runners`、`/storage`、`/history`、`/connections`、`/plugins`，可以收藏和直接打开。
+页面路径为 `/`、`/nodes/:name`、`/runners`、`/fan-control`、`/storage`、`/history`、`/connections`、`/plugins`，可以收藏和直接打开。
 
 ## 架构
 
@@ -42,7 +43,7 @@
 
 原始数据保留 24 小时，10 秒聚合保留 30 天，1 分钟聚合保留一年。查询合并各层并限制返回点数；工作台重启后从 SQLite 恢复最近走势。
 
-Agent 核心采集 CPU、内存、swap、卷空间、Top 15 进程、热状态、风扇及目录树；Runner 的采集和服务控制由可选插件提供。macmon / fanctl 缺席时省略对应段。物理传感器由实体机上报，VM 的散热由宿主机负责。
+Agent 核心采集 CPU、内存、swap、卷空间、Top 15 进程、热状态、风扇及目录树；Runner 与风扇控制由独立的可选插件提供。风扇插件通过校验本地账户的 Unix socket 访问受限 root 控制端，Agent 保持普通用户权限。macmon / fanctl 缺席时省略对应段。物理传感器由实体机上报，VM 的散热由宿主机负责。
 
 ## 本地开发与验证
 
@@ -86,6 +87,8 @@ npm run dev
 作业开始后消费标签；再次添加可复跑。push、创建/更新 PR 与定时事件不运行质量检查。
 更新 PR 后需重新请求，结果对应请求时的不可变 merge commit。仅接受本仓库 PR。
 Agent 不主动加标签或调用 CI，除非人明确要求验证。
+
+风扇隔离测试运行 `fan-control/test.sh`，来源校验运行 `fan-control/check-source.sh`。部署与权限设计见 [插件说明](fan-control/docs/plugin.md)，Agent 持续签名与完全磁盘访问见 [签名说明](agent/SIGNING.md)。
 
 ```sh
 gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci

@@ -126,7 +126,9 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
     host = fleet.hosts.find((h) => h.name === name),
     [search, setSearch] = useSearchParams(),
     view = search.get("view") ?? "overview";
-  const plugins = useWorkbenchPlugins(fleet);
+  const plugins = useWorkbenchPlugins(fleet).toSorted(
+    (a, b) => (a.nodeOrder ?? 0) - (b.nodeOrder ?? 0),
+  );
   if (!host)
     return (
       <>

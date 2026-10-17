@@ -1,3 +1,5 @@
+import { fanFixture } from "./plugins/fan-fixture.ts";
+import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -28,6 +30,8 @@ const offline = new Set<string>(),
   disabledPlugins = new Set<string>();
 const scans = new Map<string, ReturnType<typeof makeSnapshot>["disk_scan"]>();
 let multiRepo = false;
+let fanEnabled = false;
+const fans = new Map<string, ReturnType<typeof fanFixture>>();
 const transport: Transport = (url, _token, body) => {
   const index = config.hosts.findIndex((h) => url.startsWith(h.url)),
     name = config.hosts[index]?.name ?? "";
@@ -57,6 +61,92 @@ const transport: Transport = (url, _token, body) => {
         finished_at: Date.now(),
         current_root: null,
       });
+  }
+  if (fanEnabled) {
+    let fan = fans.get(name);
+    if (!fan) {
+      fan = fanFixture();
+      fans.set(name, fan);
+    }
+    fan.sampled_at = Date.now();
+    snapshot.plugins["fan-control"] = {
+      version: 1,
+      enabled: true,
+      status: "ready",
+      ts: Date.now(),
+      error: null,
+      data:
+        index < 2
+          ? fan
+          : {
+              availability: "unsupported",
+              reason: "virtual_machine",
+              reading: null,
+              control_allowed: true,
+              interval_ms: 2000,
+            },
+    };
+    if (
+      url.endsWith("/plugins/fan-control/actions/command") &&
+      body &&
+      typeof body === "object" &&
+      "request_id" in body &&
+      typeof body.request_id === "string"
+    ) {
+      const command = CommandSchema.parse({
+        action: "action" in body ? body.action : undefined,
+        data: "data" in body ? body.data : undefined,
+      });
+      if (
+        "expected_revision" in body &&
+        body.expected_revision !== fan.revision
+      )
+        return Promise.resolve({
+          ok: false,
+          status: 409,
+          error: "revision_conflict",
+        });
+      if (command.action === "apply") {
+        fan.revisions.push({
+          revision: fan.revision,
+          ts: Date.now(),
+          policy: fan.policy,
+        });
+        fan.policy = command.data.policy;
+        fan.revision = "b".repeat(64);
+      }
+      fan.jobs.push({
+        id: body.request_id,
+        action: command.action,
+        status: command.action === "manual" ? "running" : "completed",
+        requested_at: Date.now(),
+        started_at: Date.now(),
+        finished_at: command.action === "manual" ? null : Date.now(),
+        phase: "running",
+        progress: 0,
+        total: 0,
+        log: "",
+        result: null,
+        error: null,
+        restored: null,
+        expires_at: command.action === "manual" ? Date.now() + 30000 : null,
+      });
+      return Promise.resolve({ ok: true, job_id: body.request_id });
+    }
+    if (
+      url.endsWith("/plugins/fan-control/actions/cancel") &&
+      body &&
+      typeof body === "object" &&
+      "job_id" in body
+    ) {
+      const job = fan.jobs.find((j) => j.id === body.job_id);
+      if (job) {
+        job.status = "cancelled";
+        job.finished_at = Date.now();
+        job.restored = true;
+      }
+      return Promise.resolve({ ok: true, job_id: body.job_id });
+    }
   }
   if (url.endsWith("/snapshot")) {
     const runners = fixtureRunnerData(snapshot).runners;
@@ -128,6 +218,9 @@ app.post<{ Params: { name: string }; Body: { offline: boolean } }>(
 );
 app.post("/__test/reset", async () => {
   multiRepo = false;
+  fanEnabled = false;
+  fans.clear();
+  await plugins.setEnabled("fan-control", false);
   scans.clear();
   offline.clear();
   stopped.clear();
@@ -139,6 +232,12 @@ app.post("/__test/reset", async () => {
 });
 app.post("/__test/multi-repo", async () => {
   multiRepo = true;
+  await monitor.poll();
+  return { ok: true };
+});
+app.post("/__test/fan-control", async () => {
+  fanEnabled = true;
+  await plugins.setEnabled("fan-control", true);
   await monitor.poll();
   return { ok: true };
 });

@@ -1,2 +1,3 @@
 import { runnersWorkbench } from "./runners/web.tsx";
-export const workbenchPlugins = [runnersWorkbench];
+import { fanControlWorkbench } from "./fan-control/web.tsx";
+export const workbenchPlugins = [runnersWorkbench, fanControlWorkbench];

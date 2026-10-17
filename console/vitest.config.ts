@@ -17,6 +17,8 @@ export default defineConfig({
         "src/plugins/runtime.ts",
         "src/plugins/runners/domain.ts",
         "src/plugins/runners/server.ts",
+        "src/plugins/fan-control/domain.ts",
+        "src/plugins/fan-control/server.ts",
       ],
       thresholds: { statements: 80, branches: 75, functions: 80, lines: 80 },
     },

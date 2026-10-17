@@ -1,0 +1,213 @@
+.fan-nodes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.fan-node.ant-btn {
+  height: auto;
+  min-height: 104px;
+  padding: 20px;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  gap: 14px;
+}
+.fan-node.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+}
+.fan-node span > strong,
+.fan-node span > small {
+  display: block;
+}
+.fan-node small {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.fan-node-value {
+  margin-left: auto;
+  font-family: var(--mono);
+  text-align: right;
+}
+.fan-workbench {
+  display: grid;
+  gap: 22px;
+}
+.fan-readings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+.fan-readings strong {
+  display: block;
+  font: 400 32px var(--mono);
+  margin: 12px 0;
+}
+.fan-readings em {
+  font: 400 14px var(--mono);
+  color: var(--muted);
+  font-style: normal;
+}
+.fan-readings small {
+  color: var(--muted);
+}
+.fan-details {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.fan-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr);
+  gap: 32px;
+  margin: 24px 0;
+}
+.fan-curve {
+  min-width: 0;
+}
+.fan-curve svg {
+  width: 100%;
+  display: block;
+  touch-action: pan-y;
+}
+.fan-danger-zone {
+  fill: var(--ant-color-error, #c45050);
+  opacity: 0.07;
+}
+.fan-curve-applied {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+.fan-curve-draft {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.fan-curve-point {
+  fill: var(--panel);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.fan-curve-live {
+  fill: var(--accent);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.fan-curve-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  padding-left: 16px;
+}
+.fan-points {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.fan-point,
+.fan-point-heading {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(110px, 1.2fr) 32px;
+  gap: 8px;
+}
+.fan-point-heading {
+  color: var(--muted);
+  font-size: 12px;
+}
+.fan-point .ant-input-number {
+  width: 100%;
+}
+.fan-parameters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.fan-parameters .ant-input-number {
+  width: 100%;
+}
+.fan-history-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-width: 0;
+}
+.fan-history-grid > .section-card {
+  min-width: 0;
+}
+.fan-toolbar {
+  margin: 20px 0 0;
+}
+.fan-inline-form {
+  gap: 12px;
+  margin: 20px 0;
+}
+.fan-inline-form .ant-select {
+  min-width: 120px;
+}
+.fan-log {
+  font: 12px/1.6 var(--mono);
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 16px;
+  background: var(--subtle);
+  border-radius: 8px;
+}
+.fan-workbench .ant-alert {
+  margin-bottom: 0;
+}
+@media (max-width: 1200px) {
+  .fan-nodes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fan-parameters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .fan-editor-grid,
+  .fan-history-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fan-readings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fan-parameters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fan-node.ant-btn {
+    padding: 14px;
+    gap: 8px;
+  }
+  .fan-node-value {
+    display: none;
+  }
+  .fan-workbench .ant-card-extra {
+    max-width: 100%;
+  }
+  .fan-workbench .ant-card-head-wrapper {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+.fan-workbench .ant-input-number-disabled .ant-input-number-suffix {
+  color: var(--muted);
+}
+
+.fan-curve-point[role="button"] {
+  cursor: grab;
+  touch-action: none;
+}
+.fan-curve-point:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

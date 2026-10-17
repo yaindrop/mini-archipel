@@ -1,0 +1,567 @@
+--- a/src/fanctl.c
++++ b/src/fanctl.c
+@@ -26,10 +26,11 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#define VERSION "1.4.0-macmini-m6.1"
++#define VERSION "1.5.0-archipel.1"
+ #define DEFAULT_CONF "/Library/MacMiniFanControl/fanctl.conf"
+ #define RUN_DIR      "/Library/MacMiniFanControl"
+ #define PAUSE_FILE   RUN_DIR "/fanctl.paused"
++#define RUNTIME_FILE RUN_DIR "/fanctl.runtime.json"
+ 
+ /* Seconds between writes while the fan command is ramping. */
+ #define RAMP_TICK    0.5
+@@ -622,6 +623,33 @@
+ 
+ static void on_signal(int sig) {
+     if (sig == SIGHUP) g_reload = 1; else g_stop = 1;
++}
++
++/* Published by the actual control loop, never inferred from a fresh CLI sample. */
++static char g_config_identity[128] = "";
++static void publish_runtime(const cfg_t *cfg, double ctrl, double raw, double peak,
++                            int level, double commanded, double target, bool emergency,
++                            bool paused, const double below_since[MAX_STEPS]) {
++    if (g_dry) return;
++    char temp[256];
++    snprintf(temp, sizeof temp, RUNTIME_FILE ".%d.next", getpid());
++    FILE *out = fopen(temp, "w");
++    if (!out) return;
++    struct timespec ts;
++    clock_gettime(CLOCK_REALTIME, &ts);
++    fprintf(out, "{\"pid\":%d,\"ts\":%lld,\"config_identity\":\"%s\",",
++            getpid(), (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000, g_config_identity);
++    fprintf(out, "\"control_temp\":");
++    if (isfinite(ctrl) && ctrl >= 0) fprintf(out, "%.2f", ctrl); else fprintf(out, "null");
++    fprintf(out, ",\"raw_temp\":%.2f,\"peak\":%.2f,\"level\":%d,"
++            "\"command_rpm\":%.2f,\"target_rpm\":%.2f,\"emergency\":%s,\"paused\":%s,\"down_remaining\":[",
++            raw, peak, level, commanded, target, emergency ? "true" : "false", paused ? "true" : "false");
++    double tick = now_mono();
++    for (int i = 1; i < cfg->nsteps; i++)
++        fprintf(out, "%s%.1f", i > 1 ? "," : "", below_since[i] < 0 ? cfg->down_delay : fmax(0, cfg->down_delay - (tick - below_since[i])));
++    fprintf(out, "]}\n");
++    if (fclose(out) == 0) rename(temp, RUNTIME_FILE);
++    unlink(temp);
+ }
+ 
+ static void describe_setup(const cfg_t *c) {
+@@ -687,8 +715,11 @@
+     signal(SIGINT,  on_signal);
+     signal(SIGHUP,  on_signal);
+ 
+-    struct stat st;
++    struct stat st = {0};
+     time_t conf_mtime = (stat(conf, &st) == 0) ? st.st_mtime : 0;
++    snprintf(g_config_identity, sizeof g_config_identity, "%llu:%lld:%ld:%lld",
++             (unsigned long long)st.st_ino, (long long)st.st_mtimespec.tv_sec,
++             st.st_mtimespec.tv_nsec, (long long)st.st_size);
+ 
+     double ewma = -1, last_tick = now_mono();
+     int    level = 0, pending_dir = 0, exit_code = 0;
+@@ -722,7 +753,10 @@
+             level = 0; pending_dir = 0; logged_level = -1;
+             for (int i = 0; i < MAX_STEPS; i++) below_since[i] = -1;
+         }
+-        if (paused) { sleep_sec(cfg.poll); continue; }
++        if (paused) {
++            publish_runtime(&cfg, -1, 0, 0, level, 0, 0, false, true, below_since);
++            sleep_sec(cfg.poll); continue;
++        }
+ 
+         double temp, peak;
+         const char *hot = NULL;
+@@ -786,6 +820,7 @@
+             applied = rpm;
+         }
+ 
++        publish_runtime(&cfg, ewma, temp, peak, level, rpm, want_rpm, emergency, false, below_since);
+         if (g_verbose)
+             logf_("  avg=%.1f ctrl=%.1f peak=%.1f@%s level=%d rpm=%.0f%s%s",
+                   ewma, temp, peak, hot ? hot : "?", level, rpm,
+@@ -805,6 +840,7 @@
+     if (!g_dry && !fanset_release(&fans, &cfg)) {
+         logf_("error: could not restore SMC control"); exit_code = 1;
+     }
++    if (!g_dry) unlink(RUNTIME_FILE);
+     smc_close();
+     return exit_code;
+ }
+@@ -864,6 +900,7 @@
+      * cannot measure anything real anyway -- the fan is not being controlled,
+      * so the equilibrium it would wait for does not exist. Its purpose is to
+      * check the path, not the machine. */
++    if (!isfinite(cap) || cap < 40 || cap > 100) { fprintf(stderr, "invalid calibration cap\n"); return 2; }
+     if (!g_dry && geteuid() != 0) {
+         fprintf(stderr, "calibrate has to write to the SMC: sudo fanctl calibrate\n");
+         return 1;
+@@ -931,7 +968,7 @@
+         double rpm = cfg.min_rpm
+                    + (cfg.max_rpm - cfg.min_rpm) * L / (double)(CAL_LEVELS - 1);
+         bool wrote = false;
+-        if (!g_dry) fanset_apply(&fans, &cfg, rpm, &wrote);
++        if (!g_dry && !fanset_apply(&fans, &cfg, rpm, &wrote)) { aborted = true; break; }
+ 
+         double t0 = now_mono(), sum = 0, peak_seen = 0;
+         int nsum = 0;
+@@ -940,6 +977,11 @@
+             const char *hot = NULL;
+             double el = now_mono() - t0;
+             if (sensors_sample(cfg.aggregate, &temp, &peak, &hot)) {
++                if (g_json) {
++                    printf("{\"type\":\"progress\",\"phase\":\"calibrating\",\"step\":%d,\"total\":%d,\"rpm\":%.0f,\"temp\":%.1f,\"peak\":%.1f}\n",
++                           L + 1, CAL_LEVELS, rpm, temp, peak);
++                    fflush(stdout);
++                }
+                 if (peak > peak_seen) peak_seen = peak;
+                 if (el >= settle - fmin(CAL_TAIL, settle / 2)) { sum += temp; nsum++; }
+                 /* Judged on the raw peak, like the daemon's own safety net. */
+@@ -954,7 +996,7 @@
+                            g_dry ? "[dry] " : "", rpm, el, temp, peak);
+                     fflush(stdout);
+                 }
+-            }
++            } else { aborted = true; break; }
+             sleep_sec(2.0);
+         }
+         if (aborted) break;
+@@ -974,7 +1016,7 @@
+     for (long i = 0; i < nth; i++) pthread_join(th[i], NULL);
+     if (!g_dry) fanset_release(&fans, &cfg);
+ 
+-    if (g_stop || npts < 2) {
++    if (g_stop || aborted || npts < 2) {
+         printf("\nStopped early - not enough data to suggest a curve.\n");
+         printf("The fan is back on macOS automatic control.\n");
+         CAL_DONE();
+@@ -987,6 +1029,12 @@
+     for (int i = 0; i < npts; i++)
+         printf("  %5.0f rpm  ->  %.1f C\n", pts[i].rpm, pts[i].temp);
+ 
++    if (g_dry) {
++        if (g_json) printf("{\"type\":\"calibration\",\"dry_run\":true,\"valid\":false,\"curve\":null}\n");
++        printf("[dry] Path checked under CPU load. No measured curve was produced.\n");
++        CAL_DONE(); smc_close(); return 0;
++    }
++
+     /* The locus has to fall for any of this to mean anything: the method rests
+      * entirely on "more RPM, lower equilibrium". A run where it does not fall is
+      * not a curve waiting to be derived, it is a measurement to be thrown away.
+@@ -1041,6 +1089,14 @@
+     }
+     printf(", %.0f:%.0f\n", cap + 5, cfg.max_rpm);
+ 
++    if (g_json) {
++        printf("{\"type\":\"calibration\",\"dry_run\":false,\"valid\":true,\"samples\":[");
++        for (int k = 0; k < npts; k++) printf("%s{\"rpm\":%.0f,\"temp\":%.1f,\"peak\":%.1f}", k ? "," : "", pts[k].rpm, pts[k].temp, pts[k].peak);
++        printf("],\"curve\":[{\"t\":0,\"rpm\":%.0f}", cfg.min_rpm);
++        for (int k = 1; k <= 4; k++) printf(",{\"t\":%.0f,\"rpm\":%.0f}", cap - span + span * k / 4.0, round((cfg.min_rpm + (rcap - cfg.min_rpm) * k / 4.0) / 50) * 50);
++        printf(",{\"t\":%.0f,\"rpm\":%.0f}]}\n", cap + 5, cfg.max_rpm);
++    }
++
+     if (g_dry) {
+         printf("\n[dry] Path check finished. Nothing was written and the numbers\n");
+         printf("[dry] above are not usable -- run without -n for a real one.\n");
+@@ -1063,6 +1119,7 @@
+  * need privilege at exactly the moment the fan is unmanaged. The daemon polls
+  * the flag and releases the fan to the SMC while it is set. */
+ static int cmd_pause(bool on) {
++    if (g_dry) { printf("[dry] pause state unchanged\n"); return 0; }
+     if (on) {
+         mkdir(RUN_DIR, 0755);
+         FILE *f = fopen(PAUSE_FILE, "w");
+@@ -1239,21 +1296,33 @@
+     cfg_load(&cfg, conf, true);
+     if (smc_open() != 0) { fprintf(stderr, "cannot open AppleSMC\n"); return 1; }
+     sensors_setup(&cfg);
++    if (g_json) printf("[");
+     for (int i = 0; i < g_nsensors; i++) {
+-        double v;
+-        if (skey_read(&g_sensors[i], &v)) printf("%-5s %6.1f C\n", g_sensors[i].name, v);
++        double v = 0;
++        bool ok = skey_read(&g_sensors[i], &v) && sensor_plausible(v);
++        if (g_json) {
++            printf("%s{\"key\":\"%s\",\"temp\":", i ? "," : "", g_sensors[i].name);
++            if (ok) printf("%.1f", v); else printf("null");
++            printf("}");
++        } else if (ok) printf("%-5s %6.1f C\n", g_sensors[i].name, v);
+     }
++    if (g_json) printf("]\n");
+     smc_close();
+     return 0;
+ }
+ 
+ static int cmd_set(double rpm, int mode) {
++    if (!isfinite(rpm) || rpm < 1000 || rpm > 20000) {
++        fprintf(stderr, "RPM is outside the supported range\n"); return 2;
++    }
++    if (g_dry) { printf("[dry] requested %.0f rpm, no hardware writes\n", rpm); return 0; }
+     if (smc_open() != 0) { fprintf(stderr, "cannot open AppleSMC\n"); return 1; }
+     fanset_t fans;
+     if (!fanset_init(&fans, "all")) { fprintf(stderr, "no fan keys found\n"); return 1; }
+     cfg_t cfg;
+     cfg_defaults(&cfg);
+     cfg.mode = mode;
++    if (mode == MODE_FORCE) cfg.min_rpm = 0;
+     bool wrote;
+     /* fanset_apply clamps each fan to its own ceiling, so no clamp here. */
+     if (!fanset_apply(&fans, &cfg, rpm, &wrote)) {
+@@ -1268,6 +1337,7 @@
+ }
+ 
+ static int cmd_auto(void) {
++    if (g_dry) { printf("[dry] system control unchanged\n"); return 0; }
+     if (smc_open() != 0) { fprintf(stderr, "cannot open AppleSMC\n"); return 1; }
+     fanset_t fans;
+     if (!fanset_init(&fans, "all")) { fprintf(stderr, "no fan keys found\n"); return 1; }
+@@ -1283,218 +1353,91 @@
+     return 0;
+ }
+ 
+-/* Wait for the fan to spin back down, so the next probe starts from a low
+- * reading instead of inheriting the previous one's momentum. */
+-static void settle_below(const fan_t *f, double rpm) {
+-    for (int i = 0; i < 25; i++) {
+-        double ac = 0;
+-        if (skey_read(&f->actual, &ac) && ac < rpm) break;
+-        printf("\r  settling... %.0f rpm ", ac);
+-        fflush(stdout);
+-        sleep_sec(1.0);
+-    }
+-    printf("\r%*s\r", 38, "");
+-}
+-
+-/* Walk one control method end to end and say exactly where it breaks:
+- *
+- *   READONLY  the SMC owns this key and will not let anyone write it
+- *   REJECTED  the write was refused for some other reason
+- *   REVERTED  the value landed, then something put it back - i.e. another fan
+- *             utility is still running and fighting us
+- *   IGNORED   the value stuck but the fan never spun up
+- *   WORKS     the fan followed
+- *
+- * Only REVERTED is the user's to fix, so it must not be the catch-all. An
+- * earlier version of this check read the key back with no delay and called
+- * every miss REVERTED; SMC writes land asynchronously, so that reported a
+- * competing app on a machine that had none. The writes are confirmed by
+- * polling now, and REVERTED means the value was verified in place and then
+- * changed underneath us. */
+-typedef enum { PR_WORKS, PR_READONLY, PR_REJECTED, PR_REVERTED, PR_IGNORED } probe_r;
+-
+-static const char *probe_name(probe_r r) {
+-    switch (r) {
+-    case PR_WORKS:    return "WORKS";
+-    case PR_READONLY: return "READ-ONLY";
+-    case PR_REJECTED: return "REJECTED";
+-    case PR_REVERTED: return "REVERTED";
+-    default:          return "IGNORED";
+-    }
+-}
+-
+-static probe_r probe_mode(const fan_t *f, int mode, double want,
+-                          double *reached, char *detail, size_t dlen) {
+-    const skey_t *ctl = (mode == MODE_FLOOR) ? &f->fmin : &f->target;
+-    cfg_t c;
+-    cfg_defaults(&c);
+-    c.mode = mode;
+-    *reached = 0;
+-    detail[0] = 0;
+-
+-    bool wrote;
+-    if (!fan_apply(f, &c, want, &wrote)) {
+-        if (smc_last_result() == SMC_RESULT_READONLY) {
+-            snprintf(detail, dlen, "%s exists but the SMC refuses writes to it "
+-                     "(result 0x86)", ctl->name);
+-            return PR_READONLY;
++/* Known M6 adapter: never probe F0Mn writes. Verify every selected fan. */
++static int cmd_selftest(const char *conf) {
++    if (g_dry) { fprintf(stderr, "selftest requires hardware writes; use daemon -n for preview\n"); return 2; }
++    cfg_t cfg;
++    cfg_defaults(&cfg);
++    if (!cfg_load(&cfg, conf, false)) return 1;
++    if (smc_open() != 0) return 1;
++    fanset_t fans;
++    if (!fanset_init(&fans, cfg.fans)) { smc_close(); return 1; }
++    sensors_setup(&cfg);
++    signal(SIGINT, on_signal);
++    signal(SIGTERM, on_signal);
++    int result = 0;
++    for (int step = 1; step < cfg.nsteps && !g_stop; step++) {
++        bool wrote;
++        double wanted = cfg.steps[step].rpm;
++        if (!fanset_apply(&fans, &cfg, wanted, &wrote)) { result = 1; break; }
++        int stable = 0;
++        for (int sample = 0; sample < 15 && !g_stop; sample++) {
++            double ctrl, peak;
++            const char *hot = NULL;
++            if (!sensors_sample(cfg.aggregate, &ctrl, &peak, &hot) || peak >= cfg.critical_temp) {
++                result = 1; break;
++            }
++            bool reached = true;
++            for (int i = 0; i < fans.n; i++) {
++                double actual = 0, target = 0;
++                double expected = fmin(wanted, fans.f[i].hw_max);
++                if (!skey_read(&fans.f[i].actual, &actual) || !skey_read(&fans.f[i].target, &target) ||
++                    fabs(actual - expected) > 150 || fabs(target - expected) > 2) reached = false;
++            }
++            stable = reached ? stable + 1 : 0;
++            if (g_json) {
++                printf("{\"type\":\"progress\",\"phase\":\"selftest\",\"step\":%d,\"total\":%d,\"rpm\":%.0f,\"stable\":%d}\n",
++                       step, cfg.nsteps - 1, wanted, stable);
++                fflush(stdout);
++            }
++            if (stable >= 2) break;
++            sleep_sec(1);
+         }
+-        double back = 0;
+-        skey_read(ctl, &back);
+-        snprintf(detail, dlen, "wrote %.0f to %s, still reads %.0f",
+-                 want, ctl->name, back);
+-        return PR_REJECTED;
++        if (result || stable < 2) { result = 1; break; }
++        printf("PASS target=%.0f RPM on %d fan(s)\n", wanted, fans.n);
+     }
+-
+-    double best = 0;
+-    for (int i = 0; i < 14; i++) {
+-        double ac = 0;
+-        if (skey_read(&f->actual, &ac) && ac > best) best = ac;
+-        if (best >= want - 150) break;
+-        printf("\r  spinning up... %.0f rpm ", best);
+-        fflush(stdout);
+-        sleep_sec(1.0);
+-    }
+-    printf("\r%*s\r", 38, "");
+-    *reached = best;
+-
+-    double back = 0;
+-    if (!skey_read(ctl, &back) || fabs(back - want) > 5) {
+-        snprintf(detail, dlen, "%s held at %.0f, then changed to %.0f - another "
+-                 "fan app is still writing", ctl->name, want, back);
+-        return PR_REVERTED;
+-    }
+-    if (best < want - 250) {
+-        snprintf(detail, dlen, "%s held at %.0f but fan only reached %.0f",
+-                 ctl->name, want, best);
+-        return PR_IGNORED;
+-    }
+-    snprintf(detail, dlen, "%s=%.0f -> fan reached %.0f rpm", ctl->name, want, best);
+-    return PR_WORKS;
+-}
+-
+-static int cmd_selftest(void) {
+-    if (smc_open() != 0) { fprintf(stderr, "FAIL: cannot open AppleSMC\n"); return 1; }
+-    /* Fan 0 only: this establishes which control method the SMC honours, which
+-     * is a property of the machine, not of an individual fan. */
+-    fan_t fan;
+-    if (!fan_init(&fan, 0)) { fprintf(stderr, "FAIL: fan keys missing\n"); return 1; }
+-
+-    printf("euid          %d%s\n", (int)geteuid(),
+-           geteuid() == 0 ? "" : "  <- not root, writes will fail");
+-    printf("keys          F0Ac F0Tg F0Mx%s%s\n",
+-           fan.has_mode ? " F0Md" : "", fan.has_fmin ? " F0Mn" : "");
+-
+-    double mn0 = 0, md0 = 0, tg0 = 0, ac0 = 0, mx = 4900;
+-    if (fan.has_fmin) skey_read(&fan.fmin, &mn0);
+-    if (fan.has_mode) skey_read(&fan.mode, &md0);
+-    skey_read(&fan.target, &tg0);
+-    skey_read(&fan.actual, &ac0);
+-    skey_read(&fan.fmax, &mx);
+-    printf("before        F0Ac=%.0f F0Tg=%.0f F0Mn=%.0f F0Md=%.0f F0Mx=%.0f%s\n",
+-           ac0, tg0, mn0, md0, mx,
+-           md0 != 0 ? "   (F0Md=1: the fan is pinned, not on its own thermostat)" : "");
+-
+-    if (fan.has_mode) {
+-        double want_md = (md0 == 0) ? 1 : 0, back = 0;
+-        bool w = skey_write_confirm(&fan.mode, want_md, 2.0);
+-        skey_read(&fan.mode, &back);
+-        printf("F0Md write    %s (wrote %.0f, reads %.0f)\n",
+-               w ? "ok" : "FAILED", want_md, back);
+-        skey_write_confirm(&fan.mode, md0, 2.0);
+-    }
+-    if (fan.has_fmin)
+-        printf("F0Mn write    %s\n",
+-               skey_writable(&fan.fmin) ? "ok" : "read-only, floor mode unavailable");
+-
+-    /* Aim clear of both the current speed and the minimum, so reaching the
+-     * target cannot be confused with the fan simply idling. */
+-    double want = ac0 + 900 > mx - 200 ? mx - 200 : ac0 + 900;
+-    if (want < mn0 + 700) want = mn0 + 700;
+-    printf("probing with  %.0f rpm (this will be audible for ~30s)\n\n", want);
+-
+-    probe_r fl = PR_REJECTED, fo = PR_REJECTED;
+-    double reached = 0;
+-    char detail[192];
+-
+-    if (fan.has_fmin) {
+-        fl = probe_mode(&fan, MODE_FLOOR, want, &reached, detail, sizeof detail);
+-        printf("floor mode    %-10s %s\n", probe_name(fl), detail);
+-        if (skey_writable(&fan.fmin)) skey_write_confirm(&fan.fmin, mn0, 2.0);
+-        if (fan.has_mode) skey_write_confirm(&fan.mode, 0, 2.0);
+-    }
+-    if (fan.has_mode) {
+-        if (fl == PR_WORKS) settle_below(&fan, want - 400);
+-        double want2 = fmin(want + 700, mx - 200);
+-        fo = probe_mode(&fan, MODE_FORCE, want2, &reached, detail, sizeof detail);
+-        printf("force mode    %-10s %s\n", probe_name(fo), detail);
+-    }
+-
+-    if (fan.has_fmin && skey_writable(&fan.fmin)) skey_write_confirm(&fan.fmin, mn0, 2.0);
+-    if (fan.has_mode) skey_write_confirm(&fan.mode, md0, 2.0);
+-
+-    double r_mn = 0, r_md = 0, r_tg = 0;
+-    if (fan.has_fmin) skey_read(&fan.fmin, &r_mn);
+-    if (fan.has_mode) skey_read(&fan.mode, &r_md);
+-    skey_read(&fan.target, &r_tg);
+-    printf("\nrestored      F0Mn=%.0f F0Md=%.0f F0Tg=%.0f\n", r_mn, r_md, r_tg);
+-
+-    if (fl == PR_WORKS)
+-        printf("recommend     mode = floor   (SMC keeps its own ceiling; safest)\n");
+-    else if (fo == PR_WORKS)
+-        printf("recommend     mode = force   (%s)\n",
+-               fl == PR_READONLY ? "F0Mn is read-only here, so floor is not available"
+-                                 : "floor mode did not work here");
+-    else if (fl == PR_REVERTED || fo == PR_REVERTED)
+-        printf("recommend     stop the other fan utility first - including any\n"
+-               "              privileged helper it left in /Library/LaunchDaemons\n");
+-    else
+-        printf("recommend     neither method works on this machine\n");
+-
++    if (g_stop) result = 1;
++    bool restored = fanset_release(&fans, &cfg);
++    if (!restored) result = 1;
++    if (g_json) printf("{\"type\":\"selftest\",\"passed\":%s,\"restored\":%s}\n", result == 0 ? "true" : "false", restored ? "true" : "false");
+     smc_close();
+-    return (fl == PR_WORKS || fo == PR_WORKS) ? 0 : 1;
++    return result;
+ }
+ 
+ /* Size, type and access attributes for specific keys. The attribute byte is
+  * the SMC's own statement of what it will let us do with the key. */
+ static int cmd_keyinfo(int argc, char **argv) {
+     if (smc_open() != 0) { fprintf(stderr, "cannot open AppleSMC\n"); return 1; }
+-    printf("%-5s %-6s %-4s %-6s %-10s %s\n",
+-           "key", "type", "size", "attr", "bits", "value");
++    if (g_json) printf("[");
++    else printf("key   type   size attr value\n");
+     for (int i = 0; i < argc; i++) {
+-        if (strlen(argv[i]) != 4) { fprintf(stderr, "%s: not a 4-char key\n", argv[i]); continue; }
++        if (strlen(argv[i]) != 4 || strspn(argv[i], "#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") != 4) {
++            smc_close(); return 2;
++        }
+         uint32_t key = smc_key(argv[i]), size = 0, type = 0;
+         uint8_t attr = 0;
+-        if (smc_key_info_full(key, &size, &type, &attr) != 0) {
+-            printf("%-5s (no such key)\n", argv[i]);
+-            continue;
+-        }
+-        char ts[5];
++        int found = smc_key_info_full(key, &size, &type, &attr);
++        char ts[5] = "";
+         smc_key_str(type, ts);
+-        /* The attribute bits are not publicly documented and the obvious
+-         * read/write guesses do not survive contact with real keys (plain
+-         * temperature sensors come back with the same bits as F0Mn), so show
+-         * the raw byte rather than inventing labels for it. */
+-        char flags[64];
+-        snprintf(flags, sizeof flags, "%c%c%c%c%c%c%c%c",
+-                 (attr & 0x80) ? '1' : '0', (attr & 0x40) ? '1' : '0',
+-                 (attr & 0x20) ? '1' : '0', (attr & 0x10) ? '1' : '0',
+-                 (attr & 0x08) ? '1' : '0', (attr & 0x04) ? '1' : '0',
+-                 (attr & 0x02) ? '1' : '0', (attr & 0x01) ? '1' : '0');
+-        double v;
+-        char val[32] = "-";
+-        if (smc_read_num(key, size, type, &v) == 0) snprintf(val, sizeof val, "%.2f", v);
+-        printf("%-5s %-6s %-4u 0x%02x   %-10s %s\n", argv[i], ts, size, attr, flags, val);
++        double v = 0;
++        bool read = found == 0 && smc_read_num(key, size, type, &v) == 0 && isfinite(v);
++        if (g_json) {
++            printf("%s{\"key\":\"%s\",\"type\":\"%s\",\"size\":%u,\"attributes\":%u,\"found\":%s,\"value\":",
++                   i ? "," : "", argv[i], ts, size, attr, found == 0 ? "true" : "false");
++            if (read) printf("%.4f", v); else printf("null");
++            printf("}");
++        } else if (read) printf("%-5s [%.4s] %u 0x%02x %.2f\n", argv[i], ts, size, attr, v);
++        else printf("%-5s unavailable\n", argv[i]);
+     }
+-    smc_close();
+-    return 0;
++    if (g_json) printf("]\n");
++    smc_close(); return 0;
+ }
+ 
+ /* Write one key and report precisely what the kernel returned, plus what the
+  * key reads back afterwards. This is how we tell "the SMC refused us" apart
+  * from "the SMC said yes and changed nothing". */
+ static int cmd_trywrite(const char *keyname, double val) {
+-    if (!keyname || strlen(keyname) != 4) {
++    if (!isfinite(val) || !keyname || strlen(keyname) != 4 || strspn(keyname, "#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") != 4) {
+         fprintf(stderr, "trywrite needs a 4-char key and a value\n");
+         return 2;
+     }
+@@ -1526,7 +1469,7 @@
+ 
+     int kr = 0;
+     uint8_t result = 0, status = 0;
+-    int rc = smc_write_verbose(k.key, k.size, buf, &kr, &result, &status);
++    int rc = g_dry ? -1 : smc_write_verbose(k.key, k.size, buf, &kr, &result, &status);
+     const char *krname;
+     switch ((unsigned)kr) {
+     case 0x00000000: krname = "KERN_SUCCESS";           break;
+@@ -1547,6 +1490,8 @@
+     sleep_sec(2.0);
+     skey_read(&k, &after2);
+     printf("readback      %.2f immediately, %.2f after 2s\n", after1, after2);
++    if (g_json) printf("{\"type\":\"write_diagnostic\",\"key\":\"%s\",\"requested\":%.4f,\"before\":%.4f,\"immediate\":%.4f,\"after\":%.4f,\"kern_return\":%u,\"smc_result\":%u,\"smc_status\":%u,\"write_succeeded\":%s}\n",
++                       keyname, val, before, after1, after2, (unsigned)kr, result, status, rc == 0 ? "true" : "false");
+     printf("verdict       %s\n",
+            rc != 0                ? "the SMC refused the write" :
+            fabs(after1 - val) >= 5 ? "SMC reported success but the value never changed" :
+@@ -1557,23 +1502,27 @@
+ }
+ 
+ static int cmd_dump(const char *prefix) {
++    if (strlen(prefix) != 2 || strspn(prefix, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") != 2) return 2;
+     if (smc_open() != 0) { fprintf(stderr, "cannot open AppleSMC\n"); return 1; }
+-    static const char cs[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+-                             "abcdefghijklmnopqrstuvwxyz";
+-    size_t plen = strlen(prefix);
+-    if (plen != 2) { fprintf(stderr, "dump needs a 2-char prefix, e.g. Tp\n"); return 1; }
++    static const char cs[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
++    int count = 0;
++    if (g_json) printf("[");
+     for (const char *a = cs; *a; a++) for (const char *b = cs; *b; b++) {
+         char name[5] = { prefix[0], prefix[1], *a, *b, 0 };
+         skey_t k;
+-        double v;
++        double v = 0;
+         if (!skey_init(&k, name)) continue;
+-        char ts[5];
+-        smc_key_str(k.type, ts);
+-        if (skey_read(&k, &v)) printf("%-5s [%s] %10.2f\n", name, ts, v);
+-        else                   printf("%-5s [%s]  (undecoded, %u bytes)\n", name, ts, k.size);
++        char ts[5]; smc_key_str(k.type, ts);
++        bool read = skey_read(&k, &v) && isfinite(v);
++        if (g_json) {
++            printf("%s{\"key\":\"%s\",\"type\":\"%s\",\"size\":%u,\"value\":", count++ ? "," : "", name, ts, k.size);
++            if (read) printf("%.4f", v); else printf("null");
++            printf("}");
++        } else if (read) printf("%-5s [%s] %10.2f\n", name, ts, v);
++        else printf("%-5s [%s] (undecoded, %u bytes)\n", name, ts, k.size);
+     }
+-    smc_close();
+-    return 0;
++    if (g_json) printf("]\n");
++    smc_close(); return 0;
+ }
+ 
+ /* -------------------------------------------------------------------- CLI */
+@@ -1625,7 +1574,7 @@
+     if (!strcmp(cmd, "auto"))     return cmd_auto();
+     if (!strcmp(cmd, "pause"))    return cmd_pause(true);
+     if (!strcmp(cmd, "resume"))   return cmd_pause(false);
+-    if (!strcmp(cmd, "selftest")) return cmd_selftest();
++    if (!strcmp(cmd, "selftest")) return cmd_selftest(conf);
+     if (!strcmp(cmd, "calibrate")) return cmd_calibrate(conf, arg ? atof(arg) : 80.0);
+     if (!strcmp(cmd, "dump"))     return cmd_dump(arg ? arg : "");
+     if (!strcmp(cmd, "keyinfo"))  return cmd_keyinfo(argc - i, argv + i);

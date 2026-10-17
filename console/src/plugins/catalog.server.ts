@@ -1,2 +1,3 @@
 import { runnersPlugin } from "./runners/server.ts";
-export const serverPlugins = [runnersPlugin];
+import { fanControlPlugin } from "./fan-control/server.ts";
+export const serverPlugins = [runnersPlugin, fanControlPlugin];

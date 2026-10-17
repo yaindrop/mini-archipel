@@ -1,3 +1,5 @@
+#[path = "fan_control.rs"]
+mod fan_control;
 #[path = "runners.rs"]
 mod runners;
 use super::Plugin;
@@ -6,5 +8,5 @@ use std::sync::Arc;
 
 /// The composition root is the only place that selects built-in plugins.
 pub fn installed() -> Vec<Arc<dyn Plugin>> {
-    vec![Arc::new(Runners)]
+    vec![Arc::new(Runners), Arc::new(fan_control::FanControl)]
 }

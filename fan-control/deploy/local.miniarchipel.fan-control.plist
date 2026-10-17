@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>local.miniarchipel.fan-control</string>
+<key>ProgramArguments</key><array>
+<string>/usr/bin/python3</string><string>-I</string><string>/Library/MacMiniFanControl/control.py</string>
+</array>
+<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+<key>ThrottleInterval</key><integer>3</integer>
+<key>ExitTimeOut</key><integer>15</integer>
+<key>AbandonProcessGroup</key><false/>
+<key>Umask</key><integer>63</integer>
+<key>StandardOutPath</key><string>/Library/Logs/MacMiniFanControl/plugin.log</string>
+<key>StandardErrorPath</key><string>/Library/Logs/MacMiniFanControl/plugin.log</string>
+</dict></plist>

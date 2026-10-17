@@ -1,6 +1,6 @@
-# 实体节点风扇控制
+# 风扇控制插件
 
-本目录是 [mini-archipel](../README.md) 的风扇模块，源码、构建、安装和实机记录
+本目录是 [mini-archipel](../README.md) 的第二款插件，提供可视化曲线、实时传感器、限时控制、校准、自检及诊断。完整功能、权限边界和运维设计见 [插件设计](docs/plugin.md)。源码、构建、安装和实机记录
 统一在此维护。原独立仓库的完整提交历史已并入；装机步骤见
 [provisioning 第 9 章](../provisioning/docs/09-fan-control.md)。
 
@@ -16,18 +16,19 @@
 - 本机适配：`patches/m6.patch`（仅改 `src/fanctl.c`）——M6 小写模式键
   `F0md` 回退、永不探测/写入 force 模式下的最低转速键、模式写入确认后才写
   目标、传感器容量 64、48 个显式核对的 Te/Tp/Tg 键、缺失选中传感器即采样
-  失败。`src/` 与「上游 + 补丁」逐字节一致。
+  失败。
+- 群岛插件扩展：`patches/archipel.patch`，记录真实循环状态、force-only 自检、结构化诊断和校准保护。`check-source.sh` 在临时目录逆向两层补丁并核对固定上游摘要。
 
 ## 构建与安装
 
 ```bash
 cd fan-control       # 从 mini-archipel 仓库根目录进入
 ./build.sh            # Apple clang 21 / macOS 27 CommandLineTools 已验证
-sudo ./install.sh     # 部署布局见下；不改 sudoers/SIP/FileVault/电源模式，无网络调用
+./test.sh             # mock SMC、真实文件/进程和 IPC 的隔离测试
+sudo ./install-plugin.sh "$(id -un)" # 备份并安装，不改 sudoers/SIP，无网络调用
 ```
 
-上游自带的 `tests/` 面向其 Swift 菜单栏应用；C 守护进程的 mock-SMC 回归
- harness 未包含在本仓库，逻辑验证以实机验收数据为准（见 docs/）。
+测试不链接真实 AppleSMC，不在 CI 上修改风扇或运行负载校准。
 
 ## 策略（config/fanctl.conf；校验和见 SHA256SUMS）
 
@@ -35,7 +36,7 @@ sudo ./install.sh     # 部署布局见下；不改 sudoers/SIP/FileVault/电源
 
 | 温度（最高传感器） | 风扇目标转速 |
 | --- | --- |
-| < 37°C 持续 30 秒 | 交回 Apple 自动（约 1000 RPM） |
+| < 37°C 持续 30 秒 | 交回 Apple 自动（可为 0 或约 1000 RPM） |
 | ≥ 40°C | 2170 RPM |
 | ≥ 50°C | 2950 RPM |
 | ≥ 60°C | 3730 RPM |

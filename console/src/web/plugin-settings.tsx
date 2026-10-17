@@ -67,7 +67,7 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
             key={plugin.id}
             title={
               <Space>
-                <span>{plugin.label}</span>
+                <span>{remoteText(plugin.label, _)}</span>
                 <Tag>v{plugin.version}</Tag>
               </Space>
             }
@@ -89,7 +89,7 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
               </span>
               <Space>
                 <Switch
-                  aria-label={t`控制台 ${plugin.label}`}
+                  aria-label={t`控制台 ${remoteText(plugin.label, _)}`}
                   checked={plugin.enabled}
                   loading={
                     mutation.isPending &&
@@ -146,7 +146,7 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
                         ) : null}
                       </Space>
                       <Switch
-                        aria-label={t`${displayName(host)} ${plugin.label} 插件`}
+                        aria-label={t`${displayName(host)} ${remoteText(plugin.label, _)} 插件`}
                         checked={envelope?.enabled ?? false}
                         disabled={mutation.isPending || offline || !envelope}
                         loading={

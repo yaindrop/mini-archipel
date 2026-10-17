@@ -24,6 +24,7 @@ export interface WorkbenchPlugin {
   badge?: (fleet: Fleet) => number;
   columns?: (props: WorkspaceProps) => TableColumnsType<Host>;
   OverviewPanel?: ComponentType<WorkspaceProps>;
+  nodeOrder?: number;
   NodePanel?: ComponentType<
     WorkspaceProps & {
       host: Host;

@@ -12,3 +12,6 @@ console/test-results/
 console/.preview/
 
 console/src/locales/**/*.ts
+
+__pycache__/
+*.pyc
