@@ -1,6 +1,6 @@
 use super::Shared;
 
-/// Reads the mini-fan-control daemon status; absent binary leaves fan empty.
+/// Reads the fan-control daemon status; absent binary leaves fan empty.
 pub async fn run(state: Shared, fanctl: String, interval_ms: u64) {
     if fanctl.is_empty() {
         return;

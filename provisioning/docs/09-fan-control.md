@@ -3,14 +3,15 @@
 仅适用于有受支持 SMC 硬件的实体 Mac mini。Tart 客体没有独立风扇与 SMC，
 不安装、不伪造读数、不执行写入验证；由宿主机负责散热，客体记为“不适用”。
 
-部署 [mini-fan-control](https://github.com/yaindrop/mini-fan-control)
-（SMC 守护进程，本套手册的姊妹仓库）：空闲安静、负载提前散热、每道降档
+部署本仓库的 [fan-control](../../fan-control/README.md)
+模块（SMC 守护进程）：空闲安静、负载提前散热、每道降档
 边界独立 3°C/30 秒滞回、低于 37°C 交回 Apple 自动。
 
 ## 安装（一次 sudo）
 
 ```sh
-git clone https://github.com/yaindrop/mini-fan-control && cd mini-fan-control
+git clone https://github.com/yaindrop/mini-archipel
+cd mini-archipel/fan-control
 ./build.sh                 # Apple clang + CLT 即可，零警告编译
 sudo ./install.sh          # 构建核对→停旧实例→安装→四档实写验证→启动守护
 ```

@@ -1,4 +1,8 @@
-# mini-fan-control
+# 实体节点风扇控制
+
+本目录是 [mini-archipel](../README.md) 的风扇模块，源码、构建、安装和实机记录
+统一在此维护。原独立仓库的完整提交历史已并入；装机步骤见
+[provisioning 第 9 章](../provisioning/docs/09-fan-control.md)。
 
 基础款 Apple M6 Mac mini（Mac18,5）的自适应风扇控制守护进程：空闲安静、
 负载升温时提前散热、降温带独立滞回、低温交还 Apple 自动控制。
@@ -17,6 +21,7 @@
 ## 构建与安装
 
 ```bash
+cd fan-control       # 从 mini-archipel 仓库根目录进入
 ./build.sh            # Apple clang 21 / macOS 27 CommandLineTools 已验证
 sudo ./install.sh     # 部署布局见下；不改 sudoers/SIP/FileVault/电源模式，无网络调用
 ```
@@ -52,7 +57,7 @@ sudo ./install.sh     # 部署布局见下；不改 sudoers/SIP/FileVault/电源
 | LaunchDaemon | `/Library/LaunchDaemons/com.macmini.fan-control.plist` |
 | 服务标识 | `system/com.macmini.fan-control`（KeepAlive，异常退出自动重启） |
 | 日志 | `/Library/Logs/MacMiniFanControl/control.log`（newsyslog 5×1 MiB） |
-| 硬件自检 | `deploy/verify-hardware.py`（只读） |
+| 硬件自检 | `deploy/verify-hardware.py`（需 root；四档实写 / 回读，结束恢复 Apple 自动控制） |
 | 停止并交回系统 | `sudo /Library/MacMiniFanControl/stop.sh` |
 
 ## 运维要点
@@ -71,3 +76,6 @@ tail -n 5 /Library/Logs/MacMiniFanControl/control.log
 
 可靠性行为：连续 3 次读/写失败→交回系统并退出，launchd 自动重启；
 TERM/INT 退出前交回系统。
+
+仓库的主动 `PR Quality` 检查校验文件摘要、补丁、脚本语法并构建程序，不安装服务或写 SMC。
+虚拟机只参与编译和静态检查，不运行硬件验证。

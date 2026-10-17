@@ -11,7 +11,7 @@
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
-装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，风扇服务见 [mini-fan-control](https://github.com/yaindrop/mini-fan-control)。
+装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇服务见 [fan-control](fan-control/README.md)。
 
 ## 工作台
 

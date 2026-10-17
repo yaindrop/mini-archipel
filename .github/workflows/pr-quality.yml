@@ -40,6 +40,14 @@ jobs:
           brew install shellcheck
           shellcheck provisioning/scripts/*.sh
           clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
+      - name: Verify fan-control without changing hardware
+        run: |
+          (cd fan-control && shasum -a 256 -c SHA256SUMS)
+          git apply --reverse --check --directory=fan-control fan-control/patches/m6.patch
+          shellcheck fan-control/build.sh fan-control/install.sh fan-control/deploy/stop.sh
+          python3 -c 'import ast; from pathlib import Path; ast.parse(Path("fan-control/deploy/verify-hardware.py").read_text())'
+          plutil -lint fan-control/deploy/com.macmini.fan-control.plist
+          fan-control/build.sh
       - name: Set up Node 24.21.0
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
