@@ -54,6 +54,10 @@ impl Context {
 
 pub trait Plugin: Send + Sync {
     fn id(&self) -> &'static str;
+    /// Absolute directories whose direct children should appear in disk scans.
+    fn disk_expansions(&self) -> Vec<PathBuf> {
+        Vec::new()
+    }
     fn schema_version(&self) -> u32 {
         1
     }
@@ -102,6 +106,21 @@ pub fn now() -> u64 {
 }
 
 impl Manager {
+    pub async fn disk_expansions(&self) -> Vec<PathBuf> {
+        let runtime = self.runtime.lock().await;
+        self.definitions
+            .iter()
+            .filter(|(id, _)| {
+                runtime.config.plugins.get(*id).is_some_and(|c| c.enabled)
+                    && runtime
+                        .tasks
+                        .get(*id)
+                        .is_some_and(|r| !r.task.is_finished())
+            })
+            .flat_map(|(_, plugin)| plugin.disk_expansions())
+            .collect()
+    }
+
     pub async fn new(
         config: Config,
         config_path: PathBuf,
@@ -217,6 +236,13 @@ impl Manager {
         runtime.config = updated;
         let setting = runtime.config.plugins[id].clone();
         self.install(&mut runtime, id, setting).await;
+        if !self.definitions[id].disk_expansions().is_empty() {
+            self.state
+                .read()
+                .await
+                .disk_rescan_flag
+                .store(true, Ordering::Relaxed);
+        }
         Ok(())
     }
 
@@ -270,6 +296,9 @@ mod tests {
     impl Plugin for Probe {
         fn id(&self) -> &'static str {
             self.0
+        }
+        fn disk_expansions(&self) -> Vec<PathBuf> {
+            vec![PathBuf::from("/test").join(self.0)]
         }
         fn schema_version(&self) -> u32 {
             if self.0 == "beta" {
@@ -342,6 +371,10 @@ mod tests {
             .unwrap();
         ready(&state, "alpha").await;
         ready(&state, "beta").await;
+        assert_eq!(
+            manager.disk_expansions().await,
+            vec![PathBuf::from("/test/alpha"), PathBuf::from("/test/beta")]
+        );
         assert_eq!(state.read().await.plugins["beta"].version, 2);
         assert_eq!(
             manager
@@ -351,6 +384,11 @@ mod tests {
             json!({"ok": 1})
         );
         manager.set_enabled("alpha", false).await.unwrap();
+        assert_eq!(
+            manager.disk_expansions().await,
+            vec![PathBuf::from("/test/beta")]
+        );
+        assert!(state.read().await.disk_rescan_flag.load(Ordering::Relaxed));
         assert!(!state.read().await.plugins["alpha"].enabled);
         assert!(state.read().await.plugins["alpha"].data.is_null());
         assert_eq!(state.read().await.plugins["beta"].status, "ready");
@@ -389,6 +427,7 @@ mod tests {
         assert_eq!(state2.read().await.plugins["alpha"].status, "disabled");
         manager.set_enabled("alpha", true).await.unwrap();
         ready(&state2, "alpha").await;
+        assert_eq!(manager.disk_expansions().await.len(), 2);
         assert!(
             crate::config::load(dir.join("agent.toml").to_str().unwrap())
                 .unwrap()

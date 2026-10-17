@@ -1,9 +1,11 @@
 use serde::Serialize;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use super::Shared;
 
 /// Disk breakdown via du: / and ~ first-level trees, with /Applications and
-/// ~/Applications each expanded one more level. No other special treatment.
+/// ~/Applications each expanded one more level, plus directories declared by plugins.
 #[derive(Serialize, Clone, Debug)]
 pub struct TreeScan {
     pub root: String,
@@ -47,26 +49,51 @@ fn classify(name: &str) -> &'static str {
     }
 }
 
-/// Run du -k -x -d <depth> <path>, write to temp file, parse into (name, bytes) pairs.
-/// Returns (children, partial_flag).
+fn du_output(path: &str, depth: u8, key: &Path) -> std::io::Result<std::process::Output> {
+    // Loopback SSH avoids launchd I/O throttling when configured. It is optional:
+    // missing keys or SSH failures must never turn a readable directory into 0 B.
+    if key.is_file() {
+        let quoted = path.replace('\'', "'\\''");
+        let output = std::process::Command::new("/usr/bin/ssh")
+            .arg("-i")
+            .arg(key)
+            .args([
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=5",
+                "-o",
+                "StrictHostKeyChecking=no",
+                "-o",
+                "UserKnownHostsFile=/dev/null",
+                "localhost",
+            ])
+            .arg(format!("/usr/bin/du -k -x -d {depth} '{quoted}'"))
+            .output();
+        if let Ok(output) = output {
+            if output.status.code() != Some(255) && !output.stdout.is_empty() {
+                return Ok(output);
+            }
+        }
+        eprintln!("disk scan: loopback SSH unavailable; using local du");
+    }
+    std::process::Command::new("/usr/bin/du")
+        .args(["-k", "-x", "-d", &depth.to_string(), path])
+        .output()
+}
+
+/// Parse only direct children; an unsuccessful du marks partial results.
 fn du_children(path: &str, depth: u8) -> (Vec<TreeScan>, bool) {
-    let tmp = format!("/tmp/mf-du-{}-{}.tmp", std::process::id(), depth);
-    // Via SSH loopback: launchd agents get IO-throttled children; SSH
-    // sessions run at normal priority (proven by every ops command).
-    let key = format!(
-        "{}/.ssh/id_mini_archipel",
-        std::env::var("HOME").unwrap_or_default()
-    );
-    let cmd = format!(
-        "/usr/bin/ssh -i {} -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null localhost \"/usr/bin/du -k -x -d {} '{}'\" > '{}' 2>/dev/null",
-        key, depth, path, tmp
-    );
-    let _ = std::process::Command::new("/bin/sh")
-        .arg("-c")
-        .arg(&cmd)
-        .status();
-    let raw = std::fs::read_to_string(&tmp).unwrap_or_default();
-    let _ = std::fs::remove_file(&tmp);
+    let key =
+        PathBuf::from(std::env::var("HOME").unwrap_or_default()).join(".ssh/id_mini_archipel");
+    let output = match du_output(path, depth, &key) {
+        Ok(output) => output,
+        Err(error) => {
+            eprintln!("disk scan: du could not start: {error}");
+            return (Vec::new(), true);
+        }
+    };
+    let raw = String::from_utf8_lossy(&output.stdout);
 
     let mut children = Vec::new();
     let prefix = format!("{}/", path.trim_end_matches('/'));
@@ -99,11 +126,15 @@ fn du_children(path: &str, depth: u8) -> (Vec<TreeScan>, bool) {
         });
     }
     children.sort_by_key(|entry| std::cmp::Reverse(entry.bytes));
-    let partial = children.is_empty();
+    let partial = !output.status.success();
     (children, partial)
 }
 
-fn scan_tree(root_path: &str, _expand: &str) -> TreeScan {
+fn expand_child(root: &Path, name: &str, expansions: &[PathBuf]) -> bool {
+    name == "Applications" || expansions.contains(&root.join(name))
+}
+
+fn scan_tree(root_path: &str, expansions: &[PathBuf]) -> TreeScan {
     let started = std::time::Instant::now();
     let (mut children, partial) = du_children(root_path, 1);
 
@@ -123,10 +154,11 @@ fn scan_tree(root_path: &str, _expand: &str) -> TreeScan {
         }
     }
 
-    // Expand every Applications dir one more level
+    // Built-in application directories and plugin declarations expand exactly one level.
     for child in &mut children {
-        if child.root == "Applications" {
-            let full = format!("{}/Applications", root_path.trim_end_matches('/'));
+        if expand_child(Path::new(root_path), &child.root, expansions) {
+            let full = Path::new(root_path).join(&child.root);
+            let full = full.to_string_lossy();
             let (subs, sub_partial) = du_children(&full, 1);
             child.children = subs;
             child.partial = sub_partial;
@@ -152,7 +184,15 @@ async fn system_busy(state: &Shared) -> bool {
     false
 }
 
-pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
+pub async fn run(
+    state: Shared,
+    roots: Vec<String>,
+    interval_ms: u64,
+    plugins: Arc<crate::plugins::Manager>,
+) {
+    if roots.is_empty() {
+        return;
+    }
     let home = std::env::var("HOME").unwrap_or_default();
     loop {
         // Defer while a real workload is running: retry in 30 minutes.
@@ -161,7 +201,8 @@ pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
             tokio::time::sleep(std::time::Duration::from_secs(1800)).await;
             continue;
         }
-        let slash = scan_tree("/", "Applications");
+        let expansions = plugins.disk_expansions().await;
+        let slash = scan_tree("/", &expansions);
         eprintln!(
             "disk / : {} bytes in {}ms partial={}",
             slash.bytes, slash.duration_ms, slash.partial
@@ -172,7 +213,7 @@ pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
             .disk_scans
             .insert("/".to_string(), slash);
 
-        let user = scan_tree(&home, "Applications");
+        let user = scan_tree(&home, &expansions);
         eprintln!(
             "disk ~ : {} bytes in {}ms partial={}",
             user.bytes, user.duration_ms, user.partial
@@ -202,7 +243,35 @@ pub async fn run(state: Shared, _roots: Vec<String>, interval_ms: u64) {
 
 #[cfg(test)]
 mod tests {
-    use super::classify;
+    use super::{classify, du_output, expand_child};
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn readable_directories_are_scanned_without_a_loopback_ssh_key() {
+        let root = std::env::temp_dir().join(format!("disk-scan-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("data")).unwrap();
+        std::fs::write(root.join("data/file"), [1u8; 4096]).unwrap();
+        let output = du_output(root.to_str().unwrap(), 1, &root.join("missing-key")).unwrap();
+        assert!(output.status.success());
+        assert!(String::from_utf8_lossy(&output.stdout).contains("/data"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn plugin_expansions_apply_only_to_the_declared_directory() {
+        let home = Path::new("/Users/test");
+        let expansions = vec![home.join("workspaces")];
+        assert!(expand_child(home, "workspaces", &expansions));
+        assert!(!expand_child(Path::new("/"), "workspaces", &expansions));
+        assert!(!expand_child(
+            &home.join("workspaces"),
+            "project",
+            &expansions
+        ));
+        assert!(!expand_child(home, "workspaces", &[]));
+        assert!(expand_child(Path::new("/"), "Applications", &[]));
+        assert!(expand_child(home, "Applications", &Vec::<PathBuf>::new()));
+    }
 
     #[test]
     fn app_bundles_are_applications() {

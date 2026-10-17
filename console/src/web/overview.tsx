@@ -310,7 +310,6 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
   return (
     <>
       <PageTitle
-        eyebrow={t`FLEET OVERVIEW`}
         title={t`集群概览`}
         description={t`从全局状态到每台节点，掌握资源与运行情况。`}
         action={

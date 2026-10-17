@@ -1,7 +1,7 @@
 # CI 机群共享脚本
 
 `ci-fleet.json` 是仓库和节点清单。每节点每仓库独立注册，安装在
-`~/github-runners/<repo>`，不能复制 `.runner` 或认证私钥。
+`~/runners/<repo>`，不能复制 `.runner` 或认证私钥。
 
 - `ci-lease.py`：同步开始钩子的跨仓库节点互斥；PID 和进程启动时间共同标识持有者。
 - `ci-housekeeping.py`：只在持有节点租约的作业完成阶段维护可重建缓存。

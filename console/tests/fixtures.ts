@@ -128,7 +128,7 @@ export function makeSnapshot(index = 0): Snapshot {
     thermal: { state: 0, ts: now },
     disk_scans: [
       scan(`/Users/${config.hosts[index]?.name ?? "yd-mini"}`, 30 * 2 ** 30, [
-        scan("github-runners", 18 * 2 ** 30),
+        scan("runners", 18 * 2 ** 30),
         scan("Library", 6 * 2 ** 30, [], "library"),
         scan(".rustup", 3 * 2 ** 30, [], "toolchain"),
         scan(

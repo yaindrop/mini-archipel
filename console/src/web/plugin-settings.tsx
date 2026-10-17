@@ -88,9 +88,6 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
                 <Typography.Paragraph type="secondary">{t`页面、概览扩展、远端集成和控制操作`}</Typography.Paragraph>
               </span>
               <Space>
-                <Tag color={plugin.enabled ? "success" : "default"}>
-                  {plugin.enabled ? t`已启用` : t`已禁用`}
-                </Tag>
                 <Switch
                   aria-label={t`控制台 ${plugin.label}`}
                   checked={plugin.enabled}
@@ -121,29 +118,27 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
                   children: (
                     <div className="plugin-node-setting">
                       <Space wrap>
-                        <Tag
-                          color={
-                            offline
-                              ? "default"
-                              : envelope?.status === "error"
-                                ? "error"
-                                : envelope?.enabled
-                                  ? "success"
+                        {offline || envelope?.status !== "ready" ? (
+                          <Tag
+                            color={
+                              offline
+                                ? "default"
+                                : envelope?.status === "error"
+                                  ? "error"
                                   : "default"
-                          }
-                        >
-                          {offline
-                            ? t`节点离线`
-                            : !envelope
-                              ? t`节点未安装此插件`
-                              : envelope.status === "error"
-                                ? t`异常`
-                                : envelope.status === "starting"
-                                  ? t`启动中`
-                                  : envelope.enabled
-                                    ? t`已启用`
+                            }
+                          >
+                            {offline
+                              ? t`节点离线`
+                              : !envelope
+                                ? t`节点未安装此插件`
+                                : envelope.status === "error"
+                                  ? t`异常`
+                                  : envelope.status === "starting"
+                                    ? t`启动中`
                                     : t`已禁用`}
-                        </Tag>
+                          </Tag>
+                        ) : null}
                         {envelope?.error ? (
                           <Typography.Text type="danger">
                             {remoteText(envelope.error, _)}

@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 HOME = Path.home()
-ROOT = HOME / "github-runners"
+ROOT = HOME / "runners"
 DEPLOY = Path(__file__).resolve().parent
 PROFILE = json.loads(Path(sys.argv[1]).read_text())
 TOKEN_PATH = Path(sys.argv[2])

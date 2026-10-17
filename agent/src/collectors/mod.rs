@@ -81,7 +81,11 @@ pub struct AgentInfo {
 
 pub type Shared = Arc<RwLock<SharedState>>;
 
-pub async fn spawn_all(state: Shared, config: CollectorConfig) {
+pub async fn spawn_all(
+    state: Shared,
+    config: CollectorConfig,
+    plugins: Arc<crate::plugins::Manager>,
+) {
     let host_state = Arc::clone(&state);
     tokio::spawn(async move { host::run(host_state).await });
 
@@ -105,5 +109,5 @@ pub async fn spawn_all(state: Shared, config: CollectorConfig) {
     let disk_state = Arc::clone(&state);
     let roots = config.disk_roots.clone();
     let disk_interval = config.disk_interval_ms;
-    tokio::spawn(async move { disk::run(disk_state, roots, disk_interval).await });
+    tokio::spawn(async move { disk::run(disk_state, roots, disk_interval, plugins).await });
 }

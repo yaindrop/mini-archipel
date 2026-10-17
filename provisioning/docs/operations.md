@@ -10,14 +10,14 @@ launchctl print "gui/$(id -u)/com.flowbit.ci-proxy"
 curl --proxy http://127.0.0.1:10808 --noproxy '' -I https://api.github.com/
 
 # runner 实际工具环境
-cd "$HOME/github-runners/<repo>" && export PATH="$(cat .path)"
+cd "$HOME/runners/<repo>" && export PATH="$(cat .path)"
 node --version; pnpm --version; python3 --version; uv --version; rustc --version
 
 # 工作区工具链与空间
-cd "$HOME/github-runners/<repo>/_work/<repo>/<repo>"
+cd "$HOME/runners/<repo>/_work/<repo>/<repo>"
 bash testing/scripts/ci-toolchain.sh      # Flowbit 的核对脚本
 df -h /System/Volumes/Data
-du -sh "$HOME/github-runners/<repo>/_work"
+du -sh "$HOME/runners/<repo>/_work"
 sysctl vm.swapusage
 mdutil -a -s
 

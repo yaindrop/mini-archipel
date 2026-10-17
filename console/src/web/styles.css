@@ -764,16 +764,12 @@ a:hover .host-identity strong {
   font-size: 11px;
   line-height: 1.7;
 }
-.page-breadcrumb {
-  margin-bottom: 17px;
-  font-size: 11px;
-}
 .node-uptime {
   font-size: 11px;
 }
 .node-overview-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
   gap: 20px;
 }
 .sensor-list {
@@ -1318,7 +1314,10 @@ a:hover .host-identity strong {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .node-overview-columns {
-    grid-template-columns: minmax(0, 1fr) 285px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .node-overview-columns > :last-child {
+    grid-column: 1 / -1;
   }
   .history-windows {
     margin-left: 0;

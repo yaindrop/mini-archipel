@@ -45,18 +45,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = config::load(&path)?;
     let bind = config.bind.clone();
     let core = Arc::new(RwLock::new(SharedState::new()));
-    let plugins = plugins::Manager::new(
-        config.clone(),
-        path.into(),
-        Arc::clone(&core),
-        plugins::catalog::installed(),
-    )
-    .await?;
-    collectors::spawn_all(Arc::clone(&core), config.collectors).await;
+    let plugins = Arc::new(
+        plugins::Manager::new(
+            config.clone(),
+            path.into(),
+            Arc::clone(&core),
+            plugins::catalog::installed(),
+        )
+        .await?,
+    );
+    collectors::spawn_all(Arc::clone(&core), config.collectors, Arc::clone(&plugins)).await;
     let state = AppState {
         core,
         token: config.token,
-        plugins: Arc::new(plugins),
+        plugins,
     };
     let app = Router::new()
         .route("/health", get(|| async { AGENT_VERSION }))

@@ -1,5 +1,8 @@
 # 四仓库 CI 机群验收 · 2026-10-17
 
+本记录保留四仓库接入时的证据。随后统一安装目录并部署了更新的 Agent 与
+共享维护脚本；现行路径及部署摘要见[Runner 目录迁移验收](runners-path-acceptance-2026-10-17.md)。
+
 ## 部署范围
 
 四节点各安装四仓库的独立 Runner，共 16 个实例；GitHub API 核对全部 online。
@@ -12,7 +15,7 @@
 | `yaindrop/in-frames` | 22 | 21 | 23 | 24 |
 | `yaindrop/mini-archipel` | 3 | 2 | 4 | 5 |
 
-表中 ID 属于各仓库自己的编号空间。安装目录 `~/github-runners/<repo>`；
+表中 ID 属于各仓库自己的编号空间。安装目录 `~/runners/<repo>`；
 名称 `<repo>-<节点名>`。Runner 2.338.0 的官方 ARM64 包 SHA-256：
 `df4cebda25c86a886ed204e49fee63f5c2e7cec5f447b5c98440a826bbdf9df2`。
 不禁用官方自动更新。

@@ -91,7 +91,7 @@ Agent 不主动加标签或调用 CI，除非人明确要求验证。
 gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci
 ```
 
-四节点各有 `~/github-runners/mini-archipel`，与 Flowbit、Flowbit Knowledge、In Frames
+四节点各有 `~/runners/mini-archipel`，与 Flowbit、Flowbit Knowledge、In Frames
 的独立 Runner 共享每节点一个作业的保护。四仓库共 16 个实例均由 Runner 插件按 Repo
 发现与管理。共享脚本与部署规则见 [节点配置与 CI 机群](provisioning/docs/08-github-runner.md)。
 
@@ -111,6 +111,10 @@ NODE_BIN=/opt/homebrew/bin/node ./install.sh
 ```
 
 安装器第一次运行时生成权限为 600 的配置，填好节点令牌后再运行。更新会替换整个构建产物，包括带内容哈希的前端资源；保留上一版程序与 LaunchAgent，启动或健康检查失败时自动恢复。配置与 SQLite 在发布目录之外，更新不清空历史。
+
+Agent 安装器为每个节点独立生成本机目录扫描的回环 SSH 密钥，新增授权只允许回环来源并禁用转发。
+已有运维登录密钥保留。目录扫描优先使用回环 SSH 避免 launchd 的 I/O 节流；不可用时直接在本机执行 `du`，
+不把认证失败显示为正常的 0 B。读取受限目录时保留可读部分并标记结果不完整。
 
 - 配置：`~/.config/mini-archipel/console.json`
 - 程序：`~/.local/libexec/mini-archipel-console`

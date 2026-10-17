@@ -5,12 +5,10 @@ import { Link, useParams, useSearchParams } from "react-router";
 import {
   Alert,
   Badge,
-  Breadcrumb,
   Descriptions,
   Empty,
   Input,
   Progress,
-  Segmented,
   Space,
   Table,
   Tabs,
@@ -127,8 +125,7 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
   const { name } = useParams(),
     host = fleet.hosts.find((h) => h.name === name),
     [search, setSearch] = useSearchParams(),
-    view = search.get("view") ?? "overview",
-    [metric, setMetric] = useState("cpu");
+    view = search.get("view") ?? "overview";
   const plugins = useWorkbenchPlugins(fleet);
   if (!host)
     return (
@@ -192,117 +189,86 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
         />
       </div>
       <div className="node-overview-columns">
-        <Section
-          title={t`资源走势`}
-          subtitle={t`最近 10 分钟`}
-          action={
-            <Segmented
-              aria-label={t`节点资源指标`}
-              value={metric}
-              onChange={setMetric}
-              options={[
+        {(
+          [
+            ["cpu.usage_pct", t`CPU 走势`, "%", 100],
+            ["mem.used_bytes", t`内存走势`, "B", mem?.total_bytes],
+          ] as const
+        ).map(([key, title, unit, max]) => (
+          <Section key={key} title={title} subtitle={t`最近 10 分钟`}>
+            <TimeChart
+              label={`${displayName(host)} ${title}`}
+              unit={unit}
+              max={max}
+              series={[
                 {
-                  label: "CPU",
-                  value: "cpu",
-                },
-                {
-                  label: t`内存`,
-                  value: "memory",
+                  name: displayName(host),
+                  color: NODE_COLORS[index % 4] ?? "#08727e",
+                  points: host.history[key] ?? [],
                 },
               ]}
             />
-          }
-        >
-          <TimeChart
-            label={t`${displayName(host)} ${metric === "cpu" ? "CPU" : t`内存`}走势`}
-            unit={metric === "cpu" ? "%" : "B"}
-            max={metric === "cpu" ? 100 : mem?.total_bytes}
-            series={[
-              {
-                name: displayName(host),
-                color: NODE_COLORS[index % 4] ?? "#08727e",
-                points:
-                  host.history[
-                    metric === "cpu" ? "cpu.usage_pct" : "mem.used_bytes"
-                  ] ?? [],
-              },
-            ]}
-          />
-        </Section>
+          </Section>
+        ))}
         <Section title={t`传感器`}>
-          {!isVirtual(host) && (fan || mac) ? (
+          {!isVirtual(host) ? (
             <div className="sensor-list">
-              {fan ? (
-                <>
-                  <div>
-                    <Space>
-                      <Thermometer size={16} />
-                      <span>{t`最高温度`}</span>
-                    </Space>
-                    <strong>
-                      {fan.have_temp === false
-                        ? "—"
-                        : `${formatNumber(fan.temp)} °C`}
-                    </strong>
-                  </div>
-                  <div>
-                    <Space>
-                      <Fan size={16} />
-                      <span>{t`风扇转速`}</span>
-                    </Space>
-                    <strong>{formatNumber(fan.rpm, 0)} RPM</strong>
-                  </div>
-                  <div>
-                    <span>{t`控制模式`}</span>
-                    <strong>
-                      {fan.paused
-                        ? t`已暂停`
-                        : fan.forced
-                          ? t`自定义曲线`
-                          : t`系统自动`}
-                    </strong>
-                  </div>
-                </>
-              ) : null}
-              {mac ? (
-                <>
-                  <div>
-                    <Space>
-                      <Zap size={16} />
-                      <span>{t`芯片功耗`}</span>
-                    </Space>
-                    <strong>{formatNumber(mac.package_power_w)} W</strong>
-                  </div>
-                  <div>
-                    <Space>
-                      <Cpu size={16} />
-                      <span>{t`P / E 核频率`}</span>
-                    </Space>
-                    <strong>
-                      {formatNumber(mac.p_cluster_mhz, 0)} /{" "}
-                      {formatNumber(mac.e_cluster_mhz, 0)} MHz
-                    </strong>
-                  </div>
-                  <div>
-                    <span>{t`GPU 占用`}</span>
-                    <strong>{formatNumber(mac.gpu_pct)}%</strong>
-                  </div>
-                </>
-              ) : null}
+              <div>
+                <Space>
+                  <Thermometer size={16} />
+                  <span>{t`最高温度`}</span>
+                </Space>
+                <strong>
+                  {!fan || fan.have_temp === false
+                    ? "—"
+                    : `${formatNumber(fan.temp)} °C`}
+                </strong>
+              </div>
+              <div>
+                <Space>
+                  <Fan size={16} />
+                  <span>{t`风扇转速`}</span>
+                </Space>
+                <strong>{formatNumber(fan?.rpm, 0)} RPM</strong>
+              </div>
+              <div>
+                <span>{t`控制模式`}</span>
+                <strong>
+                  {!fan
+                    ? t`未上报`
+                    : fan.paused
+                      ? t`已暂停`
+                      : fan.forced
+                        ? t`自定义曲线`
+                        : t`系统自动`}
+                </strong>
+              </div>
+              <div>
+                <Space>
+                  <Zap size={16} />
+                  <span>{t`芯片功耗`}</span>
+                </Space>
+                <strong>{formatNumber(mac?.package_power_w)} W</strong>
+              </div>
+              <div>
+                <Space>
+                  <Cpu size={16} />
+                  <span>{t`P / E 核频率`}</span>
+                </Space>
+                <strong>
+                  {formatNumber(mac?.p_cluster_mhz, 0)} /{" "}
+                  {formatNumber(mac?.e_cluster_mhz, 0)} MHz
+                </strong>
+              </div>
+              <div>
+                <span>{t`GPU 占用`}</span>
+                <strong>{formatNumber(mac?.gpu_pct)}%</strong>
+              </div>
             </div>
           ) : (
             <Empty
               image={<Layers size={38} />}
-              description={
-                isVirtual(host) ? (
-                  t`虚拟机无硬件传感器`
-                ) : (
-                  <>
-                    <strong>{t`未收到传感器数据`}</strong>
-                    <Typography.Paragraph type="secondary">{t`系统资源采集仍正常工作。`}</Typography.Paragraph>
-                  </>
-                )
-              }
+              description={t`虚拟机无硬件传感器`}
             />
           )}
         </Section>
@@ -336,13 +302,6 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
           ))}
         </div>
       </Section>
-      {plugins.map((plugin) =>
-        plugin.NodePanel ? (
-          <PluginSlot key={plugin.id} label={plugin.label}>
-            <plugin.NodePanel fleet={fleet} host={host} now={now} />
-          </PluginSlot>
-        ) : null,
-      )}
       <Section title={t`节点信息`}>
         <div className="node-info">
           <HostIdentity host={host} index={index} />
@@ -399,22 +358,17 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
           >{t`查看历史趋势`}</Link>
         </div>
       </Section>
+      {plugins.map((plugin) =>
+        plugin.NodePanel ? (
+          <PluginSlot key={plugin.id} label={plugin.label}>
+            <plugin.NodePanel fleet={fleet} host={host} now={now} />
+          </PluginSlot>
+        ) : null,
+      )}
     </>
   );
   return (
     <>
-      <Breadcrumb
-        className="page-breadcrumb"
-        aria-label={t`节点位置`}
-        items={[
-          {
-            title: <Link to="/">{t`集群`}</Link>,
-          },
-          {
-            title: displayName(host),
-          },
-        ]}
-      />
       <PageTitle
         className="node-heading"
         eyebrow={nodeKindLabel(host, _)}

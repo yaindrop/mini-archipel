@@ -42,11 +42,13 @@ export function RunnerList({
   now,
   repositories,
   remoteRunners,
+  layout = "repositories",
 }: {
   hosts: Host[];
   now: number;
   repositories: RepositoryState[];
   remoteRunners: GitHubRunner[];
+  layout?: "repositories" | "node";
 }) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
@@ -87,8 +89,7 @@ export function RunnerList({
   const groups = repositoryGroups(hosts, _),
     selected =
       groups.find((group) => group.key === search.get("repo")) ?? groups[0],
-    rows = selected?.rows ?? [],
-    github = repositories.find((repo) => repo.repo === selected?.repo);
+    rows = groups.flatMap((group) => group.rows);
   const unavailable = hosts.filter((host) => !agentData(host));
   if (!rows.length)
     return (
@@ -100,227 +101,229 @@ export function RunnerList({
         }
       />
     );
+  const items = groups.map((group) => {
+    const github = repositories.find((repo) => repo.repo === group.repo);
+    return {
+      key: group.key,
+      label: (
+        <Space>
+          <GitBranch size={15} />
+          <span>{group.label}</span>
+          {layout === "repositories" ? <Tag>{group.rows.length}</Tag> : null}
+        </Space>
+      ),
+      children:
+        layout === "node" || group.key === selected?.key ? (
+          <>
+            {unavailable.length ? (
+              <Alert
+                type="warning"
+                showIcon
+                title={t`${unavailable.map(displayName).join("、")}：Runner 插件数据不可用`}
+                action={<Link to="/plugins">{t`管理插件`}</Link>}
+              />
+            ) : null}
+            {!github ? (
+              <Alert
+                type="info"
+                showIcon
+                title={t`此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。`}
+                action={<Link to="/connections">{t`查看连接`}</Link>}
+              />
+            ) : github.lastError ? (
+              <Alert
+                type="warning"
+                showIcon
+                title={remoteText(github.lastError, _)}
+              />
+            ) : null}
+            <div className="runner-list">
+              {group.rows.map(({ host, runner }) => {
+                const status = runnerState(host, runner, remoteRunners, now),
+                  enabled = runner.listener_pid !== null,
+                  remote = matchingRemote(runner, remoteRunners),
+                  disabled =
+                    !runner.repo ||
+                    status === "busy" ||
+                    !current(host, now) ||
+                    !agentData(host)?.control_allowed ||
+                    mutation.isPending;
+                return (
+                  <Card
+                    className="runner-card"
+                    key={`${host.name}-${runner.repo_dir}`}
+                    title={
+                      <Space>
+                        <span
+                          className={`runner-glyph ${status === "busy" ? "runner-glyph-busy" : ""}`}
+                        >
+                          <Terminal size={20} />
+                        </span>
+                        <span className="runner-card-name">
+                          <h3>{displayName(host)}</h3>
+                          <Space size={8}>
+                            <Link
+                              to={`/nodes/${encodeURIComponent(host.name)}`}
+                            >
+                              {runner.agent_name ?? runner.repo_dir}
+                            </Link>
+                            <Typography.Text type="secondary">
+                              #{runner.agent_id ?? "—"}
+                            </Typography.Text>
+                          </Space>
+                        </span>
+                      </Space>
+                    }
+                    extra={
+                      <Space wrap>
+                        <RunnerStatus
+                          host={host}
+                          runner={runner}
+                          now={now}
+                          remote={remoteRunners}
+                        />
+                        <Tooltip
+                          title={
+                            !runner.repo
+                              ? t`未识别注册仓库，无法执行服务操作`
+                              : status === "busy"
+                                ? t`作业运行中，暂时不能切换`
+                                : !current(host, now)
+                                  ? t`节点数据过期，操作不可用`
+                                  : !agentData(host)?.control_allowed
+                                    ? t`此节点尚未授权 Runner 服务控制`
+                                    : undefined
+                          }
+                        >
+                          <Button
+                            type={enabled ? "default" : "primary"}
+                            disabled={disabled}
+                            icon={
+                              enabled ? (
+                                <CirclePause size={15} />
+                              ) : (
+                                <Play size={15} />
+                              )
+                            }
+                            onClick={() => {
+                              mutation.reset();
+                              setConfirm({
+                                host,
+                                runner,
+                                enable: !enabled,
+                              });
+                            }}
+                          >
+                            {enabled ? t`停止接单` : t`启动接单`}
+                          </Button>
+                        </Tooltip>
+                      </Space>
+                    }
+                  >
+                    <Descriptions
+                      column={{
+                        xs: 2,
+                        sm: 2,
+                        md: 4,
+                      }}
+                      size="small"
+                      layout="vertical"
+                      items={[
+                        {
+                          key: "work",
+                          label: t`工作区`,
+                          children: (
+                            <span className="num">
+                              {formatBytes(runner.work_bytes)}
+                            </span>
+                          ),
+                        },
+                        {
+                          key: "diag",
+                          label: t`诊断日志`,
+                          children: (
+                            <Typography.Text
+                              {...((runner.diag_bytes ?? 0) > 256 * 2 ** 20
+                                ? {
+                                    type: "warning" as const,
+                                  }
+                                : {})}
+                              className="num"
+                            >
+                              {formatBytes(runner.diag_bytes)}
+                              <small className="muted"> / 256 MiB</small>
+                            </Typography.Text>
+                          ),
+                        },
+                        {
+                          key: "pid",
+                          label: t`本地进程`,
+                          children: (
+                            <span className="num">
+                              {runner.worker_pid !== null
+                                ? `Worker ${String(runner.worker_pid)}`
+                                : runner.listener_pid !== null
+                                  ? `Listener ${String(runner.listener_pid)}`
+                                  : t`未运行`}
+                            </span>
+                          ),
+                        },
+                        {
+                          key: "github",
+                          label: "GitHub",
+                          children: remote
+                            ? `${remote.status}${remote.busy ? " · busy" : ""}`
+                            : t`未取得远端状态`,
+                        },
+                      ]}
+                    />
+                    {remote?.labels.length ? (
+                      <Space size={[4, 4]} wrap className="runner-labels">
+                        {remote.labels.map((label) => (
+                          <Tag key={label.name}>{label.name}</Tag>
+                        ))}
+                      </Space>
+                    ) : null}
+                    <div className="runner-card-footer">
+                      <code>{`~/runners/${runner.repo_dir}`}</code>
+                      <Typography.Text type="secondary" className="runner-log">
+                        {runner.diag_latest ?? t`暂无诊断日志`}
+                      </Typography.Text>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        ) : null,
+    };
+  });
   return (
     <>
-      <Tabs
-        className="runner-repo-tabs"
-        animated={false}
-        activeKey={selected?.key ?? ""}
-        onChange={(key) => {
-          setConfirm(null);
-          mutation.reset();
-          const next = new URLSearchParams(search);
-          next.set("repo", key);
-          setSearch(next, {
-            replace: true,
-          });
-        }}
-        items={groups.map((group) => ({
-          key: group.key,
-          label: (
-            <Space>
-              <GitBranch size={15} />
-              <span>{group.label}</span>
-              <Tag>{group.rows.length}</Tag>
-            </Space>
-          ),
-          children:
-            group.key === selected?.key ? (
-              <>
-                {unavailable.length ? (
-                  <Alert
-                    type="warning"
-                    showIcon
-                    title={t`${unavailable.map(displayName).join("、")}：Runner 插件数据不可用`}
-                    action={<Link to="/plugins">{t`管理插件`}</Link>}
-                  />
-                ) : null}
-                {!github ? (
-                  <Alert
-                    type="info"
-                    showIcon
-                    title={t`此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。`}
-                    action={<Link to="/connections">{t`查看连接`}</Link>}
-                  />
-                ) : github.lastError ? (
-                  <Alert
-                    type="warning"
-                    showIcon
-                    title={remoteText(github.lastError, _)}
-                  />
-                ) : null}
-                <div className="runner-list">
-                  {rows.map(({ host, runner }) => {
-                    const status = runnerState(
-                        host,
-                        runner,
-                        remoteRunners,
-                        now,
-                      ),
-                      enabled = runner.listener_pid !== null,
-                      remote = matchingRemote(runner, remoteRunners),
-                      disabled =
-                        !runner.repo ||
-                        status === "busy" ||
-                        !current(host, now) ||
-                        !agentData(host)?.control_allowed ||
-                        mutation.isPending;
-                    return (
-                      <Card
-                        className="runner-card"
-                        key={`${host.name}-${runner.repo_dir}`}
-                        title={
-                          <Space>
-                            <span
-                              className={`runner-glyph ${status === "busy" ? "runner-glyph-busy" : ""}`}
-                            >
-                              <Terminal size={20} />
-                            </span>
-                            <span className="runner-card-name">
-                              <h3>{displayName(host)}</h3>
-                              <Space size={8}>
-                                <Link
-                                  to={`/nodes/${encodeURIComponent(host.name)}`}
-                                >
-                                  {runner.agent_name ?? runner.repo_dir}
-                                </Link>
-                                <Typography.Text type="secondary">
-                                  #{runner.agent_id ?? "—"}
-                                </Typography.Text>
-                              </Space>
-                            </span>
-                          </Space>
-                        }
-                        extra={
-                          <Space wrap>
-                            <RunnerStatus
-                              host={host}
-                              runner={runner}
-                              now={now}
-                              remote={remoteRunners}
-                            />
-                            <Tooltip
-                              title={
-                                !runner.repo
-                                  ? t`未识别注册仓库，无法执行服务操作`
-                                  : status === "busy"
-                                    ? t`作业运行中，暂时不能切换`
-                                    : !current(host, now)
-                                      ? t`节点数据过期，操作不可用`
-                                      : !agentData(host)?.control_allowed
-                                        ? t`此节点尚未授权 Runner 服务控制`
-                                        : undefined
-                              }
-                            >
-                              <Button
-                                type={enabled ? "default" : "primary"}
-                                disabled={disabled}
-                                icon={
-                                  enabled ? (
-                                    <CirclePause size={15} />
-                                  ) : (
-                                    <Play size={15} />
-                                  )
-                                }
-                                onClick={() => {
-                                  mutation.reset();
-                                  setConfirm({
-                                    host,
-                                    runner,
-                                    enable: !enabled,
-                                  });
-                                }}
-                              >
-                                {enabled ? t`停止接单` : t`启动接单`}
-                              </Button>
-                            </Tooltip>
-                          </Space>
-                        }
-                      >
-                        <Descriptions
-                          column={{
-                            xs: 2,
-                            sm: 2,
-                            md: 4,
-                          }}
-                          size="small"
-                          layout="vertical"
-                          items={[
-                            {
-                              key: "work",
-                              label: t`工作区`,
-                              children: (
-                                <span className="num">
-                                  {formatBytes(runner.work_bytes)}
-                                </span>
-                              ),
-                            },
-                            {
-                              key: "diag",
-                              label: t`诊断日志`,
-                              children: (
-                                <Typography.Text
-                                  {...((runner.diag_bytes ?? 0) > 256 * 2 ** 20
-                                    ? {
-                                        type: "warning" as const,
-                                      }
-                                    : {})}
-                                  className="num"
-                                >
-                                  {formatBytes(runner.diag_bytes)}
-                                  <small className="muted"> / 256 MiB</small>
-                                </Typography.Text>
-                              ),
-                            },
-                            {
-                              key: "pid",
-                              label: t`本地进程`,
-                              children: (
-                                <span className="num">
-                                  {runner.worker_pid !== null
-                                    ? `Worker ${String(runner.worker_pid)}`
-                                    : runner.listener_pid !== null
-                                      ? `Listener ${String(runner.listener_pid)}`
-                                      : t`未运行`}
-                                </span>
-                              ),
-                            },
-                            {
-                              key: "github",
-                              label: "GitHub",
-                              children: remote
-                                ? `${remote.status}${remote.busy ? " · busy" : ""}`
-                                : t`未取得远端状态`,
-                            },
-                          ]}
-                        />
-                        <div className="runner-card-footer">
-                          <span>
-                            <GitBranch size={13} />
-                            <code>{`~/github-runners/${runner.repo_dir}`}</code>
-                          </span>
-                          <Typography.Text
-                            type="secondary"
-                            className="runner-log"
-                          >
-                            {runner.diag_latest ?? t`暂无诊断日志`}
-                          </Typography.Text>
-                        </div>
-                        {remote?.labels.length ? (
-                          <Space size={[4, 4]} wrap className="runner-labels">
-                            {remote.labels.map((label) => (
-                              <Tag key={label.name}>{label.name}</Tag>
-                            ))}
-                          </Space>
-                        ) : null}
-                      </Card>
-                    );
-                  })}
-                </div>
-              </>
-            ) : null,
-        }))}
-      />
+      {layout === "node" ? (
+        <div className="runner-node-repositories">
+          {items.map((item) => (
+            <section key={item.key}>
+              <h3 className="runner-repository-heading">{item.label}</h3>
+              {item.children}
+            </section>
+          ))}
+        </div>
+      ) : (
+        <Tabs
+          className="runner-repo-tabs"
+          animated={false}
+          activeKey={selected?.key ?? ""}
+          onChange={(key) => {
+            setConfirm(null);
+            mutation.reset();
+            const next = new URLSearchParams(search);
+            next.set("repo", key);
+            setSearch(next, { replace: true });
+          }}
+          items={items}
+        />
+      )}
       <Modal
         title={confirm?.enable ? t`启动接单` : t`停止接单`}
         open={confirm !== null}
@@ -404,7 +407,7 @@ export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
       />
       <div className="metrics-row">
         <Metric
-          label={t`已发现 runner`}
+          label={t`已注册runner`}
           value={rows.length}
           detail={t`按仓库、节点分别注册`}
           icon={<Terminal size={18} />}
@@ -467,6 +470,7 @@ export function NodePanel({
       ) : (
         <RunnerList
           hosts={[host]}
+          layout="node"
           now={now}
           repositories={consoleData(fleet).repositories}
           remoteRunners={remoteFor(fleet)}
@@ -495,7 +499,7 @@ export function OverviewPanel({ fleet, now }: { fleet: Fleet; now: number }) {
     >
       <Space size="large" wrap>
         <Tag color="processing">{t`${busy} 个作业运行中`}</Tag>
-        <Typography.Text>{t`已发现 ${rows.length} 个 Runner`}</Typography.Text>
+        <Typography.Text>{t`已注册 ${rows.length} 个 Runner`}</Typography.Text>
         <Link to="/plugins">{t`插件设置`}</Link>
       </Space>
     </Section>

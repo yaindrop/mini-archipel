@@ -106,6 +106,16 @@ test("overview, filters, deep links and browser navigation", async ({
   await expect(page.locator(".page-heading")).toContainText(
     "Tart on M4 Max MacBook",
   );
+  await expect(page.locator(".topbar-breadcrumb")).toContainText(
+    "yd-mbp-tart-2",
+  );
+  await expect(page.locator(".main-content .ant-breadcrumb")).toHaveCount(0);
+  await expect(page.locator(".node-overview-columns .time-chart")).toHaveCount(
+    2,
+  );
+  const sections = await page.locator(".section-title h2").allTextContents();
+  expect(sections.indexOf("节点信息")).toBe(sections.indexOf("各核心占用") + 1);
+  expect(sections.at(-1)).toBe("节点 Runners");
   if (!isMobile) await page.setViewportSize({ width: 1512, height: 800 });
   await expect(
     page.locator(".node-heading .ant-typography-secondary"),
@@ -221,9 +231,14 @@ test("repository tabs isolate runners and controls across nodes", async ({
     original.getByRole("button", { name: "停止接单", exact: true }),
   ).toBeEnabled();
   await page.goto("/nodes/yd-mini?view=runners&repo=acme%2Fflowbit");
+  await expect(page.locator(".runner-repo-tabs")).toHaveCount(0);
+  await expect(page.locator(".runner-card")).toHaveCount(2);
   await expect(
-    page.getByRole("tab", { name: /acme\/flowbit/ }),
-  ).toHaveAttribute("aria-selected", "true");
+    page.getByRole("heading", { name: "acme/flowbit", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "yaindrop/flowbit", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "启动接单", exact: true }),
   ).toBeEnabled();

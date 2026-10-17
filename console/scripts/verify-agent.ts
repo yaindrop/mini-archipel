@@ -58,7 +58,7 @@ await test(
       ["first", "owner-a/project"],
       ["second", "owner-b/project"],
     ]) {
-      const installation = join(dir, "github-runners", directory ?? "");
+      const installation = join(dir, "runners", directory ?? "");
       mkdirSync(installation, { recursive: true });
       writeFileSync(
         join(installation, ".runner"),

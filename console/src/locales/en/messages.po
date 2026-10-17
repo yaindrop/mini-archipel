@@ -272,12 +272,6 @@ msgstr "{0} · {1} cores · {2}"
 msgid "{0} {1} 插件"
 msgstr "{0} · {1} plugin"
 
-#. placeholder {0}: displayName(host)
-#. placeholder {1}: metric === "cpu" ? "CPU" : t`内存`
-#: src/web/node.tsx
-msgid "{0} {1}走势"
-msgstr "{0} {1} trend"
-
 #. placeholder {0}: plugins.length
 #: src/web/overview.tsx
 msgid "{0} 个 ↗"
@@ -461,6 +455,10 @@ msgstr "High CPU usage"
 msgid "CPU 占用走势"
 msgstr "CPU usage trend"
 
+#: src/web/node.tsx
+msgid "CPU 走势"
+msgstr "CPU trend"
+
 #: src/web/plugin-settings.tsx
 msgid "EXTENSIONS"
 msgstr "EXTENSIONS"
@@ -468,10 +466,6 @@ msgstr "EXTENSIONS"
 #: src/web/App.tsx
 msgid "Fleet operations"
 msgstr "Node operations"
-
-#: src/web/overview.tsx
-msgid "FLEET OVERVIEW"
-msgstr "CLUSTER OVERVIEW"
 
 #: src/web/node.tsx
 msgid "GPU 占用"
@@ -601,6 +595,10 @@ msgstr "Memory usage trend"
 #: src/web/node.tsx
 msgid "内存已用"
 msgstr "Memory used"
+
+#: src/web/node.tsx
+msgid "内存走势"
+msgstr "Memory trend"
 
 #: src/web/App.tsx
 msgid "最后一次"
@@ -814,22 +812,9 @@ msgstr "Stopped"
 msgid "已停止接单"
 msgstr "Stopped"
 
-#. placeholder {0}: rows.length
-#: src/plugins/runners/workbench.tsx
-msgid "已发现 {0} 个 Runner"
-msgstr "{0, plural, one {# runner discovered} other {# runners discovered}}"
-
-#: src/plugins/runners/workbench.tsx
-msgid "已发现 runner"
-msgstr "Runners discovered"
-
 #: src/plugins/runners/workbench.tsx
 msgid "已启动本地监听进程"
 msgstr "Local listener processes are running"
-
-#: src/web/plugin-settings.tsx
-msgid "已启用"
-msgstr "Enabled"
 
 #: src/web/overview.tsx
 msgid "已启用插件"
@@ -843,6 +828,15 @@ msgstr "Connected"
 #: src/web/node.tsx
 msgid "已暂停"
 msgstr "Paused"
+
+#. placeholder {0}: rows.length
+#: src/plugins/runners/workbench.tsx
+msgid "已注册 {0} 个 Runner"
+msgstr "{0, plural, one {# registered runner} other {# registered runners}}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已注册runner"
+msgstr "Registered runners"
 
 #. placeholder {0}: formatBytes(memoryUsed)
 #. placeholder {1}: formatBytes(memoryTotal)
@@ -1057,10 +1051,6 @@ msgstr "Not reported"
 #: src/plugins/runners/workbench.tsx
 msgid "未取得远端状态"
 msgstr "Remote status unavailable"
-
-#: src/web/node.tsx
-msgid "未收到传感器数据"
-msgstr "No sensor readings received"
 
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
@@ -1370,10 +1360,6 @@ msgstr "System root"
 msgid "系统自动"
 msgstr "System automatic"
 
-#: src/web/node.tsx
-msgid "系统资源采集仍正常工作。"
-msgstr "Core resource monitoring is still running."
-
 #: src/web/chart.tsx
 msgid "纵轴 0–100%"
 msgstr "Y-axis: 0–100%"
@@ -1423,13 +1409,10 @@ msgstr "The node's Runner plugin is disabled, not ready, or has an incompatible 
 msgid "节点 Runners"
 msgstr "Node runners"
 
+#: src/web/App.tsx
 #: src/web/node.tsx
 msgid "节点不存在"
 msgstr "Node not found"
-
-#: src/web/node.tsx
-msgid "节点位置"
-msgstr "Node location"
 
 #: src/web/node.tsx
 msgid "节点信息"
@@ -1480,18 +1463,10 @@ msgstr "Overview"
 msgid "节点离线"
 msgstr "Offline"
 
-#: src/web/App.tsx
-msgid "节点详情"
-msgstr "Node details"
-
 #. js-lingui-explicit-id
 #: src/messages.ts
 msgid "节点请求失败（HTTP {status}）"
 msgstr "Node request failed (HTTP {status})"
-
-#: src/web/node.tsx
-msgid "节点资源指标"
-msgstr "Node resource metrics"
 
 #: src/web/node.tsx
 msgid "节点超过 10 秒未更新。下方保留最后一次采集结果，运维操作暂不可用。"
@@ -1568,7 +1543,6 @@ msgstr "Library"
 msgid "资源指标"
 msgstr "Resource metrics"
 
-#: src/web/node.tsx
 #: src/web/overview.tsx
 msgid "资源走势"
 msgstr "Resource trends"
@@ -1680,10 +1654,6 @@ msgstr "Rescan"
 #: src/web/App.tsx
 msgid "重试连接"
 msgstr "Retry connection"
-
-#: src/web/node.tsx
-msgid "集群"
-msgstr "Cluster"
 
 #: src/web/overview.tsx
 msgid "集群内存负载"

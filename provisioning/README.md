@@ -64,10 +64,12 @@ Tart 豁免的边界与宿主机要求见[安全基线](docs/04-updates-and-secu
 
 四台均为 macOS 27.0.1。`yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
 `yaindrop/in-frames`、`yaindrop/mini-archipel` 各有四个独立注册的 Runner，
-安装在 `~/github-runners/<repo>`。统一采用 PR `run-ci` 标签主动请求质量检查；
+安装在 `~/runners/<repo>`。统一采用 PR `run-ci` 标签主动请求质量检查；
 push、普通 PR 活动与定时事件均不运行质量检查。每节点跨仓库只执行一个作业。
 清单和共享脚本见 [scripts](scripts/README.md)，本轮范围与证据见
 [CI 机群验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
+最新安装路径、Agent 与共享钩子的部署核对见
+[Runner 目录迁移验收](docs/runners-path-acceptance-2026-10-17.md)。
 在线状态是验收快照，日常以 GitHub 和群岛 Runner 插件为准。
 逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。
 
@@ -79,7 +81,7 @@ push、普通 PR 活动与定时事件均不运行质量检查。每节点跨仓
 | ------------------------- | ------------------------------------- |
 | `mini-1` / `mini-2`       | 各机短用户名、主机名与 SSH 别名       |
 | `<owner>/<repo>`          | CI 目标仓库                           |
-| `~/github-runners/<repo>` | runner 安装目录（每仓库一个）         |
+| `~/runners/<repo>` | runner 安装目录（每仓库一个）         |
 | `~/.local/flowbit-ci-pinned/bin` | 当前 Flowbit 固定工具链入口（优先于 Homebrew） |
 | `com.flowbit.ci-proxy`    | 当前独立 CI 代理 LaunchAgent 标识    |
 | `192.168.<subnet>`        | 自己的局域网网段                      |

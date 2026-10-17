@@ -20,7 +20,7 @@
 | ----------- | ---- | ------------- | ------------------------------------------------ |
 | system      | 深灰 | OS 组成       | System, usr, private, bin, sbin, .resolve, .vol… |
 | apps        | 绿   | 应用          | Applications（展开一级）                         |
-| user        | 蓝   | 用户主动创建  | github-runners, .ssh, .config, .docker, Desktop… |
+| user        | 蓝   | 用户主动创建  | runners, .ssh, .config, .docker, Desktop…        |
 | agentic     | 橙   | AI 助手数据   | .codex, .zcode                                   |
 | toolchain   | 橙   | 开发工具      | .rustup, .cargo, .local                          |
 | reclaimable | 金   | 可安全清除    | opt, .cache, node_modules, target, .venv…        |

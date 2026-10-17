@@ -39,7 +39,7 @@ test("system defaults localize every workspace and use the system appearance", a
     ).toBe(true);
   }
   await expect(page.locator(".runner-card-footer code").first()).toHaveText(
-    "~/github-runners/flowbit",
+    "~/runners/flowbit",
   );
   await expect(page.locator(".ant-dropdown:visible")).toHaveCount(0);
   await page.screenshot({

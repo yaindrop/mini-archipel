@@ -8,7 +8,7 @@ use std::sync::{
     Arc,
 };
 
-/// GitHub Actions self-hosted runner discovery under ~/github-runners/<repo>.
+/// GitHub Actions self-hosted runner discovery under ~/runners/<repo>.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RunnerInstall {
     pub repo_dir: String,
@@ -136,7 +136,7 @@ fn latest_diag(dir: &PathBuf) -> Option<String> {
 }
 
 fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
-    let base = dirs_home().join("github-runners");
+    let base = dirs_home().join("runners");
     let mut installs: Vec<RunnerInstall> = Vec::new();
     if let Ok(entries) = std::fs::read_dir(&base) {
         for entry in entries.filter_map(|e| e.ok()) {
@@ -209,6 +209,9 @@ pub struct Runners;
 impl Plugin for Runners {
     fn id(&self) -> &'static str {
         "runners"
+    }
+    fn disk_expansions(&self) -> Vec<PathBuf> {
+        vec![dirs_home().join("runners")]
     }
     fn schema_version(&self) -> u32 {
         2
@@ -293,7 +296,7 @@ impl Plugin for Runners {
 
 fn toggle_service(runner: &RunnerInstall, enable: bool) -> Result<(), Failure> {
     let home = dirs_home();
-    let directory = home.join("github-runners").join(&runner.repo_dir);
+    let directory = home.join("runners").join(&runner.repo_dir);
     let registered_repo = parse_runner_file(&directory.join(".runner"))
         .github_url
         .as_deref()
@@ -327,17 +330,14 @@ fn toggle_service(runner: &RunnerInstall, enable: bool) -> Result<(), Failure> {
     if enable && pgrep(&process_pattern(&directory, "Runner.Listener")).is_some() {
         return Ok(());
     }
-    let service = std::fs::read_to_string(
-        home.join("github-runners")
-            .join(&runner.repo_dir)
-            .join(".service"),
-    )
-    .map_err(|_| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "could not read registered runner service".into(),
-        )
-    })?;
+    let service =
+        std::fs::read_to_string(home.join("runners").join(&runner.repo_dir).join(".service"))
+            .map_err(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "could not read registered runner service".into(),
+                )
+            })?;
     let (label, plist) = runner_service_location(&home, &service)
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.into()))?;
     let domain = format!("gui/{}", libc_getuid());
@@ -435,11 +435,8 @@ mod runner_service_tests {
             assert_eq!(repository(value), None);
         }
         assert_eq!(
-            process_pattern(
-                Path::new("/Users/ci/github-runners/repo.one"),
-                "Runner.Worker"
-            ),
-            "/Users/ci/github-runners/repo\\.one/bin/Runner\\.Worker"
+            process_pattern(Path::new("/Users/ci/runners/repo.one"), "Runner.Worker"),
+            "/Users/ci/runners/repo\\.one/bin/Runner\\.Worker"
         );
     }
 

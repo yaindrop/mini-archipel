@@ -2,6 +2,7 @@
 
 本记录是单仓库阶段的历史验收快照；现行四仓库 Runner、标签与共享钩子的规则和证据见
 [CI 机群验收记录](ci-fleet-acceptance-2026-10-17.md)。下文旧路径和摘要仅用于核对当时部署，不是现行安装入口。
+最新安装路径及部署摘要见[Runner 目录迁移验收](runners-path-acceptance-2026-10-17.md)。
 
 本记录对应 README 的实体机 / Tart 类型规则。共同运行环境已经部署并验证；
 **整体验收仍有未关闭项**，见末尾，不以机器专属例外代替。
@@ -60,7 +61,7 @@ runner 前也分别通过了 [39001831355](https://github.com/yaindrop/flowbit/a
 
 ## 共同环境
 
-- 正式仓库：`yaindrop/flowbit`；目录：`~/github-runners/flowbit`；服务：
+- 正式仓库：`yaindrop/flowbit`；目录：`~/runners/flowbit`；服务：
   `actions.runner.yaindrop-flowbit.<runner-name>`。无旧 `flow-bit` 活动服务。
 - runner 的 RunAtLoad / KeepAlive 为 true，重启节流 10 秒，退出等待 30 秒。
   `.runner`、`.credentials*`、`.env`、`.path`、`.service` 权限为 600。

@@ -79,9 +79,7 @@ def safe_target(path, checkout):
 def main():
     if W is None or not W.is_dir():
         return
-    runner = (
-        H / "github-runners" / W.resolve().relative_to(H / "github-runners").parts[0]
-    )
+    runner = H / "runners" / W.resolve().relative_to(H / "runners").parts[0]
     if not (runner / ".runner").is_file():
         raise ValueError("Workspace is not inside a registered runner")
     if run(
@@ -162,7 +160,7 @@ def main():
         # Trim cold targets first; reclaim hot targets only below the 40 GB reserve.
         # One budget across all registered repository workspaces on this node.
         targets = []
-        for install in (H / "github-runners").iterdir():
+        for install in (H / "runners").iterdir():
             if not (install / ".runner").is_file() or install.is_symlink():
                 continue
             for checkout in (install / "_work").glob("*/*"):

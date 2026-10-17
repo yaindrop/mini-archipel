@@ -3,6 +3,15 @@
   gap: 16px;
   margin-top: 18px;
 }
+.runner-node-repositories {
+  display: grid;
+  gap: 24px;
+}
+.runner-repository-heading {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
 .runner-repo-tabs > .ant-tabs-nav .ant-tag {
   margin-inline-end: 0;
 }
@@ -71,11 +80,9 @@
   border-top: 1px solid var(--line);
   font-size: 10px;
 }
-.runner-card-footer > span:first-child {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.runner-card-footer > code {
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 .runner-log {
   font: 10px var(--mono);

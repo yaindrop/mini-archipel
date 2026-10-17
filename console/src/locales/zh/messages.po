@@ -272,12 +272,6 @@ msgstr "{0} · {1} 核 · {2}"
 msgid "{0} {1} 插件"
 msgstr "{0} {1} 插件"
 
-#. placeholder {0}: displayName(host)
-#. placeholder {1}: metric === "cpu" ? "CPU" : t`内存`
-#: src/web/node.tsx
-msgid "{0} {1}走势"
-msgstr "{0} {1}走势"
-
 #. placeholder {0}: plugins.length
 #: src/web/overview.tsx
 msgid "{0} 个 ↗"
@@ -461,6 +455,10 @@ msgstr "CPU 占用偏高"
 msgid "CPU 占用走势"
 msgstr "CPU 占用走势"
 
+#: src/web/node.tsx
+msgid "CPU 走势"
+msgstr "CPU 走势"
+
 #: src/web/plugin-settings.tsx
 msgid "EXTENSIONS"
 msgstr "扩展能力"
@@ -468,10 +466,6 @@ msgstr "扩展能力"
 #: src/web/App.tsx
 msgid "Fleet operations"
 msgstr "节点运维"
-
-#: src/web/overview.tsx
-msgid "FLEET OVERVIEW"
-msgstr "集群概览"
 
 #: src/web/node.tsx
 msgid "GPU 占用"
@@ -601,6 +595,10 @@ msgstr "内存占用走势"
 #: src/web/node.tsx
 msgid "内存已用"
 msgstr "内存已用"
+
+#: src/web/node.tsx
+msgid "内存走势"
+msgstr "内存走势"
 
 #: src/web/App.tsx
 msgid "最后一次"
@@ -814,22 +812,9 @@ msgstr "已停止"
 msgid "已停止接单"
 msgstr "已停止接单"
 
-#. placeholder {0}: rows.length
-#: src/plugins/runners/workbench.tsx
-msgid "已发现 {0} 个 Runner"
-msgstr "已发现 {0} 个 Runner"
-
-#: src/plugins/runners/workbench.tsx
-msgid "已发现 runner"
-msgstr "已发现 runner"
-
 #: src/plugins/runners/workbench.tsx
 msgid "已启动本地监听进程"
 msgstr "已启动本地监听进程"
-
-#: src/web/plugin-settings.tsx
-msgid "已启用"
-msgstr "已启用"
 
 #: src/web/overview.tsx
 msgid "已启用插件"
@@ -843,6 +828,15 @@ msgstr "已接入"
 #: src/web/node.tsx
 msgid "已暂停"
 msgstr "已暂停"
+
+#. placeholder {0}: rows.length
+#: src/plugins/runners/workbench.tsx
+msgid "已注册 {0} 个 Runner"
+msgstr "已注册 {0} 个 Runner"
+
+#: src/plugins/runners/workbench.tsx
+msgid "已注册runner"
+msgstr "已注册runner"
 
 #. placeholder {0}: formatBytes(memoryUsed)
 #. placeholder {1}: formatBytes(memoryTotal)
@@ -1057,10 +1051,6 @@ msgstr "未上报"
 #: src/plugins/runners/workbench.tsx
 msgid "未取得远端状态"
 msgstr "未取得远端状态"
-
-#: src/web/node.tsx
-msgid "未收到传感器数据"
-msgstr "未收到传感器数据"
 
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
@@ -1370,10 +1360,6 @@ msgstr "系统根目录"
 msgid "系统自动"
 msgstr "系统自动"
 
-#: src/web/node.tsx
-msgid "系统资源采集仍正常工作。"
-msgstr "系统资源采集仍正常工作。"
-
 #: src/web/chart.tsx
 msgid "纵轴 0–100%"
 msgstr "纵轴 0–100%"
@@ -1423,13 +1409,10 @@ msgstr "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，�
 msgid "节点 Runners"
 msgstr "节点 Runners"
 
+#: src/web/App.tsx
 #: src/web/node.tsx
 msgid "节点不存在"
 msgstr "节点不存在"
-
-#: src/web/node.tsx
-msgid "节点位置"
-msgstr "节点位置"
 
 #: src/web/node.tsx
 msgid "节点信息"
@@ -1480,18 +1463,10 @@ msgstr "节点概览"
 msgid "节点离线"
 msgstr "节点离线"
 
-#: src/web/App.tsx
-msgid "节点详情"
-msgstr "节点详情"
-
 #. js-lingui-explicit-id
 #: src/messages.ts
 msgid "节点请求失败（HTTP {status}）"
 msgstr "节点请求失败（HTTP {status}）"
-
-#: src/web/node.tsx
-msgid "节点资源指标"
-msgstr "节点资源指标"
 
 #: src/web/node.tsx
 msgid "节点超过 10 秒未更新。下方保留最后一次采集结果，运维操作暂不可用。"
@@ -1568,7 +1543,6 @@ msgstr "资料库"
 msgid "资源指标"
 msgstr "资源指标"
 
-#: src/web/node.tsx
 #: src/web/overview.tsx
 msgid "资源走势"
 msgstr "资源走势"
@@ -1680,10 +1654,6 @@ msgstr "重新扫描"
 #: src/web/App.tsx
 msgid "重试连接"
 msgstr "重试连接"
-
-#: src/web/node.tsx
-msgid "集群"
-msgstr "集群"
 
 #: src/web/overview.tsx
 msgid "集群内存负载"

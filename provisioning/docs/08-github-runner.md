@@ -4,8 +4,8 @@
 
 1. 从 GitHub 官方 actions/runner 发布包安装 macOS ARM64 版，核对发布摘要；
    不禁用 runner 自动更新。
-2. 安装目录 `~/github-runners/<repo>`（每仓库一个独立目录），工作目录 `_work`；每台每仓库一个正式 runner。后续仓库装在
-   `~/github-runners/<repo2>`，互不干扰。
+2. 安装目录 `~/runners/<repo>`（每仓库一个独立目录），工作目录 `_work`；每台每仓库一个正式 runner。后续仓库装在
+   `~/runners/<repo2>`，互不干扰。
 3. 各机独立注册加入目标仓库 `<owner>/<repo>`——**绝不复制旧机的
    `.runner`、`.credentials` 或私钥**；注册令牌一次性使用。
 4. 用官方 `svc.sh install` 生成服务及 `runsvc.sh`，再核对用户级 LaunchAgent：
@@ -96,40 +96,39 @@ launchctl enable "$domain/$label"
 launchctl bootstrap "$domain" "$HOME/Library/LaunchAgents/$label.plist"
 ```
 
-## 目录迁移（svc.sh 官方流程）
+## 目录迁移（保留注册）
+
+先暂时移除目标节点所有仓库 Runner 的自定义调度标签，等待 GitHub 显示
+`busy: false`，并确认本机没有真实 `Runner.Worker`。备份注册文件、凭据、
+LaunchAgent 和辅助脚本后再停止服务；保留 `.runner`、`.credentials*`、
+`_work` 与日志，不运行 `config.sh` 或重新注册，也不留下旧目录的兼容链接。
+
+每个 Runner 的服务使用官方脚本重建：
 
 ```sh
-cd ~/github-runners/<repo>
-./svc.sh uninstall          # 停服务、移除 LaunchAgent（注册与 _work 保留）
-mkdir -p ~/github-runners && mv <旧目录> ~/github-runners/<repo>
-./svc.sh install            # 从新路径重新生成 LaunchAgent 并启动
+cd <当前安装目录>
+./svc.sh uninstall          # 停服务、移除 LaunchAgent，保留注册
+mkdir -p "$HOME/runners"
+mv <当前安装目录> "$HOME/runners/<repo>"
+cd "$HOME/runners/<repo>"
+./svc.sh install            # 只生成 runsvc.sh、LaunchAgent 和 .service
 ```
 
-迁移后做三件事：
+启动前按本章基线设置 `RunAtLoad`、`KeepAlive`、`ThrottleInterval: 10`、
+`ExitTimeOut: 30`，从 `.service` 读取实际服务名，执行 `launchctl enable`
+和 `bootstrap`。同时更新 `.env` / `.path` 中的绝对路径、共享作业钩子、
+代理切换助手及群岛 Agent。代理助手必须能从新目录识别 Worker，否则可能
+在作业期间错误切换代理。
 
-1. 改引用：`.env` 里的绝对路径，以及一切硬编码 runner 目录的辅助脚本——
-   作业完成钩子（`_work`、`_diag`）、代理切换助手（探测 `Runner.Worker` 是否
-   活跃，路径过期会误判空闲、在作业中途切节点）等。用
-   `grep -rl <旧目录> ~/.local/bin ~/Library/LaunchAgents` 兜底排查。
-2. **清掉烙有旧绝对路径的构建产物**——目录移动不会让工具链自愈这一类：
+工作区内的 `.venv`、Rust `target`、`node_modules` 及 CMake 构建缓存可能
+包含旧绝对路径。仅清理已确认由 Git 忽略且没有受跟踪文件的生成目录；
+不跟随符号链接删除外部内容。保留源码、注册凭据、日志和全局下载缓存，
+下一次主动 CI 按新路径重建生成内容。
 
-   - Python venv：`.venv/bin/*` 的 shebang 指向旧路径，表现为
-     `Failed to spawn: mypy/pyinstaller/...`。删除工作区内所有 `.venv`
-     （`uv sync` 会带新 shebang 重建）。
-   - Rust `target`：`env!("CARGO_MANIFEST_DIR")` 在编译期烙入路径，cargo
-     不因目录移动重编，表现为测试拿死路径找 fixture。删除工作区内全部
-     `target` 目录，强制一次重编译（一次性成本，实测清空后首轮全量重编，
-     之后回归正常）。
-
-   ```sh
-   cd ~/github-runners/<repo>/_work/<repo>/<repo>
-   find packages -maxdepth 6 -name .venv -not -path "*/node_modules/*" -exec rm -rf {} +
-   find . -maxdepth 3 -name target -type d -not -path "*/node_modules/*" -exec rm -rf {} +
-   ```
-
-3. 跑一轮完整 CI 验收：全部检查通过、作业完成钩子在新路径留痕，即迁移
-   完成。异常中断的运行可能在扫描型检查处留下临时探针文件（表现为下一轮
-   布局/治理检查报陌生文件），确认未跟踪后删除即可。
+恢复调度标签前，核对注册 ID 和凭据摘要未变、全部新路径服务启动、GitHub
+在线、插件按仓库发现和启停正确，并验证共享作业钩子与节点锁。失败时恢复
+原目录、原服务及辅助脚本。目录迁移验收不自动触发项目 CI；完整项目质量
+检查仍由人主动添加 `run-ci` 标签，单独记录结果。
 
 SSH 会话可以直接 `launchctl bootstrap gui/$(id -u) <plist>` 拉起。
 
@@ -151,7 +150,7 @@ allow_control = true
 
 Console 在 `plugins.runners` 下设置 `enabled: true`，可选的远端连接使用 `options.repositories` 数组，每项为 `{ "repo": "owner/repo", "token": "<仓库 token>" }`。仓库连接独立管理，不再使用单仓库 `githubRepo` / `githubToken`、顶层 GitHub 配置、全局 Runner 控制环境变量或旧的 Runner 专用接口。具体接口及初始化命令见 [插件系统](../../docs/plugins.md)。
 
-一台节点可安装多个 Repo 的 Runner，每个实例使用独立的 `~/github-runners/<安装目录>` 和注册服务。群岛从 `.runner` 的 `gitHubUrl` 自动识别完整仓库标识，在 **Runners → Repo → 各节点 Runner** 下管理；新增仓库不需要手动添加监控目标。不同 owner 的同名仓库使用不同安装目录。启停同时校验仓库和安装目录，不用 Runner 名称模糊匹配。当前协议为 Runner 插件 v2，Console 0.6.0 / Agent 0.4.0。
+一台节点可安装多个 Repo 的 Runner，每个实例使用独立的 `~/runners/<安装目录>` 和注册服务。群岛从 `.runner` 的 `gitHubUrl` 自动识别完整仓库标识，在 **Runners → Repo → 各节点 Runner** 下管理；新增仓库不需要手动添加监控目标。不同 owner 的同名仓库使用不同安装目录。启停同时校验仓库和安装目录，不用 Runner 名称模糊匹配。当前协议为 Runner 插件 v2，Console 0.6.0 / Agent 0.4.0。
 
 群岛的节点清单将类型和身份分开记录：`hosts[].kind` 只允许 `physical`（物理机）或 `virtual`（虚拟机）；`identity` 记录设备及运行环境。两台 mini 的身份统一为 `M6 Mac Mini`，两台虚拟机统一为 `Tart on M4 Max MacBook`。身份描述不增加类型，也不改变历史数据的节点键；离线时仍保留这两项记录。
 

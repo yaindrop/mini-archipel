@@ -16,7 +16,7 @@ class TargetSafetyTests(unittest.TestCase):
     def test_job_without_lease_cannot_enter_maintenance(self):
         with tempfile.TemporaryDirectory() as temp:
             home = Path(temp).resolve()
-            runner = home / "github-runners/repo"
+            runner = home / "runners/repo"
             workspace = runner / "_work/repo/repo"
             workspace.mkdir(parents=True)
             (runner / ".runner").write_text("{}")

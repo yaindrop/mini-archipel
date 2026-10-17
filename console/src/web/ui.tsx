@@ -35,7 +35,7 @@ export function PageTitle({
   action,
   className = "",
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   action?: ReactNode;
@@ -45,7 +45,7 @@ export function PageTitle({
   return (
     <div className={`page-heading ${className}`}>
       <div>
-        <span className="eyebrow">{eyebrow}</span>
+        {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
         <Typography.Title level={1}>{title}</Typography.Title>
         <Typography.Paragraph type="secondary">
           {description}

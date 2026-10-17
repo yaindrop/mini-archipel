@@ -11,7 +11,7 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from "react";
-import { Link, Route, Routes, useLocation } from "react-router";
+import { Link, Route, Routes, useLocation, useMatch } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
@@ -330,6 +330,10 @@ function Workbench() {
     feed = useFleet(paused),
     fleet = paused && frozen ? withLivePlugins(frozen, feed.data) : feed.data,
     location = useLocation(),
+    nodeRoute = useMatch("/nodes/:name"),
+    activeNode = fleet?.hosts.find(
+      (host) => host.name === nodeRoute?.params.name,
+    ),
     client = useQueryClient();
   useEffect(() => {
     const timer = setInterval(() => {
@@ -372,13 +376,15 @@ function Workbench() {
       icon: plugin.icon,
     })),
   ];
-  const page =
-    navigationItems.find((n) =>
-      n.to === "/"
-        ? location.pathname === "/"
-        : location.pathname.startsWith(n.to),
-    )?.label ??
-    (location.pathname.startsWith("/nodes/") ? t`节点详情` : t`连接诊断`);
+  const page = nodeRoute
+    ? activeNode
+      ? displayName(activeNode)
+      : t`节点不存在`
+    : (navigationItems.find((n) =>
+        n.to === "/"
+          ? location.pathname === "/"
+          : location.pathname.startsWith(n.to),
+      )?.label ?? t`连接诊断`);
   const effectiveNow = paused && fleet ? fleet.ts : now;
   const menuItems = navigationItems.map((item) => ({
     key: item.to,
@@ -561,7 +567,7 @@ function Workbench() {
             <Breadcrumb
               items={[
                 {
-                  title: <span>{t`我的集群`}</span>,
+                  title: <Link to="/">{t`我的集群`}</Link>,
                 },
                 {
                   title: page,
