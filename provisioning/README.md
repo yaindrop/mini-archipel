@@ -1,4 +1,6 @@
-# mini-provisioning
+# 节点配置与 CI 机群
+
+本目录是 [mini-archipel](../README.md) 的节点配置模块，统一维护装机规范、共享 CI 脚本和机群验收记录。
 
 把 Apple Silicon Mac mini 或 Tart macOS 虚拟机配成 **CI 节点**的实战手册。
 日常 SSH 管理、远程管理访问桌面，运行自托管 CI。共同对齐运行环境和运维

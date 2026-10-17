@@ -27,17 +27,17 @@
 钩子安装到 `~/.local/libexec/mini-ci/`，变更后先验证，再同步四节点；脚本更新用原子替换。
 `.env` 变更必须等节点空闲后重启对应监听服务。
 
-验证：
+从 mini-archipel 仓库根目录验证：
 
 ```sh
-python3 -m unittest discover -s scripts/tests -v
-uvx ruff@0.17.0 check --select E,F,I scripts
-uvx ruff@0.17.0 format --check scripts
-shellcheck scripts/*.sh
-clang -Wall -Wextra scripts/tests/hook-worker.c -o /tmp/Runner.Worker
+python3 -m unittest discover -s provisioning/scripts/tests -v
+uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
+uvx ruff@0.17.0 format --check provisioning/scripts
+shellcheck provisioning/scripts/*.sh
+clang -Wall -Wextra provisioning/scripts/tests/hook-worker.c -o /tmp/Runner.Worker
 /tmp/Runner.Worker
 ```
 
 C 探针在真实 `Runner.Worker` 进程祖先下调用两个钩子，但清空工作区变量、
-不执行维护或项目 CI。先确认节点空闲再运行探针。验收必须分别报告注册在线、
+不执行维护或项目 CI。先确认节点空闲再运行探针，不在 Actions 作业内运行探针。验收必须分别报告注册在线、
 钩子探针和真实项目 CI 三种证据；不能用探针替代项目检查通过。

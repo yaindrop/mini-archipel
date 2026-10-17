@@ -105,7 +105,7 @@ Agent 自动扫描 `~/github-runners/<独立安装目录>/.runner`，从注册�
 
 当前机群在四节点各部署 `yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
 `yaindrop/in-frames`、`yaindrop/mini-archipel` 四个仓库的独立 Runner，共 16 个实例。
-它们使用 mini-provisioning 统一的节点作业租约和完成维护钩子；插件负责发现、按 Repo 展示与
+它们使用本仓库 [provisioning](../provisioning/docs/08-github-runner.md) 模块统一的节点作业租约和完成维护钩子；插件负责发现、按 Repo 展示与
 服务控制，不负责触发 CI。各仓库只通过明确的 `run-ci` 请求执行 PR Quality。
 
 旧的单仓库 `githubRepo` / `githubToken` 配置已移除；已有非空配置需迁入 `repositories`。Runner 协议升级为 2，Console 0.6.0 与 Agent 0.4.0 配套部署；不保留旧协议的操作分支。

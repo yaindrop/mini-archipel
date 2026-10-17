@@ -2,15 +2,16 @@
 
 群岛是物理机与虚拟机集群的节点工作台。集中查看资源、活跃进程、存储目录、历史趋势及 GitHub Actions Runner。
 
-| 组件    | 技术                                                      | 部署位置                          |
-| ------- | --------------------------------------------------------- | --------------------------------- |
-| agent   | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
-| console | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
-| VM 连接 | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
+| 组件         | 技术                                                      | 部署位置                          |
+| ------------ | --------------------------------------------------------- | --------------------------------- |
+| agent        | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
+| console      | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
+| provisioning | Python / Bash · 装机规范、CI 机群与共享钩子               | 本仓库维护，部署到四台节点        |
+| VM 连接      | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
-装机规范见 [mini-provisioning](https://github.com/yaindrop/mini-provisioning)，风扇服务见 [mini-fan-control](https://github.com/yaindrop/mini-fan-control)。
+装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，风扇服务见 [mini-fan-control](https://github.com/yaindrop/mini-fan-control)。
 
 ## 工作台
 
@@ -56,6 +57,18 @@ npx playwright install chromium webkit
 npm run test:browser
 ```
 
+节点配置模块的检查从仓库根目录运行：
+
+```sh
+python3 -m unittest discover -s provisioning/scripts/tests -v
+uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
+uvx ruff@0.17.0 format --check provisioning/scripts
+shellcheck provisioning/scripts/*.sh
+clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
+```
+
+主动 `PR Quality` 同时验证这些共享脚本；不会执行节点安装器、运行探针或操作真实 Runner。
+
 `check` 包含 TypeScript 严格类型检查、带类型的 ESLint、React Hooks / Compiler 规则、Biome 无障碍与 CSS 检查、Prettier、Knip、带覆盖率门槛的单元 / 接口测试，以及生产构建。浏览器测试覆盖 Chromium、WebKit 和手机视口，并执行七个主要页面的 axe 无障碍检查。
 
 开发时先准备本地配置（不要提交凭据），开两个终端：
@@ -80,7 +93,7 @@ gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci
 
 四节点各有 `~/github-runners/mini-archipel`，与 Flowbit、Flowbit Knowledge、In Frames
 的独立 Runner 共享每节点一个作业的保护。四仓库共 16 个实例均由 Runner 插件按 Repo
-发现与管理。共享脚本与部署规则见 [mini-provisioning](https://github.com/yaindrop/mini-provisioning/blob/main/docs/08-github-runner.md)。
+发现与管理。共享脚本与部署规则见 [节点配置与 CI 机群](provisioning/docs/08-github-runner.md)。
 
 ## 部署
 

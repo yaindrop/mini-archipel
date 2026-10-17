@@ -32,6 +32,14 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - name: Verify provisioning scripts
+        run: |
+          python3 -m unittest discover -s provisioning/scripts/tests -v
+          uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
+          uvx ruff@0.17.0 format --check provisioning/scripts
+          brew install shellcheck
+          shellcheck provisioning/scripts/*.sh
+          clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
       - name: Set up Node 24.21.0
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

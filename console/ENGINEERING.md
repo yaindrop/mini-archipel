@@ -110,5 +110,9 @@ Vite 保留 React Compiler；Lingui Babel preset 在 Compiler 前执行。Vitest
 PR 活动和定时事件不执行质量检查。每次请求针对不可变 merge commit，更新 PR 后必须重新请求。
 一个 `Quality` 作业串行验证两个 Node 版本与 Agent，避免同节点矩阵争抢资源。
 四节点各有一个本仓库 Runner，与另外三仓库通过同步 job hooks 共享节点租约，
-工具链按仓库选择，维护在作业完成后进行。机群脚本归 mini-provisioning，
+工具链按仓库选择，维护在作业完成后进行。机群脚本归本仓库的 `provisioning/` 模块，
 核心监控不拥有 CI 调度逻辑；新增 Runner 仍由插件自动发现。
+
+节点配置与 CI 机群统一维护在仓库的 [`provisioning/`](../provisioning/README.md)。
+主动 Quality 作业还验证 Python 单元测试、固定版本 Ruff、ShellCheck 和 C 探针的编译语法。
+节点安装器与真实 Worker 探针只在明确的运维验收中运行，CI 不调用它们。

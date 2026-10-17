@@ -55,7 +55,7 @@ Agent 不主动加标签或触发 CI，除非人明确要求验证。等待机�
 
 四仓库的 `.env` 都使用 `~/.local/libexec/mini-ci/job-started.sh` 和
 `job-completed.sh` 作为 [GitHub 同步作业钩子](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/run-scripts)。
-脚本源文件统一维护在本仓库 `scripts/`，不放进 Runner 应用目录。
+脚本源文件统一维护在本仓库 `provisioning/scripts/`，不放进 Runner 应用目录。
 
 开始钩子按真实 `Runner.Worker` 的 PID 与启动时间获取节点租约，最多等待 60 分钟。
 同节点其他仓库的作业等待租约后才进入 checkout、安装和测试；四台机器仍可并行。
@@ -149,7 +149,7 @@ interval_ms = 5000
 allow_control = true
 ```
 
-Console 在 `plugins.runners` 下设置 `enabled: true`，可选的远端连接使用 `options.repositories` 数组，每项为 `{ "repo": "owner/repo", "token": "<仓库 token>" }`。仓库连接独立管理，不再使用单仓库 `githubRepo` / `githubToken`、顶层 GitHub 配置、全局 Runner 控制环境变量或旧的 Runner 专用接口。具体接口及初始化命令见 mini-archipel 的 `docs/plugins.md`。
+Console 在 `plugins.runners` 下设置 `enabled: true`，可选的远端连接使用 `options.repositories` 数组，每项为 `{ "repo": "owner/repo", "token": "<仓库 token>" }`。仓库连接独立管理，不再使用单仓库 `githubRepo` / `githubToken`、顶层 GitHub 配置、全局 Runner 控制环境变量或旧的 Runner 专用接口。具体接口及初始化命令见 [插件系统](../../docs/plugins.md)。
 
 一台节点可安装多个 Repo 的 Runner，每个实例使用独立的 `~/github-runners/<安装目录>` 和注册服务。群岛从 `.runner` 的 `gitHubUrl` 自动识别完整仓库标识，在 **Runners → Repo → 各节点 Runner** 下管理；新增仓库不需要手动添加监控目标。不同 owner 的同名仓库使用不同安装目录。启停同时校验仓库和安装目录，不用 Runner 名称模糊匹配。当前协议为 Runner 插件 v2，Console 0.6.0 / Agent 0.4.0。
 
