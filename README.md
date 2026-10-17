@@ -69,6 +69,19 @@ npm run dev
 
 单独命令：`i18n:extract`、`i18n:check`、`audit`、`typecheck`、`lint`、`lint:ui`、`format:check`、`deadcode`、`test:coverage`、`test:browser`、`build`。CI 在 Node 24 / 26 上执行同样的门禁、依赖审计和浏览器测试。实现边界与版本依据见 [console/ENGINEERING.md](console/ENGINEERING.md)。
 
+`PR Quality` 与 Flowbit 一样，只在明确给本仓库 PR 添加 `run-ci` 标签后运行，
+作业开始后消费标签；再次添加可复跑。push、创建/更新 PR 与定时事件不运行质量检查。
+更新 PR 后需重新请求，结果对应请求时的不可变 merge commit。仅接受本仓库 PR。
+Agent 不主动加标签或调用 CI，除非人明确要求验证。
+
+```sh
+gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci
+```
+
+四节点各有 `~/github-runners/mini-archipel`，与 Flowbit、Flowbit Knowledge、In Frames
+的独立 Runner 共享每节点一个作业的保护。四仓库共 16 个实例均由 Runner 插件按 Repo
+发现与管理。共享脚本与部署规则见 [mini-provisioning](https://github.com/yaindrop/mini-provisioning/blob/main/docs/08-github-runner.md)。
+
 ## 部署
 
 Agent（每台节点）：

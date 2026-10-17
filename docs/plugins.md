@@ -103,6 +103,11 @@ Agent 自动扫描 `~/github-runners/<独立安装目录>/.runner`，从注册�
 
 此列表默认空，不向浏览器返回 token；仓库标识不区分大小写且不能重复。某仓库连接失败不影响其他仓库或本地管理。每个仓库独立分页采集、30 秒刷新，远端数据超过 90 秒失效。读取权限依据 [GitHub 仓库 Runner API](https://docs.github.com/en/rest/actions/self-hosted-runners#list-self-hosted-runners-for-a-repository)。
 
+当前机群在四节点各部署 `yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
+`yaindrop/in-frames`、`yaindrop/mini-archipel` 四个仓库的独立 Runner，共 16 个实例。
+它们使用 mini-provisioning 统一的节点作业租约和完成维护钩子；插件负责发现、按 Repo 展示与
+服务控制，不负责触发 CI。各仓库只通过明确的 `run-ci` 请求执行 PR Quality。
+
 旧的单仓库 `githubRepo` / `githubToken` 配置已移除；已有非空配置需迁入 `repositories`。Runner 协议升级为 2，Console 0.6.0 与 Agent 0.4.0 配套部署；不保留旧协议的操作分支。
 
 Agent `~/.config/mini-archipel/agent.toml`：
@@ -139,7 +144,7 @@ npm ci
 npm run check
 npm run check:agent
 npm run test:browser
-npm audit --audit-level=high
+npm run audit
 ```
 
 验证覆盖空插件目录、第二个测试插件、未知数据透传、坏数据隔离、生命周期互斥、持久化失败回滚、重启恢复、作业保护、暂停状态下的显式变更，以及浅色／深色和手机界面。架构测试禁止核心模块重新出现 Runner 或 GitHub 依赖。真实 Agent HTTP 测试使用临时配置、随机回环端口和禁用的 CI 控制权限。

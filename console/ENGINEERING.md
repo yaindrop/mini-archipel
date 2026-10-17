@@ -34,7 +34,7 @@ Runner 的采集、数据模型、GitHub 集成、控制和工作台扩展已迁
 
 ## 版本与工具链
 
-2026-10-17 对照官方发布说明和 npm registry 选择并锁定依赖：React 19.3.1、React Compiler 1.0、Ant Design 6.6.6、Vite 8.3.4、TypeScript 7.0.2、React Router 8、TanStack Query 5、Fastify 5、Zod 4。Node 支持 24.12+（24.x）与 26.x，CI 覆盖 24 / 26；部署用固定路径的 Node。
+2026-10-17 对照官方发布说明和 npm registry 选择并锁定依赖：React 19.3.1、React Compiler 1.0、Ant Design 6.6.6、Vite 8.3.4、TypeScript 7.0.2、React Router 8、TanStack Query 5、Fastify 5、Zod 4。Node 支持 24.12+（24.x）与 26.x，主动 CI 覆盖 24 / 26；部署用固定路径的 Node。
 
 TypeScript 7 原生编译器通过 `@typescript/native` npm alias 安装，`typecheck` 显式调用其入口。带类型的 ESLint 当前仍需要 TypeScript 6 的 JS API，因此 `typescript@6.0.3` 单独保留给分析工具，不依赖不确定的 `tsc` bin 覆盖顺序。
 
@@ -103,3 +103,12 @@ Vite 保留 React Compiler；Lingui Babel preset 在 Compiler 前执行。Vitest
 四台 Agent 0.4.0 同一 SHA-256，Console 0.6.0；旧服务已卸载，新服务、两条宿主机隧道及两台物理机防火墙规则均使用新路径。真实 Runner.Listener PID 保持 61511 / 83147 / 554 / 554。SQLite 完整性、历史稳定键及部署文件清单按生产验收复核。物理机遗留安装源目录也统一为新名称，重新扫描确认当前目录中无旧名称。真实 CI 作业未作为测试对象启停。
 
 本地验收与 GitHub Actions 是两组结果；推送后云端检查单独报告，不将已配置或已触发的 CI 当作通过。
+
+## 共享 CI 机群
+
+`.github/workflows/pr-quality.yml` 只消费本仓库 PR 的 `run-ci` 标签；普通 push、
+PR 活动和定时事件不执行质量检查。每次请求针对不可变 merge commit，更新 PR 后必须重新请求。
+一个 `Quality` 作业串行验证两个 Node 版本与 Agent，避免同节点矩阵争抢资源。
+四节点各有一个本仓库 Runner，与另外三仓库通过同步 job hooks 共享节点租约，
+工具链按仓库选择，维护在作业完成后进行。机群脚本归 mini-provisioning，
+核心监控不拥有 CI 调度逻辑；新增 Runner 仍由插件自动发现。
