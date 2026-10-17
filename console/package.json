@@ -21,7 +21,7 @@
     "start": "node dist/server.cjs",
     "check": "npm run i18n:check && npm run typecheck && npm run lint && npm run lint:ui && npm run format:check && npm run deadcode && npm run test:coverage && npm run build",
     "lint:ui": "biome lint src/web src/plugins",
-    "test:agent": "node --test scripts/verify-agent.ts",
+    "test:agent": "node --test scripts/verify-agent.ts scripts/verify-operations.ts",
     "check:agent": "cargo fmt --manifest-path ../agent/Cargo.toml --check && cargo clippy --manifest-path ../agent/Cargo.toml --all-targets --locked -- -D warnings && cargo test --manifest-path ../agent/Cargo.toml --locked && cargo build --manifest-path ../agent/Cargo.toml --release --locked && npm run test:agent",
     "i18n:extract": "lingui extract --clean --workers 1",
     "i18n:check": "lingui check sync --workers 1 && lingui check missing --mode catalog --workers 1",
@@ -79,7 +79,8 @@
   },
   "knip": {
     "entry": [
-      "lingui.config.ts"
+      "lingui.config.ts",
+      "scripts/verify-*.ts"
     ]
   },
   "allowScripts": {

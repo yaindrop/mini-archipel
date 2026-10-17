@@ -113,6 +113,11 @@ export const api = {
         host,
       }),
     }),
+  cancelScan: (host: string, id: number) =>
+    request("/api/disk/cancel", OkSchema, {
+      method: "POST",
+      body: JSON.stringify({ host, id }),
+    }),
 };
 export function message(error: unknown, translate?: Translate): string {
   return error instanceof Error

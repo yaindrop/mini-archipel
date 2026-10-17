@@ -39,6 +39,15 @@ export function makeSnapshot(index = 0): Snapshot {
     virtual = index >= 2;
   return {
     agent: { version: "0.1.0", started_at: now - 3600_000, ts: now },
+    disk_scan: {
+      id: 1,
+      status: "completed",
+      requested_at: now - 2500,
+      started_at: now - 2300,
+      finished_at: now,
+      current_root: null,
+      error: null,
+    },
     host: {
       name: config.hosts[index]?.name ?? "yd-mini",
       model: virtual ? "VirtualMac2,1" : "Mac18,5",

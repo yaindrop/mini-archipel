@@ -46,6 +46,16 @@ msgstr "节点离线，扫描未执行"
 
 #. js-lingui-explicit-id
 #: src/app.ts
+msgid "缺少有效的节点或扫描任务"
+msgstr "缺少有效的节点或扫描任务"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，无法取消扫描"
+msgstr "节点离线，无法取消扫描"
+
+#. js-lingui-explicit-id
+#: src/app.ts
 msgid "服务暂时无法完成请求"
 msgstr "服务暂时无法完成请求"
 
@@ -324,6 +334,11 @@ msgstr "{0} 已启动接单"
 msgid "{0} 核 · 按在线节点核心数加权"
 msgstr "{0} 核 · 按在线节点核心数加权"
 
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 的作业已在本地中断"
+msgstr "{0} 的作业已在本地中断"
+
 #. placeholder {0}: displayName(h)
 #: src/web/overview.tsx
 msgid "{0} 磁盘已用比例"
@@ -495,9 +510,17 @@ msgstr "Swap 已用"
 msgid "WELCOME BACK"
 msgstr "欢迎回来"
 
+#: src/web/storage.tsx
+msgid "上次扫描因节点重启而中断，保留上次结果。"
+msgstr "上次扫描因节点重启而中断，保留上次结果。"
+
 #: src/web/node.tsx
 msgid "严重"
 msgstr "严重"
+
+#: src/plugins/runners/workbench.tsx
+msgid "中断作业"
+msgstr "中断作业"
 
 #: src/web/App.tsx
 msgid "主导航"
@@ -646,6 +669,14 @@ msgstr "历史趋势"
 msgid "取消"
 msgstr "取消"
 
+#: src/web/storage.tsx
+msgid "取消中…"
+msgstr "取消中…"
+
+#: src/web/storage.tsx
+msgid "取消扫描"
+msgstr "取消扫描"
+
 #: src/plugins/runners/workbench.tsx
 msgid "可在下方确认后恢复接单"
 msgstr "可在下方确认后恢复接单"
@@ -749,6 +780,10 @@ msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新�
 msgstr "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
 
 #: src/web/App.tsx
+msgid "实时监测控制"
+msgstr "实时监测控制"
+
+#: src/web/App.tsx
 msgid "实时资源"
 msgstr "实时资源"
 
@@ -759,6 +794,10 @@ msgstr "实时采集已连接"
 #: src/web/history.tsx
 msgid "导出 CSV"
 msgstr "导出 CSV"
+
+#: src/plugins/runners/workbench.tsx
+msgid "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
+msgstr "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
 
 #: src/web/storage.tsx
 msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
@@ -913,12 +952,20 @@ msgid "扫描中…"
 msgstr "扫描中…"
 
 #: src/web/storage.tsx
-msgid "扫描范围"
-msgstr "扫描范围"
+msgid "扫描失败，保留上次结果。"
+msgstr "扫描失败，保留上次结果。"
 
 #: src/web/storage.tsx
-msgid "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
-msgstr "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
+msgid "扫描已取消，保留上次结果。"
+msgstr "扫描已取消，保留上次结果。"
+
+#: src/web/storage.tsx
+msgid "扫描已排队"
+msgstr "扫描已排队"
+
+#: src/web/storage.tsx
+msgid "扫描范围"
+msgstr "扫描范围"
 
 #: src/web/history.tsx
 msgid "指标"
@@ -1035,10 +1082,6 @@ msgstr "暂无可用的采样数据"
 msgid "暂无诊断日志"
 msgstr "暂无诊断日志"
 
-#: src/web/storage.tsx
-msgid "暂未收到新的扫描结果，节点繁忙时可能延后。"
-msgstr "暂未收到新的扫描结果，节点繁忙时可能延后。"
-
 #: src/web/App.tsx
 #: src/web/history.tsx
 msgid "更新已暂停"
@@ -1125,6 +1168,14 @@ msgstr "检查节点采集通道与插件接入状态。"
 #: src/web/App.tsx
 msgid "正在加载工作区"
 msgstr "正在加载工作区"
+
+#: src/web/storage.tsx
+msgid "正在取消扫描"
+msgstr "正在取消扫描"
+
+#: src/web/storage.tsx
+msgid "正在后台扫描，保留上次结果"
+msgstr "正在后台扫描，保留上次结果"
 
 #: src/web/App.tsx
 msgid "正在恢复连接"
@@ -1274,16 +1325,16 @@ msgid "目录扫描"
 msgstr "目录扫描"
 
 #: src/web/storage.tsx
-msgid "目录扫描已更新。"
-msgstr "目录扫描已更新。"
-
-#: src/web/storage.tsx
 msgid "目录空间分析"
 msgstr "目录空间分析"
 
 #: src/web/storage.tsx
 msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
 msgstr "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认中断"
+msgstr "确认中断"
 
 #: src/plugins/runners/workbench.tsx
 msgid "确认停止"

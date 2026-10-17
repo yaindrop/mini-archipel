@@ -64,9 +64,7 @@ fn default_disk_interval() -> u64 {
     21_600_000
 }
 fn default_disk_roots() -> Vec<String> {
-    // One tree from home: first-level breakdown, with known-worthwhile
-    // larger workspace subtrees classified deeper by the scanner.
-    vec![std::env::var("HOME").unwrap_or_else(|_| "/Users/unknown".to_string())]
+    vec!["~".into(), "/".into()]
 }
 
 pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
@@ -74,6 +72,9 @@ pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
     let mut config: Config = toml::from_str(&raw)?;
     let home = std::env::var("HOME").unwrap_or_default();
     for root in &mut config.collectors.disk_roots {
+        if root == "~" {
+            *root = home.clone();
+        }
         if let Some(rest) = root.strip_prefix("~/") {
             if !home.is_empty() {
                 *root = format!("{home}/{rest}");

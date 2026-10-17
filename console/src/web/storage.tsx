@@ -3,7 +3,8 @@ import { msg } from "@lingui/core/macro";
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { useState } from "react";
 import { useSearchParams, Link } from "react-router";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { refreshFleet } from "./useFleet.ts";
 import {
   Alert,
   Button,
@@ -133,16 +134,7 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
       (a, b) =>
         Number(a.root === "/") - Number(b.root === "/") ||
         a.root.localeCompare(b.root),
-    ),
-    [requested, setRequested] = useState<
-      Record<
-        string,
-        {
-          stamp: number;
-          at: number;
-        }
-      >
-    >({});
+    );
   const scan = scans.find((s) => s.root === search.get("root")) ?? scans[0];
   const update = (root: string) => {
     const next = new URLSearchParams(search);
@@ -152,24 +144,14 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
       replace: true,
     });
   };
-  const stamp = Math.max(0, ...scans.map((s) => s.ts)),
-    requestState = requested[host.name],
-    waiting = Boolean(
-      requestState &&
-      stamp <= requestState.stamp &&
-      now - requestState.at < 180_000,
-    );
+  const client = useQueryClient();
+  const job = host.snapshot?.disk_scan;
+  const waiting =
+    job && ["queued", "running", "cancelling"].includes(job.status);
   const mutation = useMutation({
-    mutationFn: () => api.rescan(host.name),
-    onSuccess: () => {
-      setRequested((old) => ({
-        ...old,
-        [host.name]: {
-          stamp,
-          at: Date.now(),
-        },
-      }));
-    },
+    mutationFn: (cancel: boolean) =>
+      cancel && job ? api.cancelScan(host.name, job.id) : api.rescan(host.name),
+    onSuccess: () => refreshFleet(client),
   });
   const classes = scan ? storageClasses(scan) : new Map<string, number>(),
     total = scan?.bytes ?? 0;
@@ -239,16 +221,34 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
       title={t`目录空间分析`}
       subtitle={t`按目录与用途定位空间占用，扫描完成后自动更新。`}
       action={
-        <Button
-          icon={<RefreshCw size={15} />}
-          loading={waiting || mutation.isPending}
-          disabled={stale(host, now)}
-          onClick={() => {
-            mutation.mutate();
-          }}
-        >
-          {waiting ? t`扫描中…` : mutation.isPending ? t`提交中…` : t`重新扫描`}
-        </Button>
+        <Space>
+          {waiting ? (
+            <Button
+              danger
+              disabled={stale(host, now) || job.status === "cancelling"}
+              loading={mutation.isPending && mutation.variables}
+              onClick={() => {
+                mutation.mutate(true);
+              }}
+            >
+              {job.status === "cancelling" ? t`取消中…` : t`取消扫描`}
+            </Button>
+          ) : null}
+          <Button
+            icon={<RefreshCw size={15} />}
+            loading={mutation.isPending && !mutation.variables}
+            disabled={stale(host, now) || Boolean(waiting)}
+            onClick={() => {
+              mutation.mutate(false);
+            }}
+          >
+            {waiting
+              ? t`扫描中…`
+              : mutation.isPending
+                ? t`提交中…`
+                : t`重新扫描`}
+          </Button>
+        </Space>
       }
     >
       {mutation.isError ? (
@@ -260,21 +260,41 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
         />
       ) : waiting ? (
         <Alert
-          type="success"
+          type="info"
           showIcon
-          title={t`扫描请求已提交。节点完成扫描后会自动更新目录统计。`}
+          role="status"
+          title={
+            job.status === "queued"
+              ? t`扫描已排队`
+              : job.status === "cancelling"
+                ? t`正在取消扫描`
+                : t`正在后台扫描，保留上次结果`
+          }
+          description={
+            job.current_root ? <code>{job.current_root}</code> : undefined
+          }
+        />
+      ) : job?.status === "cancelled" ? (
+        <Alert
+          type="info"
+          showIcon
+          title={t`扫描已取消，保留上次结果。`}
           role="status"
         />
-      ) : requestState ? (
+      ) : job?.status === "interrupted" ? (
         <Alert
-          type={stamp > requestState.stamp ? "success" : "warning"}
+          type="warning"
           showIcon
-          title={
-            stamp > requestState.stamp
-              ? t`目录扫描已更新。`
-              : t`暂未收到新的扫描结果，节点繁忙时可能延后。`
-          }
+          title={t`上次扫描因节点重启而中断，保留上次结果。`}
           role="status"
+        />
+      ) : job?.status === "failed" ? (
+        <Alert
+          type="error"
+          showIcon
+          title={t`扫描失败，保留上次结果。`}
+          description={job.error}
+          role="alert"
         />
       ) : null}
       {!scan ? (

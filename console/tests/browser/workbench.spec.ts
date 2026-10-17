@@ -251,6 +251,15 @@ test("runner stop confirmation, cancellation, busy protection and restart", asyn
     .locator(".runner-card")
     .filter({ hasText: "flowbit-yd-mbp-tart-2" });
   await expect(busy.getByRole("button", { name: "停止接单" })).toBeDisabled();
+  await busy.getByRole("button", { name: "中断作业" }).click();
+  await expect(page.getByRole("dialog", { name: "中断作业" })).toBeVisible();
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(busy.getByRole("button", { name: "中断作业" })).toBeVisible();
+  await busy.getByRole("button", { name: "中断作业" }).click();
+  await page.getByRole("button", { name: "确认中断" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(busy.getByRole("button", { name: "中断作业" })).toHaveCount(0);
+  await expect(busy.getByRole("button", { name: "停止接单" })).toBeEnabled();
   const runner = page
     .locator(".runner-card")
     .filter({ hasText: "flowbit-yd-mini" })
@@ -354,9 +363,19 @@ test("storage drill-down, scan acknowledgement and history export", async ({
   );
   expect(Math.max(...alignment)).toBeLessThan(1);
   await page.getByRole("button", { name: "重新扫描", exact: true }).click();
+  await expect(page.getByText("正在后台扫描，保留上次结果")).toBeVisible();
+  await expect(table.getByText("Applications", { exact: true })).toBeVisible();
+  await page.reload();
   await expect(
-    page.getByText("扫描请求已提交。节点完成扫描后会自动更新目录统计。"),
+    page.getByRole("button", { name: "取消扫描", exact: true }),
   ).toBeVisible();
+  await expect(table.getByText("Applications", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "取消扫描", exact: true }).click();
+  await expect(page.getByText("扫描已取消，保留上次结果。")).toBeVisible();
+  await expect(table.getByText("Applications", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "重新扫描", exact: true }),
+  ).toBeEnabled();
   await page.goto("/history");
   await page.getByLabel("历史指标").click();
   await page.getByRole("option", { name: "CPU 占用", exact: true }).click();
@@ -408,6 +427,17 @@ test("pause, resume, dark theme and keyboard focus", async ({
   isMobile,
 }) => {
   await page.goto("/");
+  await expect(page.locator(".topbar-actions button")).toHaveCount(3);
+  await expect(page.locator(".topbar .ant-avatar")).toHaveCount(0);
+  if (!isMobile) {
+    const header = await page.locator(".topbar").boundingBox();
+    const live = await page.locator(".topbar-live").boundingBox();
+    expect(
+      header &&
+        live &&
+        Math.abs(live.x + live.width / 2 - header.x - header.width / 2),
+    ).toBeLessThan(1);
+  }
   await expect(
     page.getByRole("heading", { name: "集群概览", exact: true }),
   ).toBeVisible();

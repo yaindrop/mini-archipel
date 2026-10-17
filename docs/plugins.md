@@ -72,6 +72,13 @@ Console 的 `fleet.plugins` 返回已注册插件的公开元数据、启用状�
 
 Runner 使用 `actions/toggle`，控制台请求为 `{ "host": "节点ID", "repo": "owner/repo", "runner": "安装目录名", "enable": false }`；转发到节点时不包含 host。Repo 和安装目录必须同时匹配当前注册记录，不能用 Runner 名称跨仓库查找。Agent 在实际操作前重新检查注册仓库和该安装目录的 Worker。
 
+`actions/interrupt` 接收 `{ "host": "节点ID", "repo": "owner/repo", "runner": "安装目录名", "worker_pid": 123 }`。
+它在节点本地重新核对注册仓库、Worker 的完整可执行路径、用户和预期 PID，作业已变化时返回 409。
+确认后向该 Worker 和同用户的已识别子进程先发送 SIGTERM，等待后对仍存在的相同进程发送 SIGKILL；
+进程身份包含启动时间，避免误用已回收 PID。Listener、其他仓库和无关进程不在中断范围。
+此操作不调用 GitHub 取消接口，不停止接单服务，不能撤销；需要与启停相同的控制权限。
+暂停资源读数后，插件状态与扫描任务状态仍更新。
+
 旧的 `/api/runner/toggle`、`/runner-service` 和顶层 `snapshot.runners` 已移除。不存在旧接口转发或双写实现。
 
 ## 配置

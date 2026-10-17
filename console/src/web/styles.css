@@ -257,12 +257,33 @@ code {
   z-index: 8;
   height: 64px;
   padding: 0 30px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
   gap: 12px;
   line-height: 1.5;
+}
+.topbar-live {
+  margin: 0;
+  min-inline-size: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 5px 3px 13px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--subtle);
+  white-space: nowrap;
+}
+.topbar-actions {
+  justify-self: end;
+}
+.topbar > .ant-space:first-child {
+  min-width: 0;
+  overflow: hidden;
 }
 .topbar .ant-badge-status-text {
   color: var(--muted);

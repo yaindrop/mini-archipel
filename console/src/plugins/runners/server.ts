@@ -7,6 +7,7 @@ import {
   GitHubRunnerSchema,
   OptionsSchema,
   ToggleSchema,
+  InterruptSchema,
   type RepositoryState,
 } from "./contracts.ts";
 import { agentData, current, runnerState, runnersFor } from "./domain.ts";
@@ -107,17 +108,19 @@ export const runnersPlugin: PluginDefinition = {
         });
       },
       async action(action, body) {
-        if (action !== "toggle")
+        if (action !== "toggle" && action !== "interrupt")
           throw new UpstreamError(404, /*i18n*/ "插件操作不存在");
-        const input = ToggleSchema.extend({
-          host: z.string(),
-        }).safeParse(body);
+        const input = (
+          action === "interrupt"
+            ? InterruptSchema.extend({ host: z.string() })
+            : ToggleSchema.extend({ host: z.string() })
+        ).safeParse(body);
         if (!input.success)
           throw new UpstreamError(
             400,
             /*i18n*/ "缺少有效的节点、仓库、安装目录或操作",
           );
-        const { host: name, repo, runner: directory, enable } = input.data;
+        const { host: name, repo, runner: directory } = input.data;
         await context.pollHost(name);
         const host = context.hosts().find((h) => h.name === name);
         if (!host) throw new UpstreamError(404, /*i18n*/ "节点不存在");
@@ -138,7 +141,10 @@ export const runnersPlugin: PluginDefinition = {
         const freshRemote = read().repositories.flatMap(
           (state) => state.remote,
         );
-        if (runnerState(host, runner, freshRemote) === "busy")
+        if (
+          action === "toggle" &&
+          runnerState(host, runner, freshRemote) === "busy"
+        )
           throw new UpstreamError(
             409,
             /*i18n*/ "runner 正在执行作业，请等待作业结束",
@@ -146,11 +152,17 @@ export const runnersPlugin: PluginDefinition = {
         if (!readEnvelope(host, "runners")?.enabled)
           throw new UpstreamError(409, /*i18n*/ "节点插件未启用");
         OkSchema.parse(
-          await context.command(name, "plugins/runners/actions/toggle", {
-            repo,
-            runner: directory,
-            enable,
-          }),
+          await context.command(
+            name,
+            `plugins/runners/actions/${action}`,
+            action === "interrupt" && "worker_pid" in input.data
+              ? { repo, runner: directory, worker_pid: input.data.worker_pid }
+              : {
+                  repo,
+                  runner: directory,
+                  enable: "enable" in input.data ? input.data.enable : false,
+                },
+          ),
         );
         await context.pollHost(name);
         return {

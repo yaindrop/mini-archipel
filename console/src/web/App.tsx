@@ -577,7 +577,7 @@ function Workbench() {
               aria-label={t`工作区位置`}
             />
           </Space>
-          <Space size={4}>
+          <fieldset className="topbar-live" aria-label={t`实时监测控制`}>
             <Badge
               status={
                 paused
@@ -612,6 +612,8 @@ function Workbench() {
                 }}
               />
             </Tooltip>
+          </fieldset>
+          <Space size={4} className="topbar-actions">
             <Preferences />
             <Tooltip title={t`退出工作台`}>
               <Button
@@ -624,9 +626,6 @@ function Workbench() {
                 }}
               />
             </Tooltip>
-            <Avatar shape="square" size={28} className="user-avatar">
-              M
-            </Avatar>
           </Space>
         </Layout.Header>
         <Layout.Content

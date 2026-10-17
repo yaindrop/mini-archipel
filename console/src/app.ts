@@ -262,9 +262,30 @@ export function createApp(
         error: /*i18n*/ "节点离线，扫描未执行",
       });
     OkSchema.parse(await monitor.command(host.name, "rescan-disk", {}));
+    await monitor.pollHost(host.name);
     return {
       ok: true,
     };
+  });
+  app.post("/api/disk/cancel", async (request, reply) => {
+    const input = z
+      .object({ host: z.string(), id: z.number().int().positive() })
+      .safeParse(request.body);
+    if (!input.success)
+      return reply
+        .code(400)
+        .send({ error: /*i18n*/ "缺少有效的节点或扫描任务" });
+    const host = monitor.state().hosts.find((h) => h.name === input.data.host);
+    if (!host) return reply.code(404).send({ error: /*i18n*/ "节点不存在" });
+    if (stale(host, Date.now()))
+      return reply.code(409).send({ error: /*i18n*/ "节点离线，无法取消扫描" });
+    OkSchema.parse(
+      await monitor.command(host.name, "cancel-disk-scan", {
+        id: input.data.id,
+      }),
+    );
+    await monitor.pollHost(host.name);
+    return { ok: true };
   });
   app.setErrorHandler((error, _request, reply) => {
     const status = error instanceof UpstreamError ? error.status : 500;

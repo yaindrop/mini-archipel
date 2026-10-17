@@ -21,6 +21,9 @@ pub struct SharedState {
     pub thermal: Option<thermal::ThermalInfo>,
     pub fan: Option<serde_json::Value>,
     pub disk_scans: std::collections::HashMap<String, disk::TreeScan>,
+    pub disk_scan: disk::ScanJob,
+    pub disk_cancel: Arc<std::sync::atomic::AtomicBool>,
+    pub disk_stopping: bool,
     pub disk_rescan_flag: std::sync::atomic::AtomicBool,
     pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
     pub started_at: u64,
@@ -48,6 +51,7 @@ impl SharedState {
             thermal: self.thermal.clone(),
             fan: self.fan.clone(),
             disk_scans: self.disk_scans.values().cloned().collect(),
+            disk_scan: self.disk_scan.clone(),
             plugins: self.plugins.clone(),
         }
     }
@@ -69,6 +73,7 @@ pub struct Snapshot {
     pub thermal: Option<thermal::ThermalInfo>,
     pub fan: Option<serde_json::Value>,
     pub disk_scans: Vec<disk::TreeScan>,
+    pub disk_scan: disk::ScanJob,
     pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
 }
 

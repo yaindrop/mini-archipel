@@ -19,7 +19,14 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { Check, CirclePause, GitBranch, Play, Terminal } from "lucide-react";
+import {
+  Check,
+  CirclePause,
+  GitBranch,
+  Play,
+  Square,
+  Terminal,
+} from "lucide-react";
 import type { Fleet, Host } from "../../contracts.ts";
 import type { Runner, GitHubRunner, RepositoryState } from "./contracts.ts";
 import {
@@ -57,6 +64,7 @@ export function RunnerList({
       host: Host;
       runner: Runner;
       enable: boolean;
+      interrupt?: boolean;
     } | null>(null),
     client = useQueryClient(),
     { message: feedback } = App.useApp();
@@ -65,23 +73,34 @@ export function RunnerList({
       host,
       runner,
       enable,
+      interrupt,
     }: {
       host: Host;
       runner: Runner;
       enable: boolean;
+      interrupt?: boolean;
     }) =>
-      api.pluginAction("runners", "toggle", {
-        host: host.name,
-        repo: runner.repo,
-        runner: runner.repo_dir,
-        enable,
-      }),
+      interrupt
+        ? api.pluginAction("runners", "interrupt", {
+            host: host.name,
+            repo: runner.repo,
+            runner: runner.repo_dir,
+            worker_pid: runner.worker_pid,
+          })
+        : api.pluginAction("runners", "toggle", {
+            host: host.name,
+            repo: runner.repo,
+            runner: runner.repo_dir,
+            enable,
+          }),
     onSuccess: async (_data, variables) => {
       await refreshFleet(client);
       void feedback.success(
-        variables.enable
-          ? t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已启动接单`
-          : t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已停止接单`,
+        variables.interrupt
+          ? t`${variables.runner.agent_name ?? variables.runner.repo_dir} 的作业已在本地中断`
+          : variables.enable
+            ? t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已启动接单`
+            : t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已停止接单`,
       );
       setConfirm(null);
     },
@@ -182,6 +201,27 @@ export function RunnerList({
                           now={now}
                           remote={remoteRunners}
                         />
+                        {runner.worker_pid !== null ? (
+                          <Button
+                            danger
+                            icon={<Square size={14} />}
+                            disabled={
+                              !runner.repo ||
+                              !current(host, now) ||
+                              !agentData(host)?.control_allowed ||
+                              mutation.isPending
+                            }
+                            onClick={() => {
+                              mutation.reset();
+                              setConfirm({
+                                host,
+                                runner,
+                                enable: false,
+                                interrupt: true,
+                              });
+                            }}
+                          >{t`中断作业`}</Button>
+                        ) : null}
                         <Tooltip
                           title={
                             !runner.repo
@@ -325,7 +365,13 @@ export function RunnerList({
         />
       )}
       <Modal
-        title={confirm?.enable ? t`启动接单` : t`停止接单`}
+        title={
+          confirm?.interrupt
+            ? t`中断作业`
+            : confirm?.enable
+              ? t`启动接单`
+              : t`停止接单`
+        }
         open={confirm !== null}
         centered
         transitionName=""
@@ -338,7 +384,13 @@ export function RunnerList({
         }}
         closable={!mutation.isPending}
         cancelText={t`取消`}
-        okText={confirm?.enable ? t`确认启动` : t`确认停止`}
+        okText={
+          confirm?.interrupt
+            ? t`确认中断`
+            : confirm?.enable
+              ? t`确认启动`
+              : t`确认停止`
+        }
         okButtonProps={{
           danger: !confirm?.enable,
         }}
@@ -355,9 +407,11 @@ export function RunnerList({
         {confirm ? (
           <>
             <Typography.Paragraph>
-              {confirm.enable
-                ? t`启动后，该 runner 会连接 GitHub 并接受新的作业。`
-                : t`停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。`}
+              {confirm.interrupt
+                ? t`将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。`
+                : confirm.enable
+                  ? t`启动后，该 runner 会连接 GitHub 并接受新的作业。`
+                  : t`停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。`}
             </Typography.Paragraph>
             <div className="confirm-target">
               <Terminal size={20} />

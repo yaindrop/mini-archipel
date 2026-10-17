@@ -24,7 +24,9 @@ store.insertSamples(
 store.close();
 const offline = new Set<string>(),
   stopped = new Set<string>(),
+  interrupted = new Set<string>(),
   disabledPlugins = new Set<string>();
+const scans = new Map<string, ReturnType<typeof makeSnapshot>["disk_scan"]>();
 let multiRepo = false;
 const transport: Transport = (url, _token, body) => {
   const index = config.hosts.findIndex((h) => url.startsWith(h.url)),
@@ -32,7 +34,30 @@ const transport: Transport = (url, _token, body) => {
   if (offline.has(name))
     return Promise.reject(new UpstreamError(502, "模拟节点离线"));
   const snapshot = makeSnapshot(index);
+  snapshot.disk_scan = scans.get(name) ?? snapshot.disk_scan;
   snapshot.disk_scans.reverse(); // Transport order must not determine the root selector order.
+  if (url.endsWith("/rescan-disk")) {
+    const now = Date.now();
+    scans.set(name, {
+      id: now,
+      status: "running",
+      requested_at: now,
+      started_at: now,
+      finished_at: null,
+      current_root: "/",
+      error: null,
+    });
+  }
+  if (url.endsWith("/cancel-disk-scan")) {
+    const job = scans.get(name);
+    if (job)
+      scans.set(name, {
+        ...job,
+        status: "cancelled",
+        finished_at: Date.now(),
+        current_root: null,
+      });
+  }
   if (url.endsWith("/snapshot")) {
     const runners = fixtureRunnerData(snapshot).runners;
     if (multiRepo && index === 0 && runners[0])
@@ -42,8 +67,11 @@ const transport: Transport = (url, _token, body) => {
         repo_dir: "acme-flowbit",
         listener_pid: 1100,
       });
-    for (const runner of runners)
+    for (const runner of runners) {
       if (stopped.has(`${name}:${runner.repo_dir}`)) runner.listener_pid = null;
+      if (interrupted.has(`${name}:${runner.repo_dir}`))
+        runner.worker_pid = null;
+    }
     if (disabledPlugins.has(name))
       snapshot.plugins.runners = {
         version: 2,
@@ -55,6 +83,14 @@ const transport: Transport = (url, _token, body) => {
       };
     return Promise.resolve(snapshot);
   }
+  if (
+    url.endsWith("/plugins/runners/actions/interrupt") &&
+    typeof body === "object" &&
+    body !== null &&
+    "runner" in body &&
+    typeof body.runner === "string"
+  )
+    interrupted.add(`${name}:${body.runner}`);
   if (
     url.endsWith("/plugins/runners/actions/toggle") &&
     typeof body === "object" &&
@@ -92,8 +128,10 @@ app.post<{ Params: { name: string }; Body: { offline: boolean } }>(
 );
 app.post("/__test/reset", async () => {
   multiRepo = false;
+  scans.clear();
   offline.clear();
   stopped.clear();
+  interrupted.clear();
   disabledPlugins.clear();
   await plugins.setEnabled("runners", true);
   await monitor.poll();

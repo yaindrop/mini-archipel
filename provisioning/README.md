@@ -70,6 +70,7 @@ push、普通 PR 活动与定时事件均不运行质量检查。每节点跨仓
 [CI 机群验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
 最新安装路径、Agent 与共享钩子的部署核对见
 [Runner 目录迁移验收](docs/runners-path-acceptance-2026-10-17.md)。
+[后台扫描与本地中断验收](docs/operations-acceptance-2026-10-18.md)。
 在线状态是验收快照，日常以 GitHub 和群岛 Runner 插件为准。
 逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。
 

@@ -10,6 +10,9 @@ import { BrowserRouter } from "react-router";
 import { App, ErrorBoundary } from "../src/web/App.tsx";
 import { api } from "../src/web/api.ts";
 import { csvCell } from "../src/web/history.tsx";
+import { withLivePlugins } from "../src/web/useFleet.ts";
+import { current } from "../src/plugins/runners/domain.ts";
+import { makeHost } from "./fixtures.ts";
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
@@ -29,6 +32,33 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("workbench recovery", () => {
+  it("keeps connection health and operations current through a long resource pause", () => {
+    const frozenHost = makeHost(),
+      liveHost = makeHost();
+    frozenHost.lastTs -= 60_000;
+    if (!frozenHost.snapshot?.sys || !liveHost.snapshot?.sys)
+      throw Error("fixture");
+    frozenHost.snapshot.sys.cpu.usage_pct = 1;
+    liveHost.snapshot.sys.cpu.usage_pct = 99;
+    liveHost.snapshot.disk_scan.status = "running";
+    const frozen = { ts: frozenHost.lastTs, plugins: {}, hosts: [frozenHost] };
+    const updated = withLivePlugins(frozen, {
+      ts: Date.now(),
+      plugins: {},
+      hosts: [liveHost],
+    });
+    const host = updated.hosts[0];
+    if (!host) throw Error("fixture");
+    expect(current(host)).toBe(true);
+    expect(host.snapshot?.disk_scan.status).toBe("running");
+    expect(host.snapshot?.sys?.cpu.usage_pct).toBe(1);
+    expect(frozenHost.snapshot.disk_scan.status).toBe("completed");
+    liveHost.online = false;
+    const offline = withLivePlugins(frozen, { ...updated, hosts: [liveHost] })
+      .hosts[0];
+    if (!offline) throw Error("fixture");
+    expect(current(offline)).toBe(false);
+  });
   it("keeps token fields masked and gives an actionable error on rejected login", async () => {
     vi.spyOn(api, "session").mockResolvedValue({
       authenticated: false,

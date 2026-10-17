@@ -29,7 +29,7 @@ export function useFleet(paused: boolean) {
     retry: 1,
   });
   useEffect(() => {
-    if (paused || !visible) return;
+    if (!visible) return;
     let closed = false,
       socket: WebSocket | null = null,
       retry: ReturnType<typeof setTimeout> | undefined,
@@ -71,7 +71,7 @@ export function useFleet(paused: boolean) {
       if (retry) clearTimeout(retry);
       socket?.close();
     };
-  }, [client, paused, visible]);
+  }, [client, visible]);
   useEffect(() => {
     if (query.error instanceof ApiError && query.error.status === 401)
       void client.invalidateQueries({ queryKey: ["session"] });
@@ -86,7 +86,7 @@ export function useFleet(paused: boolean) {
   };
 }
 
-/** Pausing freezes resource telemetry; explicit plugin operations still update their own state. */
+/** Pausing freezes resources; connection health and operation state remain current. */
 export function withLivePlugins(frozen: Fleet, live: Fleet | undefined): Fleet {
   if (!live) return frozen;
   return {
@@ -96,10 +96,17 @@ export function withLivePlugins(frozen: Fleet, live: Fleet | undefined): Fleet {
       const current = live.hosts.find((item) => item.name === host.name);
       return {
         ...host,
+        online: current?.online ?? host.online,
+        lastTs: current?.lastTs ?? host.lastTs,
+        lastError: current ? current.lastError : host.lastError,
         snapshot: host.snapshot
           ? {
               ...host.snapshot,
               plugins: current?.snapshot?.plugins ?? host.snapshot.plugins,
+              disk_scan:
+                current?.snapshot?.disk_scan ?? host.snapshot.disk_scan,
+              disk_scans:
+                current?.snapshot?.disk_scans ?? host.snapshot.disk_scans,
             }
           : null,
       };

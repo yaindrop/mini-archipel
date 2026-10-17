@@ -24,6 +24,24 @@ const ScanSchema: z.ZodType<ScanNode> = z.lazy(() =>
     partial: z.boolean(),
   }),
 );
+const DiskScanJobSchema = z.object({
+  id: bytes,
+  status: z.enum([
+    "idle",
+    "queued",
+    "running",
+    "cancelling",
+    "completed",
+    "cancelled",
+    "failed",
+    "interrupted",
+  ]),
+  requested_at: bytes,
+  started_at: bytes.nullable(),
+  finished_at: bytes.nullable(),
+  current_root: z.string().nullable(),
+  error: z.string().nullable(),
+});
 export const SnapshotSchema = z.object({
   agent: z.object({ version: z.string(), started_at: bytes, ts: bytes }),
   host: z
@@ -97,6 +115,7 @@ export const SnapshotSchema = z.object({
     })
     .nullable(),
   disk_scans: z.array(ScanSchema),
+  disk_scan: DiskScanJobSchema,
   plugins: z.record(z.string(), z.unknown()).default({}),
 });
 export type Snapshot = z.infer<typeof SnapshotSchema>;

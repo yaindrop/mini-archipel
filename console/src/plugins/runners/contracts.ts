@@ -66,3 +66,6 @@ export const ToggleSchema = z.strictObject({
     .refine((value) => value !== "." && value !== ".."),
   enable: z.boolean(),
 });
+export const InterruptSchema = ToggleSchema.omit({ enable: true }).extend({
+  worker_pid: z.number().int().positive(),
+});

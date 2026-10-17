@@ -245,7 +245,7 @@ impl Plugin for Runners {
         body: Value,
     ) -> Task<'_, Result<Value, Failure>> {
         Box::pin(async move {
-            if action != "toggle" {
+            if action != "toggle" && action != "interrupt" {
                 return Err((StatusCode::NOT_FOUND, "plugin action not found".into()));
             }
             let settings = options(value).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
@@ -257,7 +257,8 @@ impl Plugin for Runners {
             struct Request {
                 repo: String,
                 runner: String,
-                enable: bool,
+                enable: Option<bool>,
+                worker_pid: Option<u32>,
             }
             let request: Request = serde_json::from_value(body)
                 .map_err(|_| (StatusCode::BAD_REQUEST, "invalid runner command".into()))?;
@@ -281,14 +282,34 @@ impl Plugin for Runners {
                     r.repo.as_deref() == Some(request.repo.as_str()) && r.repo_dir == request.runner
                 })
                 .ok_or((StatusCode::NOT_FOUND, "runner not found".into()))?;
-            tokio::task::spawn_blocking(move || toggle_service(&runner, request.enable))
-                .await
-                .map_err(|_| {
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "runner operation failed".into(),
-                    )
-                })??;
+            let operation = action.clone();
+            tokio::task::spawn_blocking(move || {
+                if operation == "interrupt" {
+                    let pid = request.worker_pid.ok_or((
+                        StatusCode::BAD_REQUEST,
+                        "expected Worker PID is required".into(),
+                    ))?;
+                    if request.enable.is_some() {
+                        return Err((StatusCode::BAD_REQUEST, "invalid interrupt command".into()));
+                    }
+                    interrupt_worker(&runner, pid)
+                } else {
+                    let enable = request
+                        .enable
+                        .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
+                    if request.worker_pid.is_some() {
+                        return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
+                    }
+                    toggle_service(&runner, enable)
+                }
+            })
+            .await
+            .map_err(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "runner operation failed".into(),
+                )
+            })??;
             Ok(json!({ "ok": true }))
         })
     }
@@ -410,6 +431,123 @@ fn dirs_home() -> PathBuf {
     std::env::var("HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|_| PathBuf::from("/Users/unknown"))
+}
+
+#[derive(Clone)]
+struct Process {
+    pid: u32,
+    parent: u32,
+    uid: u32,
+    started: String,
+    command: String,
+}
+fn processes() -> Result<Vec<Process>, Failure> {
+    let output = std::process::Command::new("/bin/ps")
+        .args(["-axo", "pid=,ppid=,uid=,stat=,lstart=,comm="])
+        .output()
+        .map_err(|_| {
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "could not inspect local processes".into(),
+            )
+        })?;
+    if !output.status.success() {
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            "could not inspect local processes".into(),
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| {
+            let fields: Vec<_> = line.split_whitespace().collect();
+            if fields.len() < 10 || fields[3].starts_with('Z') {
+                return None;
+            }
+            Some(Process {
+                pid: fields[0].parse().ok()?,
+                parent: fields[1].parse().ok()?,
+                uid: fields[2].parse().ok()?,
+                started: fields[4..9].join(" "),
+                command: fields[9..].join(" "),
+            })
+        })
+        .collect())
+}
+fn same_process(left: &Process, right: &Process) -> bool {
+    left.pid == right.pid
+        && left.uid == right.uid
+        && left.started == right.started
+        && left.command == right.command
+}
+fn interrupt_worker(runner: &RunnerInstall, expected_pid: u32) -> Result<(), Failure> {
+    let directory = dirs_home().join("runners").join(&runner.repo_dir);
+    let registered = parse_runner_file(&directory.join(".runner"))
+        .github_url
+        .as_deref()
+        .and_then(repository);
+    if registered.is_none() || registered != runner.repo {
+        return Err((
+            StatusCode::CONFLICT,
+            "registered repository changed; refresh before retrying".into(),
+        ));
+    }
+    let all = processes()?;
+    let worker = all
+        .iter()
+        .find(|p| {
+            p.pid == expected_pid
+                && p.uid == libc_getuid()
+                && p.command == directory.join("bin/Runner.Worker").to_string_lossy()
+        })
+        .ok_or((
+            StatusCode::CONFLICT,
+            "active job changed; refresh before interrupting".into(),
+        ))?;
+    let mut tree = vec![worker.clone()];
+    loop {
+        let added: Vec<_> = all
+            .iter()
+            .filter(|p| {
+                p.uid == worker.uid
+                    && !tree.iter().any(|t| t.pid == p.pid)
+                    && tree.iter().any(|t| t.pid == p.parent)
+            })
+            .cloned()
+            .collect();
+        if added.is_empty() {
+            break;
+        }
+        tree.extend(added);
+    }
+    // Capture identity before signalling; never signal the Listener or a reused PID.
+    for signal in [libc::SIGTERM, libc::SIGKILL] {
+        let live = processes()?;
+        for process in tree.iter().rev() {
+            if live.iter().any(|p| same_process(process, p)) {
+                let result = unsafe { libc::kill(process.pid as i32, signal) };
+                if result != 0
+                    && std::io::Error::last_os_error().raw_os_error() != Some(libc::ESRCH)
+                {
+                    return Err((
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "could not interrupt a local job process".into(),
+                    ));
+                }
+            }
+        }
+        for _ in 0..20 {
+            let live = processes()?;
+            if !tree.iter().any(|t| live.iter().any(|p| same_process(t, p))) {
+                return Ok(());
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+    }
+    Err((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "local job processes have not stopped".into(),
+    ))
 }
 #[cfg(test)]
 mod runner_service_tests {

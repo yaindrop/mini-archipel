@@ -11,21 +11,6 @@ CONF="$HOME/.config/mini-archipel/agent.toml"
 LOG_DIR="$HOME/Library/Logs/MiniArchipel"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 mkdir -p "$(dirname "$DEST")" "$(dirname "$CONF")" "$LOG_DIR" "$(dirname "$PLIST")"
-# du through loopback SSH avoids launchd's inherited I/O throttling. Generate
-# this node's own identity; only loopback may use the newly authorized key.
-mkdir -p "$HOME/.ssh"
-chmod 700 "$HOME/.ssh"
-SCAN_KEY="$HOME/.ssh/id_mini_archipel"
-if [[ ! -f "$SCAN_KEY" ]]; then
-  ssh-keygen -q -t ed25519 -N '' -f "$SCAN_KEY" -C mini-archipel-local-scan
-fi
-chmod 600 "$SCAN_KEY"
-SCAN_PUBLIC=$(ssh-keygen -y -P '' -f "$SCAN_KEY")
-touch "$HOME/.ssh/authorized_keys"
-chmod 600 "$HOME/.ssh/authorized_keys"
-if ! grep -qF "$SCAN_PUBLIC" "$HOME/.ssh/authorized_keys"; then
-  printf '\nfrom="127.0.0.1,::1",restrict %s\n' "$SCAN_PUBLIC" >> "$HOME/.ssh/authorized_keys"
-fi
 if [[ ! -f "$CONF" ]]; then
   TOKEN=$(openssl rand -hex 24)
   cat > "$CONF" <<EOF
@@ -38,7 +23,7 @@ fan_interval_ms = 2000
 macmon = "/opt/homebrew/bin/macmon"
 fanctl = "/Library/MacMiniFanControl/fanctl"
 disk_interval_ms = 21600000
-disk_roots = ["~"]
+disk_roots = ["~", "/"]
 EOF
   echo "Generated $CONF; optional plugins are disabled until configured."
 fi

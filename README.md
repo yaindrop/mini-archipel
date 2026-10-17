@@ -112,9 +112,12 @@ NODE_BIN=/opt/homebrew/bin/node ./install.sh
 
 安装器第一次运行时生成权限为 600 的配置，填好节点令牌后再运行。更新会替换整个构建产物，包括带内容哈希的前端资源；保留上一版程序与 LaunchAgent，启动或健康检查失败时自动恢复。配置与 SQLite 在发布目录之外，更新不清空历史。
 
-Agent 安装器为每个节点独立生成本机目录扫描的回环 SSH 密钥，新增授权只允许回环来源并禁用转发。
-已有运维登录密钥保留。目录扫描优先使用回环 SSH 避免 launchd 的 I/O 节流；不可用时直接在本机执行 `du`，
-不把认证失败显示为正常的 0 B。读取受限目录时保留可读部分并标记结果不完整。
+目录扫描使用可取消的本地异步进程。节点保存扫描任务状态和最近一次完整结果，
+重扫期间始终保留旧结果；页面刷新可继续查看状态并取消，Agent 重启会将未完成任务标为中断。
+配置与结果缓存位于各节点的私有数据目录，扫描不依赖本机 SSH 密钥。
+完整扫描需要在各节点「系统设置 → 隐私与安全性 → 完全磁盘访问权限」中允许
+`~/.local/libexec/mini-archipel-agent`。当前 ad hoc 构建更新后可能需要移除旧条目并重新添加；
+权限等待不会阻塞监测，可以取消扫描并继续查看旧结果。排查依据见 [扫描设计记录](docs/design.md#后台目录扫描2026-10-18)。
 
 - 配置：`~/.config/mini-archipel/console.json`
 - 程序：`~/.local/libexec/mini-archipel-console`
@@ -190,7 +193,7 @@ fan_interval_ms = 2000
 disk_interval_ms = 21600000
 macmon = "/opt/homebrew/bin/macmon"
 fanctl = "/Library/MacMiniFanControl/fanctl"
-disk_roots = ["~"]
+disk_roots = ["~", "/"]
 
 [plugins.runners]
 enabled = true
@@ -206,7 +209,7 @@ allow_control = true
 - 当前部署面向可信私有网络。跨公网使用应在前面配置 HTTPS 与相应的网络访问控制；仅 HttpOnly Cookie 不提供传输加密。
 - Runner 服务控制需要节点插件启用，并明确设置 `plugins.runners.options.allow_control = true`。从 runner 的 `.service` 找 LaunchAgent，目录或仓库改名不会使控制失效；控制台复核插件快照，Agent 执行前再次检查真实 Worker。
 - macOS 本地网络隐私会影响自编译程序，因此 console 经系统 curl 访问 agent。`.local` 可能广播无路由的 IPv6，跨机采集宜固定可达的 IPv4。
-- 磁盘扫描开销高，按 6 小时或手动触发；CPU 高时延后。扫描通过 SSH 回环绕开 launchd IO 节流，APFS firmlink 需避免重复计数。
+- 磁盘扫描按 6 小时或手动触发，由独立的本地异步 `du` 子进程执行。任务可取消，扫描过程中保留上次完整结果；状态和结果原子保存，重启后恢复结果并将未完成任务标为中断。APFS firmlink 避免重复计数。
 
 ## 语言与外观
 

@@ -46,6 +46,16 @@ msgstr "The node is offline. The scan was not started."
 
 #. js-lingui-explicit-id
 #: src/app.ts
+msgid "缺少有效的节点或扫描任务"
+msgstr "A valid node and scan task are required"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，无法取消扫描"
+msgstr "The node is offline; the scan cannot be cancelled"
+
+#. js-lingui-explicit-id
+#: src/app.ts
 msgid "服务暂时无法完成请求"
 msgstr "The service could not complete the request"
 
@@ -324,6 +334,11 @@ msgstr "{0} started accepting jobs"
 msgid "{0} 核 · 按在线节点核心数加权"
 msgstr "{0} cores · Weighted by online core count"
 
+#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
+#: src/plugins/runners/workbench.tsx
+msgid "{0} 的作业已在本地中断"
+msgstr "The job on {0} was interrupted locally"
+
 #. placeholder {0}: displayName(h)
 #: src/web/overview.tsx
 msgid "{0} 磁盘已用比例"
@@ -495,9 +510,17 @@ msgstr "Swap used"
 msgid "WELCOME BACK"
 msgstr "WELCOME BACK"
 
+#: src/web/storage.tsx
+msgid "上次扫描因节点重启而中断，保留上次结果。"
+msgstr "The previous scan was interrupted by a node restart. Previous results are retained."
+
 #: src/web/node.tsx
 msgid "严重"
 msgstr "Serious"
+
+#: src/plugins/runners/workbench.tsx
+msgid "中断作业"
+msgstr "Interrupt job"
 
 #: src/web/App.tsx
 msgid "主导航"
@@ -646,6 +669,14 @@ msgstr "History"
 msgid "取消"
 msgstr "Cancel"
 
+#: src/web/storage.tsx
+msgid "取消中…"
+msgstr "Cancelling…"
+
+#: src/web/storage.tsx
+msgid "取消扫描"
+msgstr "Cancel scan"
+
 #: src/plugins/runners/workbench.tsx
 msgid "可在下方确认后恢复接单"
 msgstr "Start a runner below to accept jobs again"
@@ -749,6 +780,10 @@ msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新�
 msgstr "Live updates are paused. Showing measurements from {0}. Resume to see the latest state."
 
 #: src/web/App.tsx
+msgid "实时监测控制"
+msgstr "Live monitoring controls"
+
+#: src/web/App.tsx
 msgid "实时资源"
 msgstr "Resource metrics"
 
@@ -759,6 +794,10 @@ msgstr "Live feed connected"
 #: src/web/history.tsx
 msgid "导出 CSV"
 msgstr "Export CSV"
+
+#: src/plugins/runners/workbench.tsx
+msgid "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
+msgstr "Terminate this Worker and its child processes locally, without calling GitHub cancellation. The listener stays running. This cannot be undone."
 
 #: src/web/storage.tsx
 msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
@@ -913,12 +952,20 @@ msgid "扫描中…"
 msgstr "Scanning…"
 
 #: src/web/storage.tsx
-msgid "扫描范围"
-msgstr "Scan scope"
+msgid "扫描失败，保留上次结果。"
+msgstr "The scan failed. Previous results are retained."
 
 #: src/web/storage.tsx
-msgid "扫描请求已提交。节点完成扫描后会自动更新目录统计。"
-msgstr "Scan requested. Directory totals will update when the node finishes."
+msgid "扫描已取消，保留上次结果。"
+msgstr "The scan was cancelled. Previous results are retained."
+
+#: src/web/storage.tsx
+msgid "扫描已排队"
+msgstr "Scan queued"
+
+#: src/web/storage.tsx
+msgid "扫描范围"
+msgstr "Scan scope"
 
 #: src/web/history.tsx
 msgid "指标"
@@ -1035,10 +1082,6 @@ msgstr "No samples available"
 msgid "暂无诊断日志"
 msgstr "No diagnostic logs yet"
 
-#: src/web/storage.tsx
-msgid "暂未收到新的扫描结果，节点繁忙时可能延后。"
-msgstr "No new scan results yet. A busy node may delay the scan."
-
 #: src/web/App.tsx
 #: src/web/history.tsx
 msgid "更新已暂停"
@@ -1125,6 +1168,14 @@ msgstr "Check node collection channels and plugin connections."
 #: src/web/App.tsx
 msgid "正在加载工作区"
 msgstr "Loading workspace…"
+
+#: src/web/storage.tsx
+msgid "正在取消扫描"
+msgstr "Cancelling scan"
+
+#: src/web/storage.tsx
+msgid "正在后台扫描，保留上次结果"
+msgstr "Scanning in the background; previous results are retained"
 
 #: src/web/App.tsx
 msgid "正在恢复连接"
@@ -1274,16 +1325,16 @@ msgid "目录扫描"
 msgstr "Directory scans"
 
 #: src/web/storage.tsx
-msgid "目录扫描已更新。"
-msgstr "Directory scan updated."
-
-#: src/web/storage.tsx
 msgid "目录空间分析"
 msgstr "Directory usage"
 
 #: src/web/storage.tsx
 msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
 msgstr "Directory totals and APFS volume capacity are measured differently. “Rebuildable caches” is a category; no data is deleted automatically."
+
+#: src/plugins/runners/workbench.tsx
+msgid "确认中断"
+msgstr "Confirm interruption"
 
 #: src/plugins/runners/workbench.tsx
 msgid "确认停止"

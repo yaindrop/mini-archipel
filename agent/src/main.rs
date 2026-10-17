@@ -21,6 +21,7 @@ struct AppState {
     core: Shared,
     token: String,
     plugins: Arc<plugins::Manager>,
+    disk_enabled: bool,
 }
 
 #[tokio::main]
@@ -44,7 +45,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or_else(|| "agent.toml".into());
     let config = config::load(&path)?;
     let bind = config.bind.clone();
-    let core = Arc::new(RwLock::new(SharedState::new()));
+    let mut initial = SharedState::new();
+    collectors::disk::restore(&mut initial);
+    let core = Arc::new(RwLock::new(initial));
     let plugins = Arc::new(
         plugins::Manager::new(
             config.clone(),
@@ -54,11 +57,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .await?,
     );
+    let disk_enabled = !config.collectors.disk_roots.is_empty();
     collectors::spawn_all(Arc::clone(&core), config.collectors, Arc::clone(&plugins)).await;
     let state = AppState {
         core,
         token: config.token,
         plugins,
+        disk_enabled,
     };
     let app = Router::new()
         .route("/health", get(|| async { AGENT_VERSION }))
@@ -66,10 +71,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/plugins/{id}", put(set_plugin))
         .route("/plugins/{id}/actions/{action}", post(plugin_action))
         .route("/rescan-disk", post(rescan_disk))
-        .with_state(state);
+        .route("/cancel-disk-scan", post(cancel_disk_scan))
+        .with_state(state.clone());
     let listener = tokio::net::TcpListener::bind(&bind).await?;
     eprintln!("mini-archipel-agent {AGENT_VERSION} listening on {bind}");
-    axum::serve(listener, app).await?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async move {
+            use tokio::signal::unix::{signal, SignalKind};
+            let mut term = signal(SignalKind::terminate()).expect("SIGTERM handler");
+            tokio::select! {
+                _ = term.recv() => {},
+                _ = tokio::signal::ctrl_c() => {},
+            }
+            collectors::disk::shutdown(&state.core).await;
+        })
+        .await?;
     Ok(())
 }
 
@@ -124,13 +140,39 @@ async fn rescan_disk(State(state): State<AppState>, headers: HeaderMap) -> impl 
     if !authorized(&headers, &state.token) {
         return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    state
-        .core
-        .read()
-        .await
-        .disk_rescan_flag
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-    response(Ok(json!({ "ok": true })))
+    if !state.disk_enabled {
+        return response(Err((
+            StatusCode::CONFLICT,
+            "disk scanning is disabled".into(),
+        )));
+    }
+    response(
+        collectors::disk::request(&state.core)
+            .await
+            .map(|job| json!({ "ok": true, "job": job }))
+            .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error)),
+    )
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CancelScan {
+    id: u64,
+}
+
+async fn cancel_disk_scan(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<CancelScan>,
+) -> impl IntoResponse {
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
+    }
+    response(
+        collectors::disk::cancel(&state.core, body.id)
+            .await
+            .map(|job| json!({ "ok": true, "job": job })),
+    )
 }
 
 async fn snapshot(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {

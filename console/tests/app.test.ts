@@ -325,6 +325,26 @@ describe("safe mutations and query inputs", () => {
       (
         await app.inject({
           method: "POST",
+          url: "/api/disk/cancel",
+          headers: auth,
+          payload: { host: "yd-mini", id: 1 },
+        })
+      ).json(),
+    ).toEqual({ ok: true });
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/disk/cancel",
+          headers: auth,
+          payload: { host: "yd-mini", id: -1 },
+        })
+      ).statusCode,
+    ).toBe(400);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
           url: "/api/disk/rescan",
           headers: auth,
           payload: { host: "yd-mini" },

@@ -291,6 +291,26 @@ describe("runner plugin integration", () => {
       }),
     ).rejects.toThrow("正在执行作业");
     expect(command).not.toHaveBeenCalled();
+    const transport = vi.fn(ctx.transport);
+    ctx.transport = transport;
+    await expect(
+      instance.action("interrupt", {
+        host: host.name,
+        repo: "yaindrop/flowbit",
+        runner: "flowbit",
+        worker_pid: 999,
+      }),
+    ).resolves.toEqual({ ok: true });
+    expect(command).toHaveBeenCalledWith(
+      host.name,
+      "plugins/runners/actions/interrupt",
+      {
+        repo: "yaindrop/flowbit",
+        runner: "flowbit",
+        worker_pid: 999,
+      },
+    );
+    expect(transport).not.toHaveBeenCalled();
   });
   it("owns GitHub polling, expires remote data and stops polling when disabled", async () => {
     vi.useFakeTimers();
