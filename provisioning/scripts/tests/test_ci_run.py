@@ -205,6 +205,35 @@ class LifecycleTests(unittest.TestCase):
         self.assertIn("console" if False else "unit", seen["identity"])
         self.assertNotIn("super-secret", json.dumps(report))
 
+    def test_pinned_bin_node_is_selected_over_homebrew(self):
+        pinned = Path(self.temp.name) / "pinned" / "bin"
+        pinned.mkdir(parents=True)
+        (pinned / "node").write_text("#!/bin/sh\necho v26.12.0\n", encoding="utf-8")
+        (pinned / "node").chmod((pinned / "node").stat().st_mode | stat.S_IEXEC)
+        brew = Path(self.temp.name) / "brew"
+        brew.mkdir()
+        (brew / "node").write_text("#!/bin/sh\necho v24.11.0\n", encoding="utf-8")
+        (brew / "node").chmod((brew / "node").stat().st_mode | stat.S_IEXEC)
+        seen = {}
+
+        def shell(_command, env, _cwd):
+            seen["path"] = env["PATH"]
+            return 0, "", ""
+
+        _workspace, _state, report = self.execute_case(
+            stage(
+                toolchain={"node": "26.12"},
+                require=[{"kind": "tool", "tool": "node", "version": "26.12"}],
+            ),
+            shell=shell,
+            env_update={
+                "MINI_CI_TOOLCHAIN_ROOT": str(Path(self.temp.name) / "pinned"),
+                "PATH": str(brew) + os.pathsep + "/usr/bin:/bin",
+            },
+        )
+        self.assertEqual(report["_code"], 0, report.get("failure"))
+        self.assertTrue(seen["path"].startswith(str(pinned)))
+
     def test_declared_pnpm_wins_over_path_pnpm(self):
         bindir = Path(self.temp.name) / "bin"
         bindir.mkdir()

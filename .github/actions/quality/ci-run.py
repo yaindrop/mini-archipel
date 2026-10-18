@@ -249,6 +249,8 @@ def probe(argv, env, cwd):
 def host_path_prefixes(env):
     home = Path(env.get("HOME", str(Path.home())))
     prefixes = [
+        home / ".local" / "flowbit-ci-pinned" / "bin",
+        home / ".local" / "share" / "mini-ci" / "bin",
         Path("/opt/homebrew/bin"),
         Path("/opt/homebrew/sbin"),
         home / ".local" / "bin",
@@ -277,10 +279,21 @@ def tool_candidates(kind, version, env):
     found = []
     for root in toolchain_roots(env):
         found.append(root / kind / version / "bin" / filename)
+        series = root / kind
+        if series.is_dir():
+            for child in sorted(series.iterdir(), reverse=True):
+                if child.name != version and version_ok(child.name, version):
+                    found.append(child / "bin" / filename)
+        found.append(root / "bin" / filename)
     cache = env.get("RUNNER_TOOL_CACHE", "")
     if cache and kind == "node":
         for arch in ("arm64", "x64"):
             found.append(Path(cache) / "node" / version / arch / "bin" / filename)
+            cache_root = Path(cache) / "node"
+            if cache_root.is_dir():
+                for child in sorted(cache_root.iterdir(), reverse=True):
+                    if child.name != version and version_ok(child.name, version):
+                        found.append(child / arch / "bin" / filename)
     return found
 
 
@@ -346,7 +359,10 @@ def uv_python_bindir(version, env, cwd):
 
 def find_tool_bin(kind, version, env, cwd):
     for candidate in tool_candidates(kind, version, env):
-        if candidate.is_file() and os.access(candidate, os.X_OK):
+        if not candidate.is_file() or not os.access(candidate, os.X_OK):
+            continue
+        code, output = probe([str(candidate), "--version"], env, cwd)
+        if code == 0 and version_ok(output, version):
             return candidate.parent
     code, output = probe([kind, "--version"], env, cwd)
     if code == 0 and version_ok(output, version):
