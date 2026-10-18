@@ -45,17 +45,23 @@ jobs:
       - name: Run the quality lifecycle
         env:
           MINI_CI_REQUEST: run-ci
-          MINI_CI_SHARED_REF: ${{ github.workflow_sha }}
           MINI_CI_RUNS_ON: ${{ inputs.runs-on }}
           MINI_CI_PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          bindir="$RUNNER_TEMP/mini-ci-shared-${MINI_CI_SHARED_REF}"
-          mkdir -p "$bindir"
-          curl -fsSL --retry 3 --retry-delay 2 \
-            "https://raw.githubusercontent.com/yaindrop/mini-archipel/${MINI_CI_SHARED_REF}/.github/actions/quality/ci-run.py" \
-            -o "$bindir/ci-run.py"
-          python3 "$bindir/ci-run.py"
+          for ref in "${GITHUB_WORKFLOW_REF##*@}" "$GITHUB_SHA"; do
+            bindir="$RUNNER_TEMP/mini-ci-shared-${ref//\//_}"
+            mkdir -p "$bindir"
+            if curl -fsSL --retry 2 --retry-delay 2 \
+              "https://raw.githubusercontent.com/yaindrop/mini-archipel/${ref}/.github/actions/quality/ci-run.py" \
+              -o "$bindir/ci-run.py"; then
+              echo "shared lifecycle fetched at ${ref}"
+              export MINI_CI_SHARED_REF="$ref"
+              exec python3 "$bindir/ci-run.py"
+            fi
+          done
+          echo "cannot fetch the shared lifecycle from $GITHUB_WORKFLOW_REF or $GITHUB_SHA" >&2
+          exit 1
       - name: Upload the quality report
         if: always()
         continue-on-error: true
