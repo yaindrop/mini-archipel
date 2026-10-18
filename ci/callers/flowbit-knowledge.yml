@@ -12,7 +12,7 @@ concurrency:
 jobs:
   quality:
     if: github.event.label.name == 'run-ci' && github.event.pull_request.head.repo.full_name == github.repository
-    uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@2e62bc368836088440e389f75880a0c200fdba36
+    uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@a463077e0c2ecf8b199da8175bb6e0a2848f6cf7
     with:
       runs-on: '["self-hosted","macOS","ARM64","ci","container"]'
     permissions:

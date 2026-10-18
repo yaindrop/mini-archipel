@@ -1,7 +1,7 @@
 # 主动 CI 接入记录 · 2026-10-18
 
-共享实现提交：`2e62bc368836088440e389f75880a0c200fdba36`（分支 `ci/shared-quality`）。
-其他三个仓库的入口固定到这一提交。规范见[主动 CI 规范](ci-practice.md)。
+共享实现提交：`a463077e0c2ecf8b199da8175bb6e0a2848f6cf7`（分支 `ci/shared-quality`）。
+其他三个仓库的入口固定到这一提交。规范见[主动 CI 规范](ci-practice.md)。首个可复用提交是 `2e62bc368836088440e389f75880a0c200fdba36`。
 
 ## 部署
 
@@ -34,12 +34,12 @@
 
 | 仓库 | 工作区 | 提交 |
 | --- | --- | --- |
-| mini-archipel | `~/mini-archipel-dev` | 共享流程 `2e62bc368836088440e389f75880a0c200fdba36`；分支头含接入记录 |
-| flowbit | `~/flowbit-ci` | `76f5361f307822aff6536171f993a59222ffca55` |
-| flowbit-knowledge | `~/flowbit-knowledge-ci` | `7774b3379f61f9ef75b201fa4673fc85b01c9a26` |
-| in-frames | `~/in-frames-ci` | `8e6575f484b6ba87ead1465f5037cbb64a93b234` |
+| mini-archipel | `~/mini-archipel-dev` | 共享流程 `a463077e0c2ecf8b199da8175bb6e0a2848f6cf7` |
+| flowbit | `~/flowbit-ci` | 入口固定到同一提交 |
+| flowbit-knowledge | `~/flowbit-knowledge-ci` | 入口固定到同一提交 |
+| in-frames | `~/in-frames-ci` | 入口固定到同一提交 |
 
-后三个入口都引用 mini-archipel 的 `2e62bc368836088440e389f75880a0c200fdba36`。这四个分支都还在本地。
+后三个入口都引用 mini-archipel 的 `a463077e0c2ecf8b199da8175bb6e0a2848f6cf7`。
 
 ## 尚未在机群上完成的一轮
 
