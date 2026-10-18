@@ -879,7 +879,8 @@ def audit_reusable(text):
     if (
         "raw.githubusercontent.com/yaindrop/mini-archipel" not in text
         or "ci-run.py" not in text
-        or "MINI_CI_SHARED_REF: ${{ github.workflow_sha }}" not in text
+        or "GITHUB_WORKFLOW_REF" not in text
+        or "GITHUB_SHA" not in text
     ):
         errors.append("the lifecycle must be fetched from the pinned engine commit")
     if "MINI_CI_REQUEST: run-ci" not in text:
