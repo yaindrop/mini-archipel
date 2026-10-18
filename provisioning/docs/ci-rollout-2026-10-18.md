@@ -30,6 +30,17 @@
 
 三个调用方的 `ci/requirements.json` 通过同一份 schema 校验；`ci/callers/*.yml` 的审计确认它们把共享流程固定到上面的提交，且该提交里存在 reusable workflow。
 
+## 四个本地分支
+
+| 仓库 | 工作区 | 提交 |
+| --- | --- | --- |
+| mini-archipel | `~/mini-archipel-dev` | 共享流程 `2e62bc368836088440e389f75880a0c200fdba36`；分支头含接入记录 |
+| flowbit | `~/flowbit-ci` | `76f5361f307822aff6536171f993a59222ffca55` |
+| flowbit-knowledge | `~/flowbit-knowledge-ci` | `7774b3379f61f9ef75b201fa4673fc85b01c9a26` |
+| in-frames | `~/in-frames-ci` | `8e6575f484b6ba87ead1465f5037cbb64a93b234` |
+
+后三个入口都引用 mini-archipel 的 `2e62bc368836088440e389f75880a0c200fdba36`。这四个分支都还在本地。
+
 ## 尚未在机群上完成的一轮
 
 四个仓库还没有各做一次真实的 `run-ci`，四台节点也还没有分别接过这次新流程的作业。原因：共享提交当时只在本地，标签会启动各仓库现有的完整质量命令并占用节点租约。把 `ci/shared-quality` 推到各仓库并打开 PR 之后，再给 PR 加上 `run-ci` 才是这一轮的证据。环境失败、项目失败和通过要分开记，不能把环境失败或项目失败写成质量通过。
