@@ -23,6 +23,8 @@ pub struct TreeScan {
     pub duration_ms: u64,
     pub partial: bool,
     #[serde(default)]
+    pub self_partial: Option<bool>,
+    #[serde(default)]
     pub children_status: ChildrenStatus,
     #[serde(default)]
     pub error: Option<String>,
@@ -83,16 +85,22 @@ fn cache_path() -> PathBuf {
     PathBuf::from(std::env::var("HOME").unwrap_or_default())
         .join(".local/share/mini-archipel/disk-scan.json")
 }
-fn save(job: &ScanJob, scans: &HashMap<String, TreeScan>) -> Result<(), String> {
+fn save_sync(job: &ScanJob, scans: &HashMap<String, TreeScan>) -> Result<(), String> {
     use std::io::Write;
     use std::os::unix::fs::OpenOptionsExt;
     let path = cache_path();
-    let temp = path.with_extension("json.next");
+    let temp = path.with_extension(format!(
+        "json.next-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    ));
     let result = (|| {
         std::fs::create_dir_all(path.parent().unwrap())?;
         let mut file = std::fs::OpenOptions::new()
-            .create(true)
-            .truncate(true)
+            .create_new(true)
             .write(true)
             .mode(0o600)
             .open(&temp)?;
@@ -103,7 +111,24 @@ fn save(job: &ScanJob, scans: &HashMap<String, TreeScan>) -> Result<(), String> 
         file.sync_all()?;
         std::fs::rename(&temp, &path)
     })();
+    if result.is_err() {
+        let _ = std::fs::remove_file(&temp);
+    }
     result.map_err(|_: std::io::Error| "could not save disk scan state".to_string())
+}
+async fn save(job: &ScanJob, scans: &HashMap<String, TreeScan>) -> Result<(), String> {
+    let job = job.clone();
+    let scans = scans.clone();
+    tokio::task::spawn_blocking(move || save_sync(&job, &scans))
+        .await
+        .map_err(|_| "disk scan persistence task failed".to_string())?
+}
+async fn persist_current(state: &Shared) -> Result<(), String> {
+    let (job, scans) = {
+        let shared = state.read().await;
+        (shared.disk_scan.clone(), shared.disk_scans.clone())
+    };
+    save(&job, &scans).await
 }
 pub fn restore(state: &mut SharedState) {
     if let Ok(raw) = std::fs::read(cache_path()) {
@@ -115,7 +140,7 @@ pub fn restore(state: &mut SharedState) {
             }
             state.disk_scans = cache.scans;
             state.disk_scan = cache.job;
-            if let Err(error) = save(&state.disk_scan, &state.disk_scans) {
+            if let Err(error) = save_sync(&state.disk_scan, &state.disk_scans) {
                 eprintln!("{error}");
             }
         }
@@ -153,7 +178,9 @@ pub async fn request(
     } else {
         None
     };
-    let mut shared = state.write().await;
+    let control = Arc::clone(&state.read().await.disk_control);
+    let _guard = control.lock().await;
+    let shared = state.write().await;
     if shared.disk_stopping {
         return Err((StatusCode::CONFLICT, "agent is shutting down".into()));
     }
@@ -180,28 +207,40 @@ pub async fn request(
     let mut job = queued();
     job.id = job.id.max(shared.disk_scan.id.saturating_add(1));
     job.target = target;
-    save(&job, &shared.disk_scans).map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error))?;
+    let scans = shared.disk_scans.clone();
+    drop(shared);
+    save(&job, &scans)
+        .await
+        .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error))?;
+    let mut shared = state.write().await;
     shared.disk_cancel.store(false, Ordering::Relaxed);
     shared.disk_rescan_flag.store(true, Ordering::Relaxed);
     shared.disk_scan = job.clone();
     Ok(job)
 }
 pub async fn cancel(state: &Shared, id: u64) -> Result<ScanJob, crate::plugins::Failure> {
-    let mut shared = state.write().await;
-    if shared.disk_scan.id != id {
-        return Err((
-            StatusCode::CONFLICT,
-            "scan changed; refresh before cancelling".into(),
-        ));
+    let control = Arc::clone(&state.read().await.disk_control);
+    let _guard = control.lock().await;
+    let (mut job, scans) = {
+        let mut shared = state.write().await;
+        if shared.disk_scan.id != id {
+            return Err((
+                StatusCode::CONFLICT,
+                "scan changed; refresh before cancelling".into(),
+            ));
+        }
+        if !shared.disk_scan.active() {
+            return Ok(shared.disk_scan.clone());
+        }
+        shared.disk_cancel.store(true, Ordering::Relaxed);
+        shared.disk_scan.status = ScanStatus::Cancelling;
+        (shared.disk_scan.clone(), shared.disk_scans.clone())
+    };
+    // Cancellation must reach the child even when the journal cannot be written.
+    if let Err(error) = save(&job, &scans).await {
+        job.error = Some(error);
     }
-    if !shared.disk_scan.active() {
-        return Ok(shared.disk_scan.clone());
-    }
-    let mut job = shared.disk_scan.clone();
-    job.status = ScanStatus::Cancelling;
-    save(&job, &shared.disk_scans).map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
-    shared.disk_cancel.store(true, Ordering::Relaxed);
-    shared.disk_scan = job.clone();
+    state.write().await.disk_scan = job.clone();
     Ok(job)
 }
 
@@ -276,22 +315,39 @@ async fn du_tree(
     }
     let started = std::time::Instant::now();
     let mut child = tokio::process::Command::new("/usr/bin/du")
-        .args(["-k", "-P", "-x", "-d", &depth.to_string(), root])
+        .args([
+            "--libxo",
+            "json",
+            "-k",
+            "-P",
+            "-x",
+            "-d",
+            &depth.to_string(),
+            root,
+        ])
         .env("LC_ALL", "C")
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .kill_on_drop(true)
         .spawn()
         .map_err(|e| ScanError::Failed(e.to_string()))?;
-    let mut stdout = child.stdout.take().unwrap();
-    let mut stderr = child.stderr.take().unwrap();
+    let stdout = child.stdout.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
     let output = tokio::spawn(async move {
         let mut raw = Vec::new();
-        stdout.read_to_end(&mut raw).await.map(|_| raw)
+        stdout
+            .take(16 * 1024 * 1024 + 1)
+            .read_to_end(&mut raw)
+            .await
+            .map(|_| raw)
     });
     let errors = tokio::spawn(async move {
         let mut raw = Vec::new();
-        stderr.read_to_end(&mut raw).await.map(|_| raw)
+        stderr
+            .take(1024 * 1024 + 1)
+            .read_to_end(&mut raw)
+            .await
+            .map(|_| raw)
     });
     let wait_cancelled = async {
         loop {
@@ -317,6 +373,11 @@ async fn du_tree(
         .await
         .map_err(|e| ScanError::Failed(e.to_string()))?
         .map_err(|e| ScanError::Failed(e.to_string()))?;
+    if raw.len() > 16 * 1024 * 1024 || errors.len() > 1024 * 1024 {
+        return Err(ScanError::Failed(
+            "directory listing exceeded the limit; reduce drill-down depth".into(),
+        ));
+    }
     if raw.is_empty() {
         return Err(ScanError::Failed(
             "directory scan returned no readable data".into(),
@@ -325,9 +386,9 @@ async fn du_tree(
     let parse_root = root.to_string();
     let parse_rules = rules.clone();
     let mut tree = tokio::task::spawn_blocking(move || {
-        parse_tree(
+        parse_json_tree(
             &parse_root,
-            &String::from_utf8_lossy(&raw),
+            &raw,
             &String::from_utf8_lossy(&errors),
             depth,
             &parse_rules,
@@ -335,13 +396,67 @@ async fn du_tree(
     })
     .await
     .map_err(|e| ScanError::Failed(e.to_string()))??;
-    tree.partial |= !status.success();
+    if !status.success() && !tree.partial {
+        tree.self_partial = Some(true);
+        tree.partial = true;
+    }
     if tree.partial && tree.children_status == ChildrenStatus::Complete {
         tree.children_status = ChildrenStatus::Partial;
     }
     tree.duration_ms = started.elapsed().as_millis() as u64;
     Ok(tree)
 }
+#[derive(Deserialize)]
+struct DuPath {
+    blocks: u64,
+    path: PathBuf,
+}
+fn parse_json_tree(
+    root: &str,
+    raw: &[u8],
+    errors: &str,
+    depth: usize,
+    rules: &Rules,
+) -> Result<TreeScan, ScanError> {
+    // libxo escapes LF but some macOS versions leave literal tabs in JSON strings.
+    // Quote every raw control byte inside a string before strict JSON decoding.
+    let mut escaped = Vec::with_capacity(raw.len());
+    let mut quoted = false;
+    let mut slash = false;
+    for &byte in raw {
+        if quoted && byte < 32 {
+            escaped.extend_from_slice(format!("\\u{byte:04x}").as_bytes());
+            slash = false;
+            continue;
+        }
+        escaped.push(byte);
+        if slash {
+            slash = false;
+        } else if quoted && byte == b'\\' {
+            slash = true;
+        } else if byte == b'"' {
+            quoted = !quoted;
+        }
+    }
+    let value: serde_json::Value = serde_json::from_slice(&escaped)
+        .map_err(|_| ScanError::Failed("directory scan returned invalid JSON".into()))?;
+    let rows: Vec<DuPath> =
+        serde_json::from_value(value["disk-usage-information"]["paths"].clone())
+            .map_err(|_| ScanError::Failed("directory scan returned invalid paths".into()))?;
+    if rows.len() > 100_000 {
+        return Err(ScanError::Failed(
+            "directory listing exceeded the limit; reduce drill-down depth".into(),
+        ));
+    }
+    assemble_tree(
+        root,
+        rows.into_iter().map(|row| (row.blocks, row.path)).collect(),
+        errors,
+        depth,
+        rules,
+    )
+}
+#[cfg(test)]
 fn parse_tree(
     root: &str,
     raw: &str,
@@ -349,17 +464,26 @@ fn parse_tree(
     depth: usize,
     rules: &Rules,
 ) -> Result<TreeScan, ScanError> {
+    let rows = raw
+        .lines()
+        .filter_map(|line| {
+            let (size, path) = line.split_once('\t')?;
+            Some((size.parse().ok()?, PathBuf::from(path)))
+        })
+        .collect();
+    assemble_tree(root, rows, errors, depth, rules)
+}
+fn assemble_tree(
+    root: &str,
+    rows: Vec<(u64, PathBuf)>,
+    errors: &str,
+    depth: usize,
+    rules: &Rules,
+) -> Result<TreeScan, ScanError> {
     let root_path = Path::new(root);
     let ts = now();
     let mut entries = HashMap::<PathBuf, TreeScan>::new();
-    for line in raw.lines() {
-        let Some((size, full)) = line.split_once('\t') else {
-            continue;
-        };
-        let Ok(kib) = size.parse::<u64>() else {
-            continue;
-        };
-        let path = PathBuf::from(full);
+    for (kib, path) in rows {
         let Ok(relative) = path.strip_prefix(root_path) else {
             continue;
         };
@@ -382,6 +506,7 @@ fn parse_tree(
                 ts,
                 duration_ms: 0,
                 partial: false,
+                self_partial: Some(false),
                 children_status: if level < depth {
                     ChildrenStatus::Complete
                 } else {
@@ -397,13 +522,20 @@ fn parse_tree(
         ));
     }
     // Attribute errors to the affected path and its ancestors; permission failure is never an empty directory.
-    for line in errors.lines() {
-        let Some((full, error)) = line.strip_prefix("du: ").and_then(|s| s.rsplit_once(": "))
-        else {
+    let mut unattributed = !errors
+        .split("du: ")
+        .next()
+        .unwrap_or_default()
+        .trim()
+        .is_empty();
+    for line in errors.split("du: ").skip(1) {
+        let Some((full, error)) = line.trim_end().rsplit_once(": ") else {
+            unattributed = true;
             continue;
         };
         let path = PathBuf::from(full);
         if !path.starts_with(root_path) {
+            unattributed = true;
             continue;
         }
         if path.strip_prefix(root_path).unwrap().components().count() <= depth
@@ -421,13 +553,19 @@ fn parse_tree(
                     ts,
                     duration_ms: 0,
                     partial: true,
+                    self_partial: Some(true),
                     children_status: ChildrenStatus::Unreadable,
                     error: Some(error.into()),
                 },
             );
         }
+        let mut attributed = false;
         for ancestor in path.ancestors().take_while(|a| a.starts_with(root_path)) {
             if let Some(node) = entries.get_mut(ancestor) {
+                if !attributed {
+                    node.self_partial = Some(true);
+                    attributed = true;
+                }
                 node.partial = true;
                 node.children_status = if ancestor == path {
                     ChildrenStatus::Unreadable
@@ -439,6 +577,11 @@ fn parse_tree(
                 }
             }
         }
+    }
+    if unattributed {
+        let root = entries.get_mut(root_path).unwrap();
+        root.partial = true;
+        root.self_partial = Some(true);
     }
     // APFS's Data-volume view duplicates /Users, /Library, etc. Keep one representation.
     let volumes = Path::new("/System/Volumes");
@@ -494,7 +637,9 @@ fn preserve_children(new: &mut TreeScan, old: &TreeScan) {
     ) && !matches!(
         old.children_status,
         ChildrenStatus::Unscanned | ChildrenStatus::Excluded
-    ) {
+    ) && (new.children_status == ChildrenStatus::Unreadable
+        || old.children_status != ChildrenStatus::Unreadable)
+    {
         new.children = old.children.clone();
         if new.children_status == ChildrenStatus::Unreadable {
             new.bytes = old.bytes;
@@ -508,6 +653,19 @@ fn preserve_children(new: &mut TreeScan, old: &TreeScan) {
                 preserve_children(child, previous);
             }
         }
+    }
+    new.partial = new.children_status == ChildrenStatus::Unreadable
+        || new.self_partial.unwrap_or(new.partial)
+        || new.children.iter().any(|child| child.partial);
+    if matches!(
+        new.children_status,
+        ChildrenStatus::Complete | ChildrenStatus::Partial
+    ) {
+        new.children_status = if new.partial {
+            ChildrenStatus::Partial
+        } else {
+            ChildrenStatus::Complete
+        };
     }
 }
 fn replace_subtree(
@@ -532,6 +690,18 @@ fn replace_subtree(
                     .bytes
                     .saturating_sub(old_size)
                     .saturating_add(child.bytes);
+                tree.partial = tree.self_partial.unwrap_or(tree.partial)
+                    || tree.children.iter().any(|child| child.partial);
+                if matches!(
+                    tree.children_status,
+                    ChildrenStatus::Complete | ChildrenStatus::Partial
+                ) {
+                    tree.children_status = if tree.partial {
+                        ChildrenStatus::Partial
+                    } else {
+                        ChildrenStatus::Complete
+                    };
+                }
                 return true;
             }
         }
@@ -539,6 +709,8 @@ fn replace_subtree(
     false
 }
 async fn execute(state: &Shared, roots: &[String], rules: &Rules) {
+    let control = Arc::clone(&state.read().await.disk_control);
+    let guard = control.lock().await;
     let (id, target, cancelled) = {
         let mut shared = state.write().await;
         if shared.disk_stopping {
@@ -547,7 +719,8 @@ async fn execute(state: &Shared, roots: &[String], rules: &Rules) {
         if shared.disk_scan.status == ScanStatus::Cancelling {
             shared.disk_scan.status = ScanStatus::Cancelled;
             shared.disk_scan.finished_at = Some(now());
-            if let Err(error) = save(&shared.disk_scan, &shared.disk_scans) {
+            drop(shared);
+            if let Err(error) = persist_current(state).await {
                 eprintln!("{error}");
             }
             return;
@@ -558,24 +731,25 @@ async fn execute(state: &Shared, roots: &[String], rules: &Rules) {
         shared.disk_cancel.store(false, Ordering::Relaxed);
         shared.disk_scan.status = ScanStatus::Running;
         shared.disk_scan.started_at = Some(now());
-        if let Err(error) = save(&shared.disk_scan, &shared.disk_scans) {
-            eprintln!("{error}");
-        }
         (
             shared.disk_scan.id,
             shared.disk_scan.target.clone(),
             Arc::clone(&shared.disk_cancel),
         )
     };
+    if let Err(error) = persist_current(state).await {
+        eprintln!("{error}");
+    }
+    drop(guard);
     let selected = target
         .clone()
         .map_or_else(|| roots.to_vec(), |path| vec![path]);
     let mut result = Ok(HashMap::new());
     for root in &selected {
         {
-            let mut shared = state.write().await;
-            shared.disk_scan.current_root = Some(root.clone());
-            if let Err(error) = save(&shared.disk_scan, &shared.disk_scans) {
+            let _guard = control.lock().await;
+            state.write().await.disk_scan.current_root = Some(root.clone());
+            if let Err(error) = persist_current(state).await {
                 eprintln!("{error}");
             }
         }
@@ -600,7 +774,8 @@ async fn execute(state: &Shared, roots: &[String], rules: &Rules) {
             }
         }
     }
-    let mut shared = state.write().await;
+    let _guard = control.lock().await;
+    let shared = state.write().await;
     if shared.disk_scan.id != id {
         return;
     }
@@ -653,10 +828,15 @@ async fn execute(state: &Shared, roots: &[String], rules: &Rules) {
             None
         }
     };
-    match save(&job, replacement.as_ref().unwrap_or(&shared.disk_scans)) {
+    let previous = shared.disk_scans.clone();
+    drop(shared);
+    let saved = save(&job, replacement.as_ref().unwrap_or(&previous)).await;
+    let mut shared = state.write().await;
+    match saved {
         Ok(()) => {
             if let Some(scans) = replacement {
                 shared.disk_scans = scans;
+                shared.disk_revision = job.id;
             }
         }
         Err(error) => {
@@ -682,12 +862,15 @@ pub async fn shutdown(state: &Shared) {
         }
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     }
+    let control = Arc::clone(&state.read().await.disk_control);
+    let _guard = control.lock().await;
     let mut shared = state.write().await;
     if shared.disk_scan.id == id {
         shared.disk_scan.status = ScanStatus::Interrupted;
         shared.disk_scan.finished_at = Some(now());
         shared.disk_scan.current_root = None;
-        if let Err(error) = save(&shared.disk_scan, &shared.disk_scans) {
+        drop(shared);
+        if let Err(error) = persist_current(state).await {
             eprintln!("{error}");
         }
     }
@@ -797,11 +980,106 @@ mod tests {
             "appdata"
         );
     }
+    #[test]
+    fn partial_subtree_updates_and_then_clears_ancestor_quality() {
+        let root = Path::new("/Users/test");
+        let mut tree = parse_tree(
+            "/Users/test",
+            "4\t/Users/test/Library\n4\t/Users/test\n",
+            "",
+            1,
+            &rules(),
+        )
+        .unwrap();
+        let bad = parse_tree(
+            "/Users/test/Library",
+            "0\t/Users/test/Library\n",
+            "du: /Users/test/Library/Closed: Permission denied\n",
+            1,
+            &rules(),
+        )
+        .unwrap();
+        assert!(replace_subtree(
+            &mut tree,
+            root,
+            &root.join("Library"),
+            &bad
+        ));
+        assert!(tree.partial);
+        assert_eq!(tree.children_status, ChildrenStatus::Partial);
+        let good = parse_tree(
+            "/Users/test/Library",
+            "4\t/Users/test/Library\n",
+            "",
+            1,
+            &rules(),
+        )
+        .unwrap();
+        assert!(replace_subtree(
+            &mut tree,
+            root,
+            &root.join("Library"),
+            &good
+        ));
+        assert!(!tree.partial);
+        assert_eq!(tree.children_status, ChildrenStatus::Complete);
+    }
+    #[test]
+    fn shallow_refresh_keeps_quality_of_retained_deep_results() {
+        let root = "/Users/test";
+        let old = parse_tree(
+            root,
+            "4\t/Users/test/Library/Caches\n4\t/Users/test/Library\n4\t/Users/test\n",
+            "du: /Users/test/Library/Caches/Closed: Permission denied\n",
+            3,
+            &rules(),
+        )
+        .unwrap();
+        let mut fresh = parse_tree(
+            root,
+            "4\t/Users/test/Library\n4\t/Users/test\n",
+            "",
+            1,
+            &rules(),
+        )
+        .unwrap();
+        assert!(!fresh.partial);
+        preserve_children(&mut fresh, &old);
+        assert!(fresh.partial);
+        assert_eq!(fresh.children_status, ChildrenStatus::Partial);
+        assert!(fresh.children[0].partial);
+        assert_eq!(
+            fresh.children[0].children[0].ts,
+            old.children[0].children[0].ts
+        );
+    }
+    #[test]
+    fn readable_leaf_does_not_inherit_an_old_unreadable_listing() {
+        let mut fresh = parse_tree(
+            "/Users/test/Library/Caches",
+            "4\t/Users/test/Library/Caches\n",
+            "",
+            0,
+            &rules(),
+        )
+        .unwrap();
+        let mut old = fresh.clone();
+        old.children_status = ChildrenStatus::Unreadable;
+        old.partial = true;
+        old.self_partial = Some(true);
+        old.error = Some("Operation not permitted".into());
+        preserve_children(&mut fresh, &old);
+        assert!(!fresh.partial);
+        assert_eq!(fresh.children_status, ChildrenStatus::Unscanned);
+        assert!(fresh.error.is_none());
+        assert_eq!(fresh.bytes, 4096);
+    }
     #[tokio::test]
     async fn native_subtree_scan_is_cancellable_and_preserves_deeper_cache() {
         let root = std::env::temp_dir().join(format!("disk-lazy-{}", std::process::id()));
         std::fs::create_dir_all(root.join("Library/Caches/item/deeper")).unwrap();
         std::fs::create_dir_all(root.join("Applications/Tool.app/Contents")).unwrap();
+        std::fs::create_dir_all(root.join("Library/a\nb\tc")).unwrap();
         std::fs::write(root.join("Library/Caches/item/deeper/file"), [1u8; 4096]).unwrap();
         let root = root.canonicalize().unwrap();
         let rules = Rules::new(&DiskRulesConfig::default(), &root, &[]).unwrap();
@@ -809,6 +1087,14 @@ mod tests {
         let mut tree = du_tree(root.to_str().unwrap(), 3, &rules, &flag)
             .await
             .unwrap();
+        assert!(tree
+            .children
+            .iter()
+            .find(|node| node.root == "Library")
+            .unwrap()
+            .children
+            .iter()
+            .any(|node| node.root == "a\nb\tc"));
         let caches = root.join("Library/Caches");
         let lazy = du_tree(caches.to_str().unwrap(), 1, &rules, &flag)
             .await

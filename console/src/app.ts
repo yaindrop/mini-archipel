@@ -12,6 +12,7 @@ import {
   type Transport,
 } from "./fleet.ts";
 import { Store } from "./store.ts";
+import { fleetUpdate } from "./fleet-wire.ts";
 import { METRIC_KEYS, stale } from "./domain.ts";
 import { OkSchema } from "./contracts.ts";
 import { PluginManager, type PluginDefinition } from "./plugins/runtime.ts";
@@ -160,7 +161,7 @@ export function createApp(
   });
   app.get("/api/state", view);
   app.get("/api/config", () => ({
-    version: "0.10.0",
+    version: "0.11.0",
     hosts: config.hosts.map(({ name, url }) => ({
       name,
       url,
@@ -189,7 +190,7 @@ export function createApp(
     return {
       host,
       key,
-      points: store.queryRange(host, key, now - windowMs, now),
+      points: await store.queryRange(host, key, now - windowMs, now),
     };
   });
   app.put<{
@@ -340,7 +341,16 @@ export function createApp(
     return { ok: true };
   });
   app.setErrorHandler((error, _request, reply) => {
-    const status = error instanceof UpstreamError ? error.status : 500;
+    const status =
+      error instanceof UpstreamError
+        ? error.status
+        : error instanceof Error &&
+            "statusCode" in error &&
+            typeof error.statusCode === "number" &&
+            error.statusCode >= 400 &&
+            error.statusCode < 500
+          ? error.statusCode
+          : 500;
     void reply.code(status).send({
       error:
         error instanceof UpstreamError
@@ -421,14 +431,17 @@ export function createApp(
   >();
   wss.on("connection", (socket, request) => {
     sessions.set(socket, request.headers);
-    socket.send(JSON.stringify(view()));
+    const versions = new Map<string, string>();
+    directoryVersions.set(socket, versions);
+    socket.send(JSON.stringify(fleetUpdate(view(), versions)));
     socket.on("error", () => {
       socket.close();
     });
   });
+  const directoryVersions = new WeakMap<WebSocket, Map<string, string>>();
   const broadcast = setInterval(() => {
     if (!wss.clients.size) return;
-    const data = JSON.stringify(view());
+    const state = view();
     for (const socket of wss.clients) {
       if (!authenticated(config, sessions.get(socket) ?? {})) {
         socket.close(1008, "Session expired");
@@ -438,7 +451,14 @@ export function createApp(
         socket.readyState === WebSocket.OPEN &&
         socket.bufferedAmount < 1_000_000
       )
-        socket.send(data);
+        socket.send(
+          JSON.stringify(
+            fleetUpdate(
+              state,
+              directoryVersions.get(socket) ?? new Map<string, string>(),
+            ),
+          ),
+        );
     }
   }, 1000);
   if (options.startPolling !== false) {
@@ -450,12 +470,11 @@ export function createApp(
     wss.close();
     done();
   });
-  app.addHook("onClose", (_instance, done) => {
+  app.addHook("onClose", async () => {
     clearInterval(broadcast);
-    monitor.stop();
     plugins.stop();
-    store.close();
-    done();
+    await monitor.stop();
+    await store.close();
   });
   return {
     app,

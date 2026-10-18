@@ -1,5 +1,6 @@
 pub mod catalog;
 pub mod cli;
+mod runner_operations;
 
 use crate::collectors::disk_rules::{self, PluginRule, RulesUpdate, RulesView};
 use crate::collectors::Shared;
@@ -301,6 +302,7 @@ impl Manager {
             .ok_or((StatusCode::NOT_FOUND, "plugin not installed".into()))?;
         let runtime = self.runtime.lock().await;
         let setting = runtime.config.plugins.get(id).cloned().unwrap_or_default();
+        drop(runtime);
         if !setting.enabled {
             return Err((StatusCode::CONFLICT, "plugin is disabled".into()));
         }
@@ -374,6 +376,8 @@ mod tests {
             Box::pin(async move {
                 if action == "echo" {
                     Ok(body)
+                } else if action == "wait" {
+                    std::future::pending().await
                 } else {
                     Err((StatusCode::NOT_FOUND, "unknown action".into()))
                 }
@@ -412,6 +416,38 @@ mod tests {
             .iter()
             .map(|rule| PathBuf::from(&rule.path))
             .collect()
+    }
+    #[tokio::test]
+    async fn slow_actions_do_not_hold_the_global_runtime_lock() {
+        let (config, dir, state) = fixture();
+        let manager = Arc::new(
+            Manager::new(
+                config,
+                dir.join("agent.toml"),
+                state.clone(),
+                vec![Arc::new(Probe("alpha")), Arc::new(Probe("beta"))],
+            )
+            .await
+            .unwrap(),
+        );
+        ready(&state, "alpha").await;
+        ready(&state, "beta").await;
+        let other = manager.clone();
+        let waiting =
+            tokio::spawn(async move { other.action("alpha", "wait".into(), Value::Null).await });
+        tokio::task::yield_now().await;
+        let result = tokio::time::timeout(
+            std::time::Duration::from_millis(200),
+            manager.action("beta", "echo".into(), json!({"independent":true})),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        assert_eq!(result, json!({"independent":true}));
+        waiting.abort();
+        let _ = waiting.await;
+        drop(manager);
+        std::fs::remove_dir_all(dir).unwrap();
     }
     #[tokio::test]
     async fn directory_updates_share_plugin_persistence_and_keep_tasks_alive() {

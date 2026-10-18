@@ -3,7 +3,7 @@ mod config;
 mod plugins;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     routing::{get, post, put},
@@ -207,16 +207,27 @@ async fn cancel_disk_scan(
     )
 }
 
-async fn snapshot(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+#[derive(serde::Deserialize)]
+struct SnapshotQuery {
+    disk_revision: Option<String>,
+}
+async fn snapshot(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Query(query): Query<SnapshotQuery>,
+) -> impl IntoResponse {
     if !authorized(&headers, &state.token) {
         return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    response(
-        serde_json::to_value(state.core.read().await.render()).map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "snapshot serialization failed".into(),
-            )
-        }),
-    )
+    let snapshot = {
+        let shared = state.core.read().await;
+        let revision = format!("{}:{}", shared.started_at, shared.disk_revision);
+        shared.render(query.disk_revision.as_deref() != Some(&revision))
+    };
+    response(serde_json::to_value(snapshot).map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "snapshot serialization failed".into(),
+        )
+    }))
 }

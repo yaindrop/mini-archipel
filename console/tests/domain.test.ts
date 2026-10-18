@@ -14,10 +14,26 @@ import {
   storageClasses,
   uptime,
   metricValue,
+  sampleFresh,
 } from "../src/domain.ts";
 import { makeHost } from "./fixtures.ts";
 import { SnapshotSchema } from "../src/contracts.ts";
 describe("node interpretation", () => {
+  it("separates collector expiry from connectivity and ignores expired resource warnings", () => {
+    const h = makeHost(),
+      now = Date.now();
+    if (!h.snapshot?.sys?.disks[0]) throw Error("fixture");
+    h.snapshot.sys.ts = now - 60_000;
+    h.snapshot.sys.cpu.usage_pct = 100;
+    h.snapshot.sys.disks[0].available_bytes = 0;
+    expect(stale(h, now)).toBe(false);
+    expect(alertsFor([h], now).map((item) => item.title)).toEqual([
+      "系统指标已过期",
+    ]);
+    expect(sampleFresh({ ts: now, error: true }, now)).toBe(false);
+    expect(sampleFresh({ ts: now + 6000 }, now)).toBe(false);
+    expect(sampleFresh({ ts: now }, now)).toBe(true);
+  });
   it("prefers the recorded identity and falls back to the declared type", () => {
     const h = makeHost(2);
     expect(nodeIdentityLabel(h)).toBe("Tart on M4 Max MacBook");

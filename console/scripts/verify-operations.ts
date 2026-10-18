@@ -13,7 +13,7 @@ import { EnvelopeSchema } from "../src/plugins/contracts.ts";
 
 await test(
   "real agent: cancellable durable scans and isolated local Worker interruption",
-  { timeout: 30000 },
+  { timeout: 60000 },
   async (t) => {
     const home = mkdtempSync(join(tmpdir(), "archipel-operations-"));
     const binary =
@@ -26,6 +26,14 @@ await test(
       );
     const token = "fixture-operations-only";
     const config = join(home, "agent.toml");
+    const scanRoot = join(home, "scan-fixture");
+    mkdirSync(scanRoot);
+    // A private tree keeps cancellation deterministic without touching real user data.
+    for (let i = 0; i < 12000; i++) {
+      const directory = join(scanRoot, String(i));
+      mkdirSync(directory);
+      writeFileSync(join(directory, "file"), "fixture");
+    }
     const base = "http://127.0.0.1:0";
     // Reserve a port briefly, then let the real agent bind it.
     const { createServer } = await import("node:net");
@@ -42,11 +50,11 @@ await test(
     );
     writeFileSync(
       config,
-      `bind = "127.0.0.1:${String(address.port)}"\ntoken = "${token}"\n[collectors]\nmacmon = ""\nfanctl = ""\ndisk_roots = ["/"]\n[plugins.runners]\nenabled = true\n[plugins.runners.options]\ninterval_ms = 1000\nallow_control = true\n`,
+      `bind = "127.0.0.1:${String(address.port)}"\ntoken = "${token}"\n[collectors]\nmacmon = ""\nfanctl = ""\ndisk_roots = [${JSON.stringify(scanRoot)}]\n[plugins.runners]\nenabled = true\n[plugins.runners.options]\ninterval_ms = 1000\nallow_control = true\n`,
       { mode: 0o600 },
     );
     const cached = {
-      root: "/",
+      root: scanRoot,
       class: "root",
       bytes: 4096,
       children: [
@@ -82,7 +90,7 @@ await test(
           current_root: null,
           error: null,
         },
-        scans: { "/": cached },
+        scans: { [scanRoot]: cached },
       }),
       { mode: 0o600 },
     );
@@ -120,9 +128,19 @@ await test(
     );
     const hooks = join(home, ".local/libexec/mini-ci");
     mkdirSync(hooks, { recursive: true });
+    // Continually forking descendants in separate sessions remain descendants;
+    // termination must quiesce them rather than rely on one process-group signal.
+    execFileSync(
+      "/usr/bin/clang",
+      ["-x", "c", "-", "-o", join(home, "fork-fixture")],
+      {
+        input:
+          "#include <unistd.h>\n#include <stdlib.h>\nint main(void) { for(int i=0;i<30;i++) { if(fork()==0) { setsid(); sleep(120); _exit(0); } usleep(30000); } sleep(120); return 0; }\n",
+      },
+    );
     writeFileSync(
       join(hooks, "job-started.sh"),
-      "#!/bin/bash\nexec /bin/sleep 120\n",
+      '#!/bin/bash\nexec "$HOME/fork-fixture"\n',
     );
     writeFileSync(join(hooks, "job-completed.sh"), "#!/bin/bash\nexit 0\n");
     const worker = spawn(join(install, "bin/Runner.Worker"), [], {
@@ -172,7 +190,18 @@ await test(
           authorization: `Bearer ${token}`,
           "content-type": "application/json",
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...(body === undefined
+          ? {}
+          : {
+              body: JSON.stringify(
+                path.startsWith("/plugins/runners/actions/")
+                  ? {
+                      request_id: crypto.randomUUID(),
+                      ...(body as Record<string, unknown>),
+                    }
+                  : body,
+              ),
+            }),
         signal: AbortSignal.timeout(2000),
       });
     async function startAgent() {
@@ -204,7 +233,17 @@ await test(
       throw Error("scan state did not reach " + status);
     }
     await startAgent();
-    assert.deepEqual((await snapshot()).disk_scans, [cached]);
+    const initial = await snapshot();
+    assert.deepEqual(initial.disk_scans, [cached]);
+    assert(initial.disk_revision);
+    const unchanged = await request(
+      "/snapshot?disk_revision=" + encodeURIComponent(initial.disk_revision),
+    );
+    assert.equal(unchanged.status, 200);
+    assert.equal(
+      Object.hasOwn((await unchanged.json()) as object, "disk_scans"),
+      false,
+    );
     assert.equal((await request("/rescan-disk", {})).status, 200);
     let state = await waitStatus("running");
     assert.deepEqual(state.disk_scans, [cached]);
@@ -297,12 +336,16 @@ await test(
     assert.equal(listener.signalCode, null);
     assert.equal(unrelated.exitCode, null);
     assert.equal(unrelated.signalCode, null);
-    const remaining = execFileSync("/bin/ps", ["-axo", "pid=,stat="])
+    const remaining = execFileSync("/bin/ps", ["-axo", "pid=,stat=,comm="])
       .toString()
       .trim()
       .split("\n");
     for (const line of remaining) {
       const [pid, status] = line.trim().split(/\s+/);
+      assert(
+        !line.includes(join(home, "fork-fixture")) || status?.startsWith("Z"),
+        "newly forked or separate-session descendant survived",
+      );
       assert(
         !pid || !owned.has(pid) || status?.startsWith("Z"),
         "job descendant survived interruption",

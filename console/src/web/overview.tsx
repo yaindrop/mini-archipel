@@ -40,6 +40,7 @@ import {
   memoryPct,
   NODE_COLORS,
   stale,
+  sampleFresh,
   uptime,
 } from "../domain.ts";
 import { HostIdentity, Metric, NodeStatus, PageTitle, Section } from "./ui.tsx";
@@ -88,7 +89,8 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
     };
   }, []);
   const plugins = useWorkbenchPlugins(fleet);
-  const fresh = fleet.hosts.filter((h) => !stale(h, now));
+  const reachable = fleet.hosts.filter((h) => !stale(h, now)),
+    fresh = reachable.filter((h) => sampleFresh(h.snapshot?.sys, now));
   const memoryTotal = fresh.reduce(
       (sum, h) => sum + (h.snapshot?.sys?.mem.total_bytes ?? 0),
       0,
@@ -332,7 +334,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
           label={t`在线节点`}
           value={
             <>
-              {fresh.length}
+              {reachable.length}
               <span>/ {fleet.hosts.length}</span>
             </>
           }

@@ -33,6 +33,29 @@ function setup(
   return x;
 }
 const auth = { authorization: `Bearer ${TOKEN}` };
+it("preserves malformed JSON and oversized body HTTP status codes", async () => {
+  const { app } = setup();
+  expect(
+    (
+      await app.inject({
+        method: "POST",
+        url: "/api/session",
+        headers: { "content-type": "application/json" },
+        payload: "{",
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (
+      await app.inject({
+        method: "POST",
+        url: "/api/session",
+        headers: { "content-type": "application/json" },
+        payload: JSON.stringify({ token: "x".repeat(17000) }),
+      })
+    ).statusCode,
+  ).toBe(413);
+});
 async function session(app: ReturnType<typeof createApp>["app"]) {
   const r = await app.inject({
     method: "POST",
@@ -336,6 +359,7 @@ describe("safe mutations and query inputs", () => {
       "test-agent-token",
       { repo: "yaindrop/flowbit", runner: "flowbit", enable: false },
       "POST",
+      expect.any(AbortSignal),
     );
     fail = true;
     expect(

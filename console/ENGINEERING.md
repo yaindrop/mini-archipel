@@ -21,7 +21,10 @@ Runner 的采集、数据模型、GitHub 集成、控制和工作台扩展已迁
 | `src/contracts.ts`    | Zod 校验 agent、HTTP、WebSocket 与历史数据，导出共享 TS 类型              |
 | `src/domain.ts`       | 单位、状态、过期判定、告警、存储树与指标口径                              |
 | `src/fleet.ts`        | 基础采集、同节点轮询去重、最近走势                                        |
-| `src/store.ts`        | SQLite 写入、分层聚合、保留与有界查询                                     |
+| `src/store.ts`        | 有界 Worker 请求、故障隔离与排空退出                                      |
+| `src/store-worker.ts` | 后台数据库操作入口                                                        |
+| `src/history-db.ts`   | SQLite 事务、带权聚合、保留与有界查询                                     |
+| `src/fleet-wire.ts`   | 目录修订与完整基线恢复                                                    |
 | `src/app.ts`          | 可注入 transport 的 Fastify 应用、会话、输入校验、操作保护、静态资源与 WS |
 | `src/server.ts`       | 配置、监听、退出与运行目录                                                |
 | `src/web/App.tsx`     | 登录、导航、布局、错误边界及页面路由                                      |
@@ -71,7 +74,7 @@ npm run audit
 
 ## 发布与兼容
 
-Vite 按业务路由、共享表格与 React 运行时拆分前端并对资产加内容哈希，所有 JS 分块低于 500 kB 的默认警戒线。esbuild 将服务端打成 `dist/server.cjs`。安装器复制整个 web 目录；HTML 不缓存，哈希资源长期缓存。配置和 SQLite 保存在发布目录之外，现有主机历史键保持不变；0.6 的命名迁移路径见 README。
+Vite 按业务路由、共享表格与 React 运行时拆分前端并对资产加内容哈希，所有 JS 分块低于 500 kB 的默认警戒线。esbuild 产出 `dist/server.cjs` 和 `dist/store-worker.cjs`，安装器同时复制两个入口和整个 web 目录；HTML 不缓存，哈希资源长期缓存。配置和 SQLite 保存在发布目录之外，现有主机历史键保持不变；0.6 的命名迁移路径见 README。采集、任务和迁移边界见 [可靠性说明](../docs/reliability.md)。
 
 原来的 `?token=` 链接和 localStorage token 认证已移除。首次打开登录页输入原 `uiToken`，换取 HttpOnly 会话；令牌不出现在 URL。过期会话会停止实时订阅并回到登录。GitHub Token 是可选服务端配置，不依赖开发者机器的 gh 登录。
 

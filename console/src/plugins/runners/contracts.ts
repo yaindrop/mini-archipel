@@ -17,6 +17,7 @@ const RunnerSchema = z.object({
   listener_pid: bytes.nullable(),
   worker_pid: bytes.nullable(),
   work_bytes: bytes.nullable(),
+  sizes_ts: bytes.nullable().optional(),
   diag_bytes: bytes.nullable(),
   diag_latest: z.string().nullable(),
   ts: bytes,
@@ -33,6 +34,26 @@ export const GitHubRunnerSchema = z.object({
 export type GitHubRunner = z.infer<typeof GitHubRunnerSchema>;
 
 export const AgentDataSchema = z.object({
+  operations: z
+    .array(
+      z.object({
+        id: z.string(),
+        action: z.string(),
+        request: z.record(z.string(), z.unknown()),
+        status: z.enum([
+          "queued",
+          "running",
+          "completed",
+          "failed",
+          "uncertain",
+          "interrupted",
+        ]),
+        requested_at: bytes,
+        finished_at: bytes.nullable(),
+        error: z.string().nullable(),
+      }),
+    )
+    .optional(),
   runners: z.array(RunnerSchema),
   interval_ms: z.number().min(1000).max(60000),
   control_allowed: z.boolean(),
@@ -67,6 +88,7 @@ export const OptionsSchema = z.strictObject({
     .default([]),
 });
 export const ToggleSchema = z.strictObject({
+  request_id: z.uuid().optional(),
   repo: RepoSchema,
   runner: z
     .string()
@@ -80,6 +102,7 @@ export const InterruptSchema = ToggleSchema.omit({ enable: true }).extend({
   worker_pid: z.number().int().positive(),
 });
 export const CoordinationSchema = z.strictObject({
+  request_id: z.uuid().optional(),
   host: z.string().min(1),
   enable: z.boolean(),
 });

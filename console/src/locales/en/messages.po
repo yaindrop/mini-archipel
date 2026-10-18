@@ -167,8 +167,28 @@ msgstr "The node returned invalid data"
 
 #. js-lingui-explicit-id
 #: src/fleet.ts
+msgid "历史记录暂时无法读取，实时监测仍在运行"
+msgstr "History is temporarily unavailable. Live monitoring is still running."
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史缓冲已满，部分样本未保存"
+msgstr "The history buffer is full. Some samples were not saved."
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史记录暂时无法保存，实时监测仍在运行"
+msgstr "History could not be saved. Live monitoring is still running."
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
 msgid "节点数据校验失败"
 msgstr "Node data validation failed"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史归档暂时失败，实时监测仍在运行"
+msgstr "History archiving failed. Live monitoring is still running."
 
 #. js-lingui-explicit-id
 #: src/plugins/runtime.ts
@@ -209,6 +229,11 @@ msgstr "Plugin disabled"
 #: src/plugins/runtime.ts
 msgid "插件暂不可用，请检查插件状态"
 msgstr "The plugin is unavailable. Check its status."
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件正在切换状态，请稍后重试"
+msgstr "The plugin is changing state. Try again shortly."
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
@@ -449,6 +474,11 @@ msgstr "{0} drill-down depth"
 msgid "{0} 个 ↗"
 msgstr "{0} ↗"
 
+#. placeholder {0}: String(fleet.historyDropped)
+#: src/web/App.tsx
+msgid "{0} 个历史样本未保存，实时监测仍在运行。"
+msgstr "{0} history samples were not saved. Live monitoring is still running."
+
 #. placeholder {0}: String(host.snapshot.host.cores)
 #. placeholder {1}: formatNumber(host.snapshot.host.load[0], 2)
 #: src/web/node.tsx
@@ -491,26 +521,6 @@ msgstr "{0} reporting"
 msgid "{0} 台物理机 · {1} 台虚拟机"
 msgstr "{0} physical · {1} virtual"
 
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已停止接单"
-msgstr "{0} stopped accepting jobs"
-
-#. placeholder {0}: displayName(host)
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已关闭接单互斥"
-msgstr "Mutual exclusion disabled on {0}"
-
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已启动接单"
-msgstr "{0} started accepting jobs"
-
-#. placeholder {0}: displayName(host)
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已开启接单互斥"
-msgstr "Mutual exclusion enabled on {0}"
-
 #. placeholder {0}: displayName(host)
 #: src/plugins/runners/workbench.tsx
 msgid "{0} 接单互斥"
@@ -520,11 +530,6 @@ msgstr "{0} mutual exclusion"
 #: src/web/overview.tsx
 msgid "{0} 核 · 按在线节点核心数加权"
 msgstr "{0} cores · Weighted by online core count"
-
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 的作业已在本地中断"
-msgstr "The job on {0} was interrupted locally"
 
 #. placeholder {0}: displayName(h)
 #: src/web/overview.tsx
@@ -1247,13 +1252,13 @@ msgstr "Terminate this Worker and its child processes locally, without calling G
 msgid "将校准建议导入草稿"
 msgstr "Import calibration suggestion into draft"
 
+#: src/plugins/runners/workbench.tsx
+msgid "尚无已注册 Runner，节点上报注册信息后会自动显示。"
+msgstr "No runners are registered yet. They will appear when nodes report their registrations."
+
 #: src/web/storage.tsx
 msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
 msgstr "No directory scan yet. Select Rescan to collect directory usage."
-
-#: src/plugins/runners/workbench.tsx
-msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
-msgstr "No runners found yet. Installed runners appear when nodes report them."
 
 #: src/web/storage.tsx
 msgid "尚未扫描下级目录"
@@ -1504,6 +1509,10 @@ msgstr "Scan queued"
 msgid "扫描此目录"
 msgstr "Scan this directory"
 
+#: src/web/storage-errors.ts
+msgid "扫描状态无法保存，请检查节点可用空间和目录权限。"
+msgstr "Scan state could not be saved. Check free space and directory permissions on the node."
+
 #: src/web/storage.tsx
 msgid "扫描范围"
 msgstr "Scan scope"
@@ -1614,9 +1623,25 @@ msgstr "Search processes"
 msgid "操作"
 msgstr "Actions"
 
+#: src/plugins/runners/workbench.tsx
+msgid "操作处理中"
+msgstr "Operation in progress"
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作已完成"
+msgstr "Operation completed"
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作未确认完成，请核对当前节点状态"
+msgstr "Operation not confirmed. Check the current node state."
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "The node runs this locally. Closing this page will not stop the task. You can cancel it in the task history."
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作请求已提交，请查看节点操作状态"
+msgstr "Request submitted. Check the node operation status."
 
 #: src/web/api.ts
 msgid "收到的数据不符合接口约定，请刷新后重试"
@@ -1639,6 +1664,7 @@ msgstr "Discard unsaved directory rules?"
 msgid "散热状态异常"
 msgstr "Thermal warning"
 
+#: src/web/node.tsx
 #: src/web/ui.tsx
 msgid "数据已过期"
 msgstr "Data stale"
@@ -1731,6 +1757,10 @@ msgstr "Disabled"
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "No disconnected nodes, low-storage alerts, or thermal warnings."
+
+#: src/web/storage-errors.ts
+msgid "未获得有效目录统计，请查看节点诊断日志。"
+msgstr "No valid directory statistics were received. Check the node diagnostic log."
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
@@ -2056,14 +2086,26 @@ msgstr "Listening / ready"
 msgid "目录"
 msgstr "Directory"
 
+#: src/web/storage-errors.ts
+msgid "目录不可读取，请检查节点访问权限。"
+msgstr "The directory cannot be read. Check access permissions on the node."
+
 #. placeholder {0}: formatBytes(scan.bytes)
 #: src/web/storage.tsx
 msgid "目录分类，共 {0}"
 msgstr "Directory categories, {0} total"
 
+#: src/web/storage-errors.ts
+msgid "目录已不在缓存中，请重新扫描上级目录。"
+msgstr "The directory is no longer cached. Rescan its parent directory."
+
 #: src/web/App.tsx
 msgid "目录扫描"
 msgstr "Directory scans"
+
+#: src/web/storage-errors.ts
+msgid "目录条目超过限制，请降低下钻深度后重试。"
+msgstr "Too many directory entries. Reduce the drill-down depth and try again."
 
 #: src/web/storage.tsx
 msgid "目录空间分析"
@@ -2117,6 +2159,10 @@ msgstr "Low available storage"
 #: src/web/App.tsx
 msgid "私有工作空间"
 msgstr "Private workspace"
+
+#: src/plugins/runners/workbench.tsx
+msgid "空间统计每分钟更新，进程状态独立实时更新"
+msgstr "Storage usage updates every minute; process status updates independently in real time."
 
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
@@ -2193,6 +2239,15 @@ msgstr "System reports critical thermal state"
 #: src/domain.ts
 msgid "系统报告 serious"
 msgstr "System reports serious thermal state"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统指标已过期"
+msgstr "System metrics are stale"
+
+#: src/web/node.tsx
+msgid "系统指标已过期，显示最后有效读数"
+msgstr "System metrics are stale. Showing the last valid readings."
 
 #: src/web/storage.tsx
 msgid "系统根目录"
@@ -2289,6 +2344,11 @@ msgstr "Node runners"
 msgid "节点不存在"
 msgstr "Node not found"
 
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
+msgstr "The node is online. Waiting for collection to resume; stale readings are excluded from cluster totals."
+
 #: src/web/node.tsx
 msgid "节点信息"
 msgstr "Node information"
@@ -2300,6 +2360,10 @@ msgstr "This node may have been removed from the cluster configuration."
 #: src/web/ui.tsx
 msgid "节点在线"
 msgstr "Online"
+
+#: src/web/ui.tsx
+msgid "节点在线，指标已过期"
+msgstr "Node online, metrics stale"
 
 #: src/web/App.tsx
 msgid "节点导航"
@@ -2433,6 +2497,10 @@ msgstr "Diagnostic logs"
 #: src/web/preferences.tsx
 msgid "语言：{languageLabel}"
 msgstr "Language: {languageLabel}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
+msgstr "Refresh the node state and check local processes and runner coordination before retrying."
 
 #. placeholder {0}: String(response.status)
 #: src/web/api.ts
@@ -2570,6 +2638,10 @@ msgstr "Sign out"
 #: src/web/storage.tsx
 msgid "部分不可读取"
 msgstr "Partially unreadable"
+
+#: src/web/node.tsx
+msgid "部分传感器已过期，显示最后有效读数"
+msgstr "Some sensor readings are stale. Showing the last valid readings."
 
 #: src/web/storage.tsx
 msgid "部分目录不可读取 · "

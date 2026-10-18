@@ -4,7 +4,8 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { FleetSchema, type Fleet } from "../contracts.ts";
+import { type Fleet } from "../contracts.ts";
+import { restoreFleet } from "../fleet-wire.ts";
 import { api, ApiError } from "./api.ts";
 export function useFleet(paused: boolean) {
   const client = useQueryClient();
@@ -44,12 +45,11 @@ export function useFleet(paused: boolean) {
       };
       socket.onmessage = (event) => {
         try {
-          const parsed = FleetSchema.safeParse(
+          const fleet = restoreFleet(
             JSON.parse(String(event.data)) as unknown,
+            client.getQueryData<Fleet>(["fleet"]),
           );
-          if (parsed.success)
-            client.setQueryData<Fleet>(["fleet"], parsed.data);
-          else socket?.close();
+          client.setQueryData<Fleet>(["fleet"], fleet);
         } catch {
           setConnection("polling");
           socket?.close();

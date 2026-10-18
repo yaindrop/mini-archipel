@@ -51,6 +51,7 @@ const DiskScanJobSchema = z.object({
   error: z.string().nullable(),
 });
 export const SnapshotSchema = z.object({
+  disk_revision: z.string().optional(),
   agent: z.object({ version: z.string(), started_at: bytes, ts: bytes }),
   host: z
     .object({
@@ -106,6 +107,7 @@ export const SnapshotSchema = z.object({
       gpu_power_w: number.nullable(),
       package_power_w: number.nullable(),
       ts: bytes,
+      error: z.boolean().optional(),
     })
     .nullable(),
   thermal: z
@@ -120,6 +122,8 @@ export const SnapshotSchema = z.object({
       target: number.nullish(),
       forced: z.boolean().optional(),
       paused: z.boolean().optional(),
+      ts: bytes.optional(),
+      error: z.boolean().optional(),
     })
     .nullable(),
   disk_scans: z.array(ScanSchema),
@@ -127,6 +131,9 @@ export const SnapshotSchema = z.object({
   plugins: z.record(z.string(), z.unknown()).default({}),
 });
 export type Snapshot = z.infer<typeof SnapshotSchema>;
+export const SnapshotUpdateSchema = SnapshotSchema.partial({
+  disk_scans: true,
+});
 export const NodeKindSchema = z.enum(["physical", "virtual"]);
 const HostSchema = z.object({
   name: z.string(),
@@ -141,10 +148,17 @@ const HostSchema = z.object({
 export type Host = z.infer<typeof HostSchema>;
 export const FleetSchema = z.object({
   ts: bytes,
+  historyError: z.string().nullable().optional(),
+  historyDropped: bytes.optional(),
   hosts: z.array(HostSchema),
   plugins: z.record(z.string(), PluginViewSchema).default({}),
 });
 export type Fleet = z.infer<typeof FleetSchema>;
+export const FleetUpdateSchema = FleetSchema.extend({
+  hosts: z.array(
+    HostSchema.extend({ snapshot: SnapshotUpdateSchema.nullable() }),
+  ),
+});
 export const HistorySchema = z.object({
   host: z.string(),
   key: z.string(),

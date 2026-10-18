@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
 import { OkSchema } from "../../contracts.ts";
 import { UpstreamError } from "../../fleet.ts";
 import { readEnvelope } from "../contracts.ts";
@@ -15,7 +16,7 @@ import { agentData, current, runnerState, runnersFor } from "./domain.ts";
 export const runnersPlugin: PluginDefinition = {
   id: "runners",
   label: "Runners",
-  version: "2.1.0",
+  version: "2.2.0",
   description: /*i18n*/ "GitHub Actions 接单进程、作业保护、工作区及诊断日志。",
   create(context, rawOptions) {
     const parsed = OptionsSchema.safeParse(rawOptions);
@@ -128,6 +129,7 @@ export const runnersPlugin: PluginDefinition = {
             /*i18n*/ "缺少有效的节点、仓库、安装目录或操作",
           );
         const { host: name } = input.data;
+        const requestId = input.data.request_id ?? randomUUID();
         await context.pollHost(name);
         const host = context.hosts().find((h) => h.name === name);
         if (!host) throw new UpstreamError(404, /*i18n*/ "节点不存在");
@@ -141,6 +143,9 @@ export const runnersPlugin: PluginDefinition = {
             403,
             /*i18n*/ "此节点只启用了监控，尚未授权 Runner 服务控制",
           );
+        const operationId = agentData(host)?.operations
+          ? { request_id: requestId }
+          : {};
         if (!("repo" in input.data)) {
           if (!agentData(host)?.coordination?.available)
             throw new UpstreamError(
@@ -152,6 +157,7 @@ export const runnersPlugin: PluginDefinition = {
               name,
               "plugins/runners/actions/coordination",
               {
+                ...operationId,
                 enable: input.data.enable,
               },
             ),
@@ -192,8 +198,14 @@ export const runnersPlugin: PluginDefinition = {
             name,
             `plugins/runners/actions/${action}`,
             action === "interrupt" && "worker_pid" in input.data
-              ? { repo, runner: directory, worker_pid: input.data.worker_pid }
+              ? {
+                  ...operationId,
+                  repo,
+                  runner: directory,
+                  worker_pid: input.data.worker_pid,
+                }
               : {
+                  ...operationId,
                   repo,
                   runner: directory,
                   enable: "enable" in input.data ? input.data.enable : false,

@@ -33,7 +33,9 @@ export class PluginManager {
   private readonly definitions = new Map<string, PluginDefinition>();
   private readonly instances = new Map<string, PluginInstance>();
   private readonly failures = new Map<string, string>();
-  private queue: Promise<unknown> = Promise.resolve();
+  private readonly queues = new Map<string, Promise<unknown>>();
+  private readonly actions = new Map<string, Set<Promise<unknown>>>();
+  private readonly changing = new Set<string>();
   private running = false;
   private config: ConsoleConfig;
   private readonly context: PluginContext;
@@ -113,81 +115,105 @@ export class PluginManager {
     this.running = false;
     for (const instance of this.instances.values()) instance.stop();
   }
-  private serial<T>(operation: () => Promise<T> | T): Promise<T> {
-    const result = this.queue.then(operation);
-    this.queue = result.catch(() => undefined);
+  private serial<T>(id: string, operation: () => Promise<T> | T): Promise<T> {
+    const result = (this.queues.get(id) ?? Promise.resolve()).then(operation);
+    const tail = result.catch(() => undefined);
+    this.queues.set(id, tail);
+    void tail.finally(() => {
+      if (this.queues.get(id) === tail) this.queues.delete(id);
+    });
     return result;
   }
   setEnabled(id: string, enabled: boolean): Promise<void> {
-    return this.serial(() => {
-      const definition = this.definitions.get(id);
-      if (!definition) throw new UpstreamError(404, /*i18n*/ "插件未安装");
-      const setting = this.config.plugins[id] ?? {
-        enabled: false,
-        options: {},
-      };
-      if (setting.enabled === enabled && !this.failures.has(id)) return;
-      let instance: PluginInstance | undefined;
+    return this.serial(id, async () => {
+      this.changing.add(id);
       try {
-        if (enabled)
-          instance = definition.create(this.context, setting.options);
-      } catch {
-        throw new UpstreamError(400, /*i18n*/ "插件配置无效，请检查配置后重试");
-      }
-      const updated = {
-        ...this.config,
-        plugins: {
-          ...this.config.plugins,
-          [id]: {
-            ...setting,
-            enabled,
+        const pending = this.actions.get(id);
+        if (pending) await Promise.allSettled(pending);
+        const definition = this.definitions.get(id);
+        if (!definition) throw new UpstreamError(404, /*i18n*/ "插件未安装");
+        const setting = this.config.plugins[id] ?? {
+          enabled: false,
+          options: {},
+        };
+        if (setting.enabled === enabled && !this.failures.has(id)) return;
+        let instance: PluginInstance | undefined;
+        try {
+          if (enabled)
+            instance = definition.create(this.context, setting.options);
+        } catch {
+          throw new UpstreamError(
+            400,
+            /*i18n*/ "插件配置无效，请检查配置后重试",
+          );
+        }
+        const updated = {
+          ...this.config,
+          plugins: {
+            ...this.config.plugins,
+            [id]: {
+              ...setting,
+              enabled,
+            },
           },
-        },
-      };
-      try {
-        if (this.running) instance?.start();
-        this.persist(updated);
-      } catch {
-        instance?.stop();
-        throw new UpstreamError(500, /*i18n*/ "插件配置未保存，原状态保持不变");
+        };
+        try {
+          if (this.running) instance?.start();
+          this.persist(updated);
+        } catch {
+          instance?.stop();
+          throw new UpstreamError(
+            500,
+            /*i18n*/ "插件配置未保存，原状态保持不变",
+          );
+        }
+        this.instances.get(id)?.stop();
+        this.instances.delete(id);
+        this.failures.delete(id);
+        if (instance) this.instances.set(id, instance);
+        this.config = updated;
+      } finally {
+        this.changing.delete(id);
       }
-      this.instances.get(id)?.stop();
-      this.instances.delete(id);
-      this.failures.delete(id);
-      if (instance) this.instances.set(id, instance);
-      this.config = updated;
     });
   }
-  action(id: string, action: string, body: unknown): Promise<unknown> {
-    return this.serial(async () => {
-      if (!this.definitions.has(id))
-        throw new UpstreamError(404, /*i18n*/ "插件未安装");
-      const instance = this.instances.get(id);
-      if (!this.config.plugins[id]?.enabled)
-        throw new UpstreamError(409, /*i18n*/ "插件未启用");
-      if (!instance || this.failures.has(id))
-        throw new UpstreamError(503, /*i18n*/ "插件暂不可用，请检查插件状态");
-      return instance.action(action, body);
-    });
+  async action(id: string, action: string, body: unknown): Promise<unknown> {
+    if (!this.definitions.has(id))
+      throw new UpstreamError(404, /*i18n*/ "插件未安装");
+    const instance = this.instances.get(id);
+    if (!this.config.plugins[id]?.enabled)
+      throw new UpstreamError(409, /*i18n*/ "插件未启用");
+    if (!instance || this.failures.has(id))
+      throw new UpstreamError(503, /*i18n*/ "插件暂不可用，请检查插件状态");
+    if (this.changing.has(id) && action !== "cancel")
+      throw new UpstreamError(409, /*i18n*/ "插件正在切换状态，请稍后重试");
+    const pending = instance.action(action, body);
+    const actions = this.actions.get(id) ?? new Set<Promise<unknown>>();
+    this.actions.set(id, actions);
+    actions.add(pending);
+    try {
+      return await pending;
+    } finally {
+      actions.delete(pending);
+      if (!actions.size) this.actions.delete(id);
+    }
   }
-  setAgentEnabled(
+  async setAgentEnabled(
     host: string,
     id: string,
     enabled: boolean,
   ): Promise<unknown> {
-    return this.serial(async () => {
-      if (!this.definitions.has(id))
-        throw new UpstreamError(404, /*i18n*/ "插件未安装");
-      const result = await this.context.command(
-        host,
-        `plugins/${encodeURIComponent(id)}`,
-        {
-          enabled,
-        },
-        "PUT",
-      );
-      await this.context.pollHost(host);
-      return result;
-    });
+    if (!this.definitions.has(id))
+      throw new UpstreamError(404, /*i18n*/ "插件未安装");
+    const result = await this.context.command(
+      host,
+      `plugins/${encodeURIComponent(id)}`,
+      {
+        enabled,
+      },
+      "PUT",
+    );
+    await this.context.pollHost(host);
+    return result;
   }
 }

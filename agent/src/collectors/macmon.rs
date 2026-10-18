@@ -17,6 +17,7 @@ pub struct MacmonSample {
     pub gpu_power_w: Option<f32>,
     pub package_power_w: Option<f32>,
     pub ts: u64,
+    pub error: bool,
 }
 
 fn now_unix() -> u64 {
@@ -67,7 +68,25 @@ fn apply(sample: &mut MacmonSample, value: &serde_json::Value) {
     }
 }
 
+fn reading(value: &serde_json::Value) -> Option<MacmonSample> {
+    let mut sample = MacmonSample::default();
+    apply(&mut sample, value);
+    if sample.cpu_power_w.is_none()
+        && sample.package_power_w.is_none()
+        && sample.p_cluster_mhz.is_none()
+        && sample.e_cluster_mhz.is_none()
+        && sample.gpu_pct.is_none()
+        && sample.gpu_mhz.is_none()
+    {
+        return None;
+    }
+    Some(sample)
+}
+
 pub async fn run(state: Shared, binary: String) {
+    if binary.trim().is_empty() {
+        return;
+    }
     loop {
         let mut child = match tokio::process::Command::new(&binary)
             .arg("pipe")
@@ -75,10 +94,14 @@ pub async fn run(state: Shared, binary: String) {
             .arg("1000")
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::null())
+            .kill_on_drop(true)
             .spawn()
         {
             Ok(child) => child,
             Err(error) => {
+                if let Some(sample) = state.write().await.macmon.as_mut() {
+                    sample.error = true;
+                }
                 eprintln!("macmon spawn failed ({binary}): {error}");
                 // Binary absent on this host: retry occasionally in case it
                 // gets installed later.
@@ -90,21 +113,53 @@ pub async fn run(state: Shared, binary: String) {
         use tokio::io::{AsyncBufReadExt, BufReader};
         let stdout = child.stdout.take().expect("piped stdout");
         let mut lines = BufReader::new(stdout).lines();
-        let mut sample = MacmonSample::default();
         let mut seen_lines = 0u32;
 
-        while let Ok(Some(line)) = lines.next_line().await {
+        while let Ok(Ok(Some(line))) =
+            tokio::time::timeout(std::time::Duration::from_secs(5), lines.next_line()).await
+        {
             seen_lines += 1;
             let Ok(value) = serde_json::from_str::<serde_json::Value>(&line) else {
                 continue;
             };
-            apply(&mut sample, &value);
+            let Some(mut sample) = reading(&value) else {
+                continue;
+            };
             sample.ts = now_unix();
-            state.write().await.macmon = Some(sample.clone());
+            state.write().await.macmon = Some(sample);
         }
 
+        if let Some(sample) = state.write().await.macmon.as_mut() {
+            sample.error = true;
+        }
+        let _ = child.kill().await;
         let status = child.wait().await;
         eprintln!("macmon stream ended after {seen_lines} lines, status={status:?}; respawning");
         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn each_reading_is_independent_and_unknown_json_is_not_a_sample() {
+        assert!(reading(&serde_json::json!({"unrecognized":1})).is_none());
+        let first = reading(&serde_json::json!({"cpu_power":3.5,"pcpu_freq_mhz":1440})).unwrap();
+        let second = reading(&serde_json::json!({"all_power":4})).unwrap();
+        assert_eq!(first.cpu_power_w, Some(3.5));
+        assert_eq!(second.cpu_power_w, None);
+        assert_eq!(second.p_cluster_mhz, None);
+    }
+    #[tokio::test]
+    async fn explicitly_disabled_collector_does_not_start_a_retry_loop() {
+        let state = std::sync::Arc::new(tokio::sync::RwLock::new(super::super::SharedState::new()));
+        tokio::time::timeout(
+            std::time::Duration::from_millis(100),
+            run(state.clone(), String::new()),
+        )
+        .await
+        .unwrap();
+        assert!(state.read().await.macmon.is_none());
     }
 }

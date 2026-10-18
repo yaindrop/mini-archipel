@@ -10,6 +10,7 @@ import {
   isVirtual,
   nodeIdentityLabel,
   stale,
+  sampleFresh,
 } from "../domain.ts";
 export function Brand() {
   const { t } = useLinguiMacro();
@@ -139,10 +140,19 @@ export function HostIdentity({
 export function NodeStatus({ host, now }: { host: Host; now: number }) {
   const { t } = useLinguiMacro();
   const old = stale(host, now);
+  const expired = !sampleFresh(host.snapshot?.sys, now);
   return (
     <Badge
-      status={old ? "error" : "success"}
-      text={old ? (host.online ? t`数据已过期` : t`节点离线`) : t`节点在线`}
+      status={old ? "error" : expired ? "warning" : "success"}
+      text={
+        old
+          ? host.online
+            ? t`数据已过期`
+            : t`节点离线`
+          : expired
+            ? t`节点在线，指标已过期`
+            : t`节点在线`
+      }
     />
   );
 }

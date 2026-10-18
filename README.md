@@ -13,6 +13,8 @@
 
 装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](fan-control/README.md)。
 
+采集过期、历史缓冲、扫描任务、Runner 操作回执与签名恢复约定见 [可靠性说明](docs/reliability.md)。
+
 ## 工作台
 
 通用界面使用 Ant Design 6，主题由 ConfigProvider 统一管理。节点指标和监控图表按业务设计，页面按路由加载。
@@ -119,7 +121,7 @@ NODE_BIN=/opt/homebrew/bin/node ./install.sh
 重扫期间始终保留旧结果；页面刷新可继续查看状态并取消，Agent 重启会将未完成任务标为中断。
 配置与结果缓存位于各节点的私有数据目录，扫描不依赖本机 SSH 密钥。
 完整扫描需要在各节点「系统设置 → 隐私与安全性 → 完全磁盘访问权限」中允许
-`~/.local/libexec/mini-archipel-agent`。当前 ad hoc 构建更新后可能需要移除旧条目并重新添加；
+`~/.local/libexec/mini-archipel-agent`。构建和安装必须保留 [持续签名身份](agent/SIGNING.md)，正常升级不会更换授权身份；首次从临时签名迁移仍需移除旧条目并重新添加。
 权限等待不会阻塞监测，可以取消扫描并继续查看旧结果。排查依据见 [扫描设计记录](docs/design.md#后台目录扫描2026-10-18)。
 
 - 配置：`~/.config/mini-archipel/console.json`

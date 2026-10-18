@@ -73,6 +73,36 @@ fn default_disk_roots() -> Vec<String> {
 pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
     let raw = std::fs::read_to_string(path)?;
     let mut config: Config = toml::from_str(&raw)?;
+    for (name, value, min, max) in [
+        (
+            "proc_interval_ms",
+            config.collectors.proc_interval_ms,
+            500,
+            60_000,
+        ),
+        (
+            "thermal_interval_ms",
+            config.collectors.thermal_interval_ms,
+            500,
+            60_000,
+        ),
+        (
+            "fan_interval_ms",
+            config.collectors.fan_interval_ms,
+            500,
+            60_000,
+        ),
+        (
+            "disk_interval_ms",
+            config.collectors.disk_interval_ms,
+            60_000,
+            604_800_000,
+        ),
+    ] {
+        if !(min..=max).contains(&value) {
+            return Err(format!("{name} must be between {min} and {max}").into());
+        }
+    }
     let home = std::env::var("HOME").unwrap_or_default();
     for root in &mut config.collectors.disk_roots {
         if root == "~" {

@@ -137,6 +137,19 @@ export function nodeIdentityLabel(
 export function stale(host: Host, now: number): boolean {
   return !host.online || now - host.lastTs > STALE_MS;
 }
+export function sampleFresh(
+  sample:
+    { ts?: number | undefined; error?: boolean | undefined } | null | undefined,
+  now: number,
+  maxAge = 10_000,
+): boolean {
+  return Boolean(
+    sample?.ts &&
+    !sample.error &&
+    sample.ts <= now + 5000 &&
+    now - sample.ts <= maxAge,
+  );
+}
 export function dataDisk(host: Host) {
   return (
     host.snapshot?.sys?.disks.find((d) => d.mount === "/System/Volumes/Data") ??
@@ -194,8 +207,23 @@ export function alertsFor(
           tone: "danger" as const,
         },
       ];
-    const disk = dataDisk(host),
-      mem = host.snapshot?.sys?.mem;
+    const current = sampleFresh(host.snapshot?.sys, now);
+    if (!current)
+      items.push({
+        host,
+        title: translate(
+          /*i18n*/ { id: "系统指标已过期", message: "系统指标已过期" },
+        ),
+        detail: translate(
+          /*i18n*/ {
+            id: "节点仍在线，等待采集器恢复；旧读数不参与集群汇总",
+            message: "节点仍在线，等待采集器恢复；旧读数不参与集群汇总",
+          },
+        ),
+        tone: "warning",
+      });
+    const disk = current ? dataDisk(host) : undefined,
+      mem = current ? host.snapshot?.sys?.mem : undefined;
     if (disk && disk.available_bytes < 40 * GiB)
       items.push({
         host,
@@ -218,7 +246,10 @@ export function alertsFor(
         ),
         tone: "warning",
       });
-    if ((host.snapshot?.thermal?.state ?? 0) >= 2)
+    if (
+      sampleFresh(host.snapshot?.thermal, now, 30_000) &&
+      (host.snapshot?.thermal?.state ?? 0) >= 2
+    )
       items.push({
         host,
         title: translate(
@@ -246,7 +277,7 @@ export function alertsFor(
               ),
         tone: "danger",
       });
-    if ((host.snapshot?.sys?.cpu.usage_pct ?? 0) >= 85)
+    if (current && (host.snapshot?.sys?.cpu.usage_pct ?? 0) >= 85)
       items.push({
         host,
         title: translate(

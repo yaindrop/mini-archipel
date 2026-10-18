@@ -170,6 +170,7 @@ describe("plugin HTTP lifecycle", () => {
       "test-agent-token",
       { enabled: false },
       "PUT",
+      expect.any(AbortSignal),
     );
     expect(
       (
@@ -347,6 +348,31 @@ describe("generic plugin runtime", () => {
       "原状态保持不变",
     );
     expect(failed.views().example?.enabled).toBe(true);
+  });
+  it("lets independent operations and cancellation run while another action waits", async () => {
+    const gate = Promise.withResolvers<unknown>();
+    const definition = probe("example");
+    const calls: string[] = [];
+    definition.create = () => ({
+      read: () => ({}),
+      start: () => undefined,
+      stop: () => undefined,
+      action: async (action) => {
+        calls.push(action);
+        if (action === "slow") return gate.promise;
+        return { ok: true };
+      },
+    });
+    const manager = new PluginManager(
+      { ...config, plugins: { example: { enabled: true, options: {} } } },
+      context(),
+      [definition],
+    );
+    const waiting = manager.action("example", "slow", { host: "a" });
+    await manager.action("example", "cancel", { host: "b" });
+    expect(calls).toEqual(["slow", "cancel"]);
+    gate.resolve({ ok: true });
+    await waiting;
   });
 });
 it("keeps runner implementation out of core modules", () => {

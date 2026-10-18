@@ -508,7 +508,7 @@ function Workbench() {
         </div>
         <div className="sidebar-version">
           {t` 群岛`}
-          <span>v0.10.0</span>
+          <span>v0.11.0</span>
         </div>
       </div>
     </div>
@@ -647,6 +647,18 @@ function Workbench() {
               role="status"
             />
           ) : null}
+          {fleet?.historyError && (
+            <Alert
+              type="warning"
+              showIcon
+              title={remoteText(fleet.historyError, _)}
+              description={
+                fleet.historyDropped
+                  ? t`${String(fleet.historyDropped)} 个历史样本未保存，实时监测仍在运行。`
+                  : undefined
+              }
+            />
+          )}
           {feed.error ? (
             <Alert
               type="error"
