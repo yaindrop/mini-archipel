@@ -61,7 +61,7 @@ pnpm check
 pnpm check:agent
 pnpm exec playwright install chromium webkit
 pnpm test:browser
-pnpm audit
+pnpm run audit
 ```
 
 - Vitest：状态与格式、存储分类、SQLite 聚合 / 保留 / 回滚、配置、真实本地 HTTP curl transport、会话与跨站拦截、Runner 忙碌保护、上游错误、WebSocket 和关键 UI。

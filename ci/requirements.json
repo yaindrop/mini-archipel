@@ -71,7 +71,7 @@
         },
         {"kind": "playwright", "playwright": ["chromium", "webkit"]}
       ],
-      "check": "cd console && pnpm check && pnpm audit && pnpm test:browser"
+      "check": "cd console && pnpm check && pnpm run audit && pnpm test:browser"
     },
     {
       "id": "agent",
