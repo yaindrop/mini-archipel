@@ -876,8 +876,12 @@ def audit_reusable(text):
         errors.append("checkout follows the moving PR head")
     if "labels/run-ci" not in text:
         errors.append("run-ci label is not consumed")
-    if "./.github/actions/quality" not in text:
-        errors.append("shared action is not used")
+    if (
+        "raw.githubusercontent.com/yaindrop/mini-archipel" not in text
+        or "ci-run.py" not in text
+        or "MINI_CI_SHARED_REF: ${{ github.workflow_sha }}" not in text
+    ):
+        errors.append("the lifecycle must be fetched from the pinned engine commit")
     if "MINI_CI_REQUEST: run-ci" not in text:
         errors.append("explicit request is not passed to the lifecycle")
     return errors
