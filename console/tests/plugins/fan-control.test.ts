@@ -7,12 +7,24 @@ import {
   readyState,
   controllable,
   activeJob,
+  withProtectionTemperature,
 } from "../../src/plugins/fan-control/domain.ts";
 import { fanControlPlugin } from "../../src/plugins/fan-control/server.ts";
 import type { PluginContext } from "../../src/plugins/runtime.ts";
 import { makeHost } from "../fixtures.ts";
 import { fanFixture } from "./fan-fixture.ts";
 describe("fan-control boundary", () => {
+  it("links the protection point to the temperature and keeps it at maximum RPM", () => {
+    const original = fanFixture().policy;
+    const next = withProtectionTemperature(original, 80);
+    expect(next.critical_temp).toBe(80);
+    expect(next.curve.at(-1)).toEqual({ t: 80, rpm: original.max_rpm });
+    expect(next.curve.slice(0, -1)).toEqual(original.curve.slice(0, -1));
+    expect(original.critical_temp).toBe(70);
+    expect(PolicySchema.safeParse(next).success).toBe(true);
+    expect(withProtectionTemperature(original, 30).critical_temp).toBe(61);
+    expect(withProtectionTemperature(original, 200).critical_temp).toBe(100);
+  });
   it("rejects silent fallback policy modes, invalid curves and diagnostic injection", () => {
     const policy = fanFixture().policy;
     for (const patch of [

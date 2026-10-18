@@ -623,6 +623,7 @@ msgid "CPU 占用走势"
 msgstr "CPU 占用走势"
 
 #: src/web/node.tsx
+#: src/web/overview.tsx
 msgid "CPU 走势"
 msgstr "CPU 走势"
 
@@ -748,6 +749,10 @@ msgid "作业运行中，暂时不能切换"
 msgstr "作业运行中，暂时不能切换"
 
 #: src/plugins/fan-control/workbench.tsx
+msgid "保护档：达到此温度，立即使用最高转速（100%）。"
+msgstr "保护档：达到此温度，立即使用最高转速（100%）。"
+
+#: src/plugins/fan-control/workbench.tsx
 msgid "保护温度"
 msgstr "保护温度"
 
@@ -833,6 +838,7 @@ msgid "内存已用"
 msgstr "内存已用"
 
 #: src/web/node.tsx
+#: src/web/overview.tsx
 msgid "内存走势"
 msgstr "内存走势"
 
@@ -1774,6 +1780,10 @@ msgstr "没有匹配的节点，调整名称或类型筛选后重试。"
 msgid "没有匹配的进程"
 msgstr "没有匹配的进程"
 
+#: src/plugins/fan-control/curve.tsx
+msgid "波浪线：系统默认（转速由系统决定）"
+msgstr "波浪线：系统默认（转速由系统决定）"
+
 #: src/web/App.tsx
 #: src/web/node.tsx
 msgid "活跃进程"
@@ -1804,8 +1814,8 @@ msgid "温度保护已触发"
 msgstr "温度保护已触发"
 
 #: src/plugins/fan-control/workbench.tsx
-msgid "温度必须递增、转速不能递减，最后一档须达到最高转速，所有阈值不得超过保护温度。"
-msgstr "温度必须递增、转速不能递减，最后一档须达到最高转速，所有阈值不得超过保护温度。"
+msgid "温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。"
+msgstr "温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "温度走势"
@@ -2010,6 +2020,10 @@ msgstr "系统根目录"
 #: src/web/node.tsx
 msgid "系统自动"
 msgstr "系统自动"
+
+#: src/plugins/fan-control/workbench.tsx
+msgid "系统默认"
+msgstr "系统默认"
 
 #: src/web/chart.tsx
 msgid "纵轴 0–100%"
@@ -2243,6 +2257,10 @@ msgstr "读取键列表"
 msgid "读取键详情"
 msgstr "读取键详情"
 
+#: src/plugins/fan-control/curve.tsx
+msgid "调整保护温度：拖动或使用左右方向键"
+msgstr "调整保护温度：拖动或使用左右方向键"
+
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/curve.tsx
 msgid "调整第 {0} 档：拖动或使用方向键"
@@ -2251,14 +2269,6 @@ msgstr "调整第 {0} 档：拖动或使用方向键"
 #: src/web/storage.tsx
 msgid "资料库"
 msgstr "资料库"
-
-#: src/web/overview.tsx
-msgid "资源指标"
-msgstr "资源指标"
-
-#: src/web/overview.tsx
-msgid "资源走势"
-msgstr "资源走势"
 
 #: src/web/App.tsx
 msgid "跳到工作区"
@@ -2391,6 +2401,10 @@ msgstr "重新载入节点曲线"
 #: src/web/App.tsx
 msgid "重试连接"
 msgstr "重试连接"
+
+#: src/plugins/fan-control/curve.tsx
+msgid "阴影：达到保护温度时使用最高转速"
+msgstr "阴影：达到保护温度时使用最高转速"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "降档滞回（°C）"

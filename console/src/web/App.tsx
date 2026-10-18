@@ -508,7 +508,7 @@ function Workbench() {
         </div>
         <div className="sidebar-version">
           {t` 群岛`}
-          <span>v0.8.0</span>
+          <span>v0.8.1</span>
         </div>
       </div>
     </div>

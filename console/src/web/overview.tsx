@@ -9,7 +9,6 @@ import {
   Grid,
   Input,
   Progress,
-  Segmented,
   Select,
   Space,
   Table,
@@ -62,8 +61,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
           ? "descend"
           : ["cpu", "memory"].includes(sort)
             ? "descend"
-            : "ascend",
-    metric = search.get("metric") === "memory" ? "memory" : "cpu";
+            : "ascend";
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(search);
     if (value) next.set(key, value);
@@ -489,48 +487,32 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
         />
       </Section>
       <div className="overview-columns">
-        <Section
-          title={t`资源走势`}
-          subtitle={t`节点间的同尺度比较 · 最近 10 分钟`}
-          action={
-            <Segmented
-              aria-label={t`资源指标`}
-              value={metric}
-              onChange={(value) => {
-                update("metric", value);
-              }}
-              options={[
-                {
-                  label: "CPU",
-                  value: "cpu",
-                },
-                {
-                  label: t`内存`,
-                  value: "memory",
-                },
-              ]}
+        {(["cpu", "memory"] as const).map((metric) => (
+          <Section
+            key={metric}
+            title={metric === "cpu" ? t`CPU 走势` : t`内存走势`}
+            subtitle={t`节点间的同尺度比较 · 最近 10 分钟`}
+          >
+            <TimeChart
+              label={metric === "cpu" ? t`CPU 占用走势` : t`内存占用走势`}
+              unit="%"
+              max={100}
+              series={fleet.hosts.map((h, i) => ({
+                name: displayName(h),
+                color: NODE_COLORS[i % 4] ?? "#08727e",
+                points:
+                  metric === "cpu"
+                    ? (h.history["cpu.usage_pct"] ?? [])
+                    : (h.history["mem.used_bytes"] ?? []).map((p) => ({
+                        ...p,
+                        value:
+                          (p.value / (h.snapshot?.sys?.mem.total_bytes ?? 1)) *
+                          100,
+                      })),
+              }))}
             />
-          }
-        >
-          <TimeChart
-            label={metric === "cpu" ? t`CPU 占用走势` : t`内存占用走势`}
-            unit="%"
-            max={100}
-            series={fleet.hosts.map((h, i) => ({
-              name: displayName(h),
-              color: NODE_COLORS[i % 4] ?? "#08727e",
-              points:
-                metric === "cpu"
-                  ? (h.history["cpu.usage_pct"] ?? [])
-                  : (h.history["mem.used_bytes"] ?? []).map((p) => ({
-                      ...p,
-                      value:
-                        (p.value / (h.snapshot?.sys?.mem.total_bytes ?? 1)) *
-                        100,
-                    })),
-            }))}
-          />
-        </Section>
+          </Section>
+        ))}
         <Section
           title={t`需要关注`}
           action={

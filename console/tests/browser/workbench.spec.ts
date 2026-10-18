@@ -75,6 +75,27 @@ test("overview, filters, deep links and browser navigation", async ({
       .locator(".metrics-row .metric-tile .ant-flex > .ant-typography")
       .allTextContents(),
   ).toEqual(["在线节点", "集群核心负载", "集群内存负载", "集群可用存储容量"]);
+  const trends = page.locator(".overview-columns");
+  await expect(trends.locator(".time-chart")).toHaveCount(2);
+  await expect(
+    trends.getByRole("heading", { name: "CPU 走势", exact: true }),
+  ).toBeVisible();
+  await expect(
+    trends.getByRole("heading", { name: "内存走势", exact: true }),
+  ).toBeVisible();
+  await expect(trends.getByRole("radiogroup")).toHaveCount(0);
+  if (!isMobile) {
+    const widths = await trends
+      .locator(":scope > .section-card")
+      .evaluateAll((cards) =>
+        cards.map((card) => card.getBoundingClientRect().width),
+      );
+    expect(widths).toHaveLength(3);
+    const [cpu, memory, attention] = widths;
+    if (!cpu || !memory || !attention) throw Error("Missing overview panel");
+    expect(cpu / attention).toBeCloseTo(2, 1);
+    expect(memory / attention).toBeCloseTo(2, 1);
+  }
   const tableFooter = page.locator(".nodes-table .ant-table-footer");
   await expect(tableFooter).toContainText("每秒采集");
   await expect(tableFooter).toContainText("共 4 / 4 台");
@@ -367,6 +388,86 @@ test("storage selection works across the entire card and with the keyboard", asy
   await page.reload();
   await expect(cards.nth(3)).toHaveClass(/selected/);
 });
+test("storage common directories expand in both scopes", async ({ page }) => {
+  await page.goto("/storage");
+  const table = page.locator(".storage-table");
+  const roots = page.getByRole("radiogroup", { name: "扫描范围" });
+  const scopes = [
+    [
+      "用户目录",
+      [
+        [".local", "share"],
+        ["Library", "Caches"],
+        [".cache", "uv"],
+      ],
+    ],
+    [
+      "系统根目录",
+      [
+        ["Users", "yd-mini"],
+        ["System", "Library"],
+        ["private", "var"],
+        ["Library", "Updates"],
+        ["usr", "lib"],
+        ["opt", "homebrew"],
+      ],
+    ],
+  ] as const;
+  for (const [scope, directories] of scopes) {
+    await roots.getByText(scope, { exact: true }).click();
+    for (const [name, child] of directories) {
+      const row = table.locator(`tr[data-row-key="/${name}"]`);
+      await row.getByRole("button", { name: "展开行" }).click();
+      const nested = table.locator(`tr[data-row-key="/${name}/${child}"]`);
+      await expect(nested).toBeVisible();
+      await row.getByRole("button", { name: "关闭行" }).click();
+    }
+  }
+});
+test("storage selected subdirectories drill down again with bounded leaves", async ({
+  page,
+}) => {
+  await page.goto("/storage");
+  const table = page.locator(".storage-table"),
+    roots = page.getByRole("radiogroup", { name: "扫描范围" });
+  for (const [scope, paths] of [
+    [
+      "用户目录",
+      [
+        ["Library", "Caches", "Chrome"],
+        ["Library", "Application Support", "Code"],
+        [".local", "state", "mini-ci"],
+        [".local", "share", "mini-archipel"],
+      ],
+    ],
+    [
+      "系统根目录",
+      [
+        ["System", "Library", "Frameworks"],
+        ["Library", "Caches", "Desktop Pictures"],
+        ["Library", "Application Support", "Apple"],
+        ["private", "var", "db"],
+        ["opt", "homebrew", "Cellar"],
+      ],
+    ],
+  ] as const) {
+    await roots.getByText(scope, { exact: true }).click();
+    for (const [parent, directory, child] of paths) {
+      const top = table.locator(`tr[data-row-key="/${parent}"]`),
+        nested = table.locator(`tr[data-row-key="/${parent}/${directory}"]`);
+      await top.getByRole("button", { name: "展开行" }).click();
+      await nested.getByRole("button", { name: "展开行" }).click();
+      const leaf = table.locator(
+        `tr[data-row-key="/${parent}/${directory}/${child}"]`,
+      );
+      await expect(leaf).toBeVisible();
+      if (child === "Desktop Pictures") await expect(leaf).toContainText("0 B");
+      await expect(leaf.getByRole("button")).toHaveCount(0);
+      await nested.getByRole("button", { name: "关闭行" }).click();
+      await top.getByRole("button", { name: "关闭行" }).click();
+    }
+  }
+});
 test("storage drill-down, scan acknowledgement and history export", async ({
   page,
 }) => {
@@ -389,7 +490,15 @@ test("storage drill-down, scan acknowledgement and history export", async ({
   const tool = table.getByRole("row").filter({ hasText: "Tool.app" });
   await expect(tool.getByRole("button")).toHaveCount(0);
   const cache = table.getByRole("row").filter({ hasText: ".cache" });
-  await expect(cache.getByRole("button")).toHaveCount(0);
+  await cache.getByRole("button", { name: "展开行" }).click();
+  await expect(table.getByText("uv", { exact: true })).toBeVisible();
+  await expect(
+    table
+      .getByRole("row")
+      .filter({ has: page.getByText("uv", { exact: true }) })
+      .getByRole("button"),
+  ).toHaveCount(0);
+  await cache.getByRole("button", { name: "关闭行" }).click();
   await applications.getByRole("button", { name: "关闭行" }).click();
   await expect(page.getByText("Tool.app", { exact: true })).toHaveCount(0);
   const roots = page.getByRole("radiogroup", { name: "扫描范围" });

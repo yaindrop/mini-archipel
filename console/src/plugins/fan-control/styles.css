@@ -116,6 +116,12 @@
   grid-template-columns: minmax(90px, 1fr) minmax(110px, 1.2fr) 32px;
   gap: 8px;
 }
+.fan-protection-note {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
 .fan-point-heading {
   color: var(--muted);
   font-size: 12px;
@@ -131,6 +137,9 @@
 }
 .fan-parameters .ant-input-number {
   width: 100%;
+}
+.fan-limits {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .fan-history-grid {
   display: grid;

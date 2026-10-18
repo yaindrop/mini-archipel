@@ -136,24 +136,134 @@ export function makeSnapshot(index = 0): Snapshot {
         },
     thermal: { state: 0, ts: now },
     disk_scans: [
-      scan(`/Users/${config.hosts[index]?.name ?? "yd-mini"}`, 30 * 2 ** 30, [
-        scan("runners", 18 * 2 ** 30),
-        scan("Library", 6 * 2 ** 30, [], "library"),
-        scan(".rustup", 3 * 2 ** 30, [], "toolchain"),
+      scan(
+        `/Users/${config.hosts[index]?.name ?? "yd-mini"}`,
+        30 * 2 ** 30 + 2 ** 20,
+        [
+          scan("runners", 18 * 2 ** 30),
+          scan(
+            "Library",
+            6 * 2 ** 30,
+            [
+              scan(
+                "Caches",
+                3 * 2 ** 30,
+                [scan("Chrome", 3 * 2 ** 30, [], "reclaimable")],
+                "reclaimable",
+              ),
+              scan(
+                "Application Support",
+                3 * 2 ** 30,
+                [scan("Code", 3 * 2 ** 30, [], "library")],
+                "library",
+              ),
+            ],
+            "library",
+          ),
+          scan(".rustup", 3 * 2 ** 30, [], "toolchain"),
+          scan(
+            "Applications",
+            2 * 2 ** 30,
+            [
+              scan("Tool.app", 1 * 2 ** 30, [], "apps"),
+              scan("Other.app", 1 * 2 ** 30, [], "apps"),
+            ],
+            "apps",
+          ),
+          scan(
+            ".cache",
+            1 * 2 ** 30,
+            [scan("uv", 1 * 2 ** 30, [], "reclaimable")],
+            "reclaimable",
+          ),
+          scan(
+            ".local",
+            1 * 2 ** 20,
+            [
+              scan(
+                "share",
+                2 ** 19,
+                [scan("mini-archipel", 2 ** 19, [], "toolchain")],
+                "toolchain",
+              ),
+              scan(
+                "state",
+                2 ** 19,
+                [scan("mini-ci", 2 ** 19, [], "toolchain")],
+                "toolchain",
+              ),
+            ],
+            "toolchain",
+          ),
+        ],
+      ),
+      scan("/", 90 * 2 ** 30 + 4 * 2 ** 20, [
         scan(
-          "Applications",
-          2 * 2 ** 30,
+          "System",
+          70 * 2 ** 30,
           [
-            scan("Tool.app", 1 * 2 ** 30, [], "apps"),
-            scan("Other.app", 1 * 2 ** 30, [], "apps"),
+            scan(
+              "Library",
+              70 * 2 ** 30,
+              [scan("Frameworks", 70 * 2 ** 30, [], "system")],
+              "system",
+            ),
           ],
-          "apps",
+          "system",
         ),
-        scan(".cache", 1 * 2 ** 30, [], "reclaimable"),
-      ]),
-      scan("/", 90 * 2 ** 30, [
-        scan("System", 70 * 2 ** 30, [], "system"),
-        scan("Users", 20 * 2 ** 30),
+        scan("Users", 20 * 2 ** 30, [scan("yd-mini", 20 * 2 ** 30)]),
+        scan(
+          "private",
+          1 * 2 ** 20,
+          [
+            scan(
+              "var",
+              1 * 2 ** 20,
+              [scan("db", 1 * 2 ** 20, [], "system")],
+              "system",
+            ),
+          ],
+          "system",
+        ),
+        scan(
+          "Library",
+          1 * 2 ** 20,
+          [
+            scan("Updates", 3 * 2 ** 18, [], "library"),
+            scan(
+              "Caches",
+              0,
+              [scan("Desktop Pictures", 0, [], "reclaimable")],
+              "reclaimable",
+            ),
+            scan(
+              "Application Support",
+              2 ** 18,
+              [scan("Apple", 2 ** 18, [], "library")],
+              "library",
+            ),
+          ],
+          "library",
+        ),
+        scan(
+          "usr",
+          1 * 2 ** 20,
+          [scan("lib", 1 * 2 ** 20, [], "system")],
+          "system",
+        ),
+        scan(
+          "opt",
+          1 * 2 ** 20,
+          [
+            scan(
+              "homebrew",
+              1 * 2 ** 20,
+              [scan("Cellar", 1 * 2 ** 20, [], "reclaimable")],
+              "reclaimable",
+            ),
+          ],
+          "reclaimable",
+        ),
       ]),
     ],
     plugins: {

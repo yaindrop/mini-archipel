@@ -184,7 +184,7 @@ async fn du_children(
         return Err(ScanError::Cancelled);
     }
     let mut child = tokio::process::Command::new("/usr/bin/du")
-        .args(["-k", "-x", "-d", "1", path])
+        .args(["-k", "-x", "-d", "3", path])
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .kill_on_drop(true)
@@ -238,6 +238,7 @@ async fn du_children(
 fn parse_children(path: &str, raw: &str) -> Vec<TreeScan> {
     let prefix = format!("{}/", path.trim_end_matches('/'));
     let mut children = Vec::new();
+    let mut entries = HashMap::new();
     for line in raw.lines() {
         let Some((size, full)) = line.split_once('\t') else {
             continue;
@@ -248,24 +249,109 @@ fn parse_children(path: &str, raw: &str) -> Vec<TreeScan> {
         let Some(name) = full.strip_prefix(&prefix) else {
             continue;
         };
-        if name.is_empty() || name.contains('/') || kib == 0 {
+        if name.is_empty() || name.split('/').count() > 3 {
             continue;
         }
-        children.push(TreeScan {
-            root: name.into(),
-            class: classify(name).into(),
+        // Keep inherited cache/toolchain/system meaning at every level.
+        let class = name
+            .split('/')
+            .fold("", |parent, part| match (parent, classify(part)) {
+                ("system" | "toolchain" | "reclaimable", _) => parent,
+                (_, "user") if !parent.is_empty() => parent,
+                (_, current) => current,
+            });
+        let entry = TreeScan {
+            root: name.rsplit('/').next().unwrap().into(),
+            class: class.into(),
             bytes: kib.saturating_mul(1024),
             children: Vec::new(),
             ts: 0,
             duration_ms: 0,
             partial: false,
-        });
+        };
+        entries.insert(name, entry);
     }
-    children.sort_by_key(|c| std::cmp::Reverse(c.bytes));
+    let mut paths: Vec<_> = entries.keys().copied().collect();
+    paths.sort_by_key(|name| std::cmp::Reverse(name.matches('/').count()));
+    for path in paths {
+        let mut entry = entries.remove(path).unwrap();
+        entry
+            .children
+            .sort_by(|a, b| b.bytes.cmp(&a.bytes).then(a.root.cmp(&b.root)));
+        if let Some((parent, _)) = path.rsplit_once('/') {
+            if let Some(parent) = entries.get_mut(parent) {
+                parent.children.push(entry);
+            }
+        } else {
+            children.push(entry);
+        }
+    }
+    if path == "/" {
+        if let Some(system) = children.iter_mut().find(|c| c.root == "System") {
+            if let Some(volume) = system.children.iter().find(|c| c.root == "Volumes") {
+                system.bytes = system.bytes.saturating_sub(volume.bytes);
+                system.partial = true;
+            }
+            // The Data volume is already represented by /Users, /Library, etc.
+            system.children.retain(|c| c.root != "Volumes");
+        }
+    }
+    children.sort_by(|a, b| b.bytes.cmp(&a.bytes).then(a.root.cmp(&b.root)));
     children
 }
 fn expand_child(root: &Path, name: &str, expansions: &[PathBuf]) -> bool {
     name == "Applications" || expansions.contains(&root.join(name))
+}
+fn builtin_expansions(home: &Path) -> Vec<PathBuf> {
+    [
+        "/Users",
+        "/System",
+        "/private",
+        "/Library",
+        "/usr",
+        "/opt",
+        "/System/Library",
+        "/Library/Caches",
+        "/Library/Application Support",
+        "/private/var",
+        "/opt/homebrew",
+    ]
+    .into_iter()
+    .map(PathBuf::from)
+    .chain(
+        [
+            ".local",
+            "Library",
+            ".cache",
+            "Library/Caches",
+            "Library/Application Support",
+            ".local/state",
+            ".local/share",
+        ]
+        .map(|name| home.join(name)),
+    )
+    .collect()
+}
+fn retain_expansions(
+    root: &Path,
+    children: &mut [TreeScan],
+    expansions: &[PathBuf],
+    partial: bool,
+) {
+    for child in children {
+        if !expand_child(root, &child.root, expansions) {
+            child.children.clear();
+        } else {
+            // One du pass reports read errors for the whole tree.
+            child.partial |= partial;
+            retain_expansions(
+                &root.join(&child.root),
+                &mut child.children,
+                expansions,
+                partial,
+            );
+        }
+    }
 }
 async fn scan_tree(
     root: &str,
@@ -273,26 +359,8 @@ async fn scan_tree(
     cancelled: &AtomicBool,
 ) -> Result<TreeScan, ScanError> {
     let started = std::time::Instant::now();
-    let (mut children, mut partial) = du_children(root, cancelled).await?;
-    if root == "/" {
-        if let Some(system) = children.iter_mut().find(|c| c.root == "System") {
-            let (volumes, sub_partial) = du_children("/System", cancelled).await?;
-            if let Some(volume) = volumes.iter().find(|c| c.root == "Volumes") {
-                system.bytes = system.bytes.saturating_sub(volume.bytes);
-                system.partial = true;
-            }
-            partial |= sub_partial;
-        }
-    }
-    for child in &mut children {
-        if expand_child(Path::new(root), &child.root, expansions) {
-            let full = Path::new(root).join(&child.root);
-            let (sub, sub_partial) = du_children(&full.to_string_lossy(), cancelled).await?;
-            child.children = sub;
-            child.partial = sub_partial;
-            partial |= sub_partial;
-        }
-    }
+    let (mut children, partial) = du_children(root, cancelled).await?;
+    retain_expansions(Path::new(root), &mut children, expansions, partial);
     Ok(TreeScan {
         root: root.into(),
         class: "root".into(),
@@ -437,7 +505,9 @@ pub async fn run(
             .disk_rescan_flag
             .swap(false, Ordering::Relaxed);
         if requested || now() >= next {
-            let expansions = plugins.disk_expansions().await;
+            let home = PathBuf::from(std::env::var("HOME").unwrap_or_default());
+            let mut expansions = builtin_expansions(&home);
+            expansions.extend(plugins.disk_expansions().await);
             execute(&state, &roots, &expansions).await;
             next = now().saturating_add(interval_ms);
         }
@@ -467,6 +537,151 @@ mod tests {
         ));
         assert!(!expand_child(home, "workspaces", &[]));
         assert!(expand_child(home, "Applications", &[]));
+    }
+    #[test]
+    fn standard_expansions_are_scoped_to_home_and_system_paths() {
+        let home = Path::new("/Users/test");
+        let paths = builtin_expansions(home);
+        for name in [".local", "Library", ".cache"] {
+            assert!(expand_child(home, name, &paths));
+            assert!(!expand_child(&home.join("other"), name, &paths));
+        }
+        for name in ["Users", "System", "private", "Library", "usr", "opt"] {
+            assert!(expand_child(Path::new("/"), name, &paths));
+        }
+        for (parent, name) in [
+            ("Library", "Caches"),
+            ("Library", "Application Support"),
+            (".local", "state"),
+            (".local", "share"),
+        ] {
+            assert!(expand_child(&home.join(parent), name, &paths));
+            assert!(!expand_child(
+                &home.join("other").join(parent),
+                name,
+                &paths
+            ));
+        }
+        for (parent, name) in [
+            ("/System", "Library"),
+            ("/Library", "Caches"),
+            ("/Library", "Application Support"),
+            ("/private", "var"),
+            ("/opt", "homebrew"),
+        ] {
+            assert!(expand_child(Path::new(parent), name, &paths));
+        }
+        assert!(!expand_child(home, "System", &paths));
+        assert!(!expand_child(Path::new("/Users/other"), ".local", &paths));
+    }
+    #[test]
+    fn parses_three_levels_with_stable_paths_and_does_not_recurse_further() {
+        let raw = "4\t/Users/test/Library/one/deeper/too-deep\n4\t/Users/test/Library/one/deeper\n8\t/Users/test/Library/two\n4\t/Users/test/Library/one\n12\t/Users/test/Library\n4\t/Users/test/.cache/item\n4\t/Users/test/.cache\n16\t/Users/test\n";
+        let children = parse_children("/Users/test", raw);
+        assert_eq!(children.len(), 2);
+        assert_eq!(children[0].root, "Library");
+        assert_eq!(children[0].bytes, 12 * 1024);
+        assert_eq!(children[0].children[0].root, "two");
+        assert_eq!(children[0].children[0].class, "library");
+        assert_eq!(children[0].children[1].root, "one");
+        assert!(children[0].children[0].children.is_empty());
+        assert_eq!(children[0].children[1].children[0].root, "deeper");
+        assert_eq!(children[0].children[1].children[0].class, "library");
+        assert!(children[0].children[1].children[0].children.is_empty());
+        assert_eq!(children[1].children[0].root, "item");
+        assert_eq!(children[1].children[0].class, "reclaimable");
+        assert_eq!(
+            parse_children("/", "8\t/Library/Caches\n8\t/Library\n8\t/\n")[0].children[0].root,
+            "Caches"
+        );
+    }
+    #[test]
+    fn system_expansion_keeps_data_volume_out_of_parent_and_children_totals() {
+        let raw = "80\t/System/Volumes\n20\t/System/Library\n100\t/System\n80\t/Users/test\n80\t/Users\n180\t/\n";
+        let children = parse_children("/", raw);
+        let system = children.iter().find(|c| c.root == "System").unwrap();
+        assert_eq!(system.bytes, 20 * 1024);
+        assert_eq!(system.children.len(), 1);
+        assert_eq!(system.children[0].root, "Library");
+        assert_eq!(system.children[0].class, "system");
+        assert_eq!(system.children[0].bytes, system.bytes);
+        assert_eq!(children.iter().map(|c| c.bytes).sum::<u64>(), 100 * 1024);
+    }
+    #[test]
+    fn empty_directories_remain_expandable_with_their_real_zero_size() {
+        let children = parse_children(
+            "/",
+            "0\t/Library/Caches/Desktop Pictures\n0\t/Library/Caches\n8\t/Library\n8\t/\n",
+        );
+        let caches = &children[0].children[0];
+        assert_eq!(caches.root, "Caches");
+        assert_eq!(caches.bytes, 0);
+        assert_eq!(caches.children[0].root, "Desktop Pictures");
+        assert_eq!(caches.children[0].bytes, 0);
+        assert_eq!(caches.children[0].class, "reclaimable");
+    }
+    #[tokio::test]
+    async fn native_scan_expands_only_selected_paths_and_bounds_deeper_children() {
+        let root = std::env::temp_dir().join(format!("disk-tree-{}", std::process::id()));
+        for name in ["Library", ".local", ".cache", "runners", "other"] {
+            let nested = root.join(name).join("child/deeper");
+            std::fs::create_dir_all(&nested).unwrap();
+            std::fs::write(nested.join("file"), [1u8; 4096]).unwrap();
+        }
+        for name in [
+            "Library/Caches",
+            "Library/Application Support",
+            ".local/state",
+            ".local/share",
+        ] {
+            let nested = root.join(name).join("item/deeper");
+            std::fs::create_dir_all(&nested).unwrap();
+            std::fs::write(nested.join("file"), [1u8; 4096]).unwrap();
+        }
+        let mut expansions = builtin_expansions(&root);
+        expansions.push(root.join("runners"));
+        let flag = AtomicBool::new(false);
+        let tree = scan_tree(root.to_str().unwrap(), &expansions, &flag)
+            .await
+            .unwrap();
+        for name in ["Library", ".local", ".cache", "runners"] {
+            let directory = tree.children.iter().find(|c| c.root == name).unwrap();
+            assert!(directory
+                .children
+                .iter()
+                .find(|c| c.root == "child")
+                .unwrap()
+                .children
+                .is_empty());
+        }
+        for (parent, name) in [
+            ("Library", "Caches"),
+            ("Library", "Application Support"),
+            (".local", "state"),
+            (".local", "share"),
+        ] {
+            let directory = tree
+                .children
+                .iter()
+                .find(|c| c.root == parent)
+                .unwrap()
+                .children
+                .iter()
+                .find(|c| c.root == name)
+                .unwrap();
+            assert_eq!(directory.children.len(), 1);
+            assert_eq!(directory.children[0].root, "item");
+            assert_eq!(directory.children[0].class, directory.class);
+            assert!(directory.children[0].children.is_empty());
+        }
+        assert!(tree
+            .children
+            .iter()
+            .find(|c| c.root == "other")
+            .unwrap()
+            .children
+            .is_empty());
+        std::fs::remove_dir_all(root).unwrap();
     }
     #[tokio::test]
     async fn native_scans_are_cancellable_and_do_not_need_ssh() {

@@ -618,7 +618,7 @@ a:hover .host-identity strong {
 }
 .overview-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
   gap: 20px;
   align-items: stretch;
 }
@@ -1314,9 +1314,6 @@ a:hover .host-identity strong {
   .main-content {
     padding-inline: 42px;
   }
-  .overview-columns {
-    grid-template-columns: minmax(0, 1fr) 310px;
-  }
 }
 @media (width <= 1250px) {
   .metric-tile .ant-card-body {
@@ -1334,9 +1331,11 @@ a:hover .host-identity strong {
   .storage-volume-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .overview-columns,
   .node-overview-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .overview-columns > :last-child,
   .node-overview-columns > :last-child {
     grid-column: 1 / -1;
   }
@@ -1348,9 +1347,6 @@ a:hover .host-identity strong {
   }
 }
 @media (width <= 991px) {
-  .overview-columns {
-    grid-template-columns: minmax(0, 1fr) 260px;
-  }
   .main-content {
     padding-inline: 24px;
   }

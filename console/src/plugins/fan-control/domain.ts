@@ -1,7 +1,24 @@
-import { DataSchema, type FanState } from "./contracts.ts";
+import { DataSchema, type FanState, type Policy } from "./contracts.ts";
 import { readEnvelope } from "../contracts.ts";
 import { stale } from "../../domain.ts";
 import type { Host } from "../../contracts.ts";
+export function withProtectionTemperature(
+  policy: Policy,
+  temperature: number,
+): Policy {
+  const critical = Math.max(
+    40,
+    Math.min(100, temperature),
+    (policy.curve.at(-2)?.t ?? 0) + 1,
+  );
+  return {
+    ...policy,
+    critical_temp: critical,
+    curve: policy.curve.map((p, i) =>
+      i === policy.curve.length - 1 ? { t: critical, rpm: policy.max_rpm } : p,
+    ),
+  };
+}
 export function fanData(host: Host) {
   const envelope = readEnvelope(host, "fan-control");
   if (

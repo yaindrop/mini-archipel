@@ -623,6 +623,7 @@ msgid "CPU 占用走势"
 msgstr "CPU usage trend"
 
 #: src/web/node.tsx
+#: src/web/overview.tsx
 msgid "CPU 走势"
 msgstr "CPU trend"
 
@@ -748,6 +749,10 @@ msgid "作业运行中，暂时不能切换"
 msgstr "A job is running. Wait for it to finish before changing the service."
 
 #: src/plugins/fan-control/workbench.tsx
+msgid "保护档：达到此温度，立即使用最高转速（100%）。"
+msgstr "Protection step: immediately use maximum speed (100%) at this temperature."
+
+#: src/plugins/fan-control/workbench.tsx
 msgid "保护温度"
 msgstr "Thermal limit"
 
@@ -833,6 +838,7 @@ msgid "内存已用"
 msgstr "Memory used"
 
 #: src/web/node.tsx
+#: src/web/overview.tsx
 msgid "内存走势"
 msgstr "Memory trend"
 
@@ -1774,6 +1780,10 @@ msgstr "No matching nodes. Adjust the name or type filter."
 msgid "没有匹配的进程"
 msgstr "No matching processes"
 
+#: src/plugins/fan-control/curve.tsx
+msgid "波浪线：系统默认（转速由系统决定）"
+msgstr "Wave: system default (speed set by the system)"
+
 #: src/web/App.tsx
 #: src/web/node.tsx
 msgid "活跃进程"
@@ -1804,8 +1814,8 @@ msgid "温度保护已触发"
 msgstr "Thermal protection active"
 
 #: src/plugins/fan-control/workbench.tsx
-msgid "温度必须递增、转速不能递减，最后一档须达到最高转速，所有阈值不得超过保护温度。"
-msgstr "Temperatures must increase and speeds must not decrease. The final step must reach maximum speed, and no threshold may exceed the thermal limit."
+msgid "温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。"
+msgstr "Temperatures must increase, speeds must not decrease, the protection step must use maximum speed, and other thresholds must not exceed the protection temperature."
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "温度走势"
@@ -2010,6 +2020,10 @@ msgstr "System root"
 #: src/web/node.tsx
 msgid "系统自动"
 msgstr "System automatic"
+
+#: src/plugins/fan-control/workbench.tsx
+msgid "系统默认"
+msgstr "System default"
 
 #: src/web/chart.tsx
 msgid "纵轴 0–100%"
@@ -2243,6 +2257,10 @@ msgstr "Read key list"
 msgid "读取键详情"
 msgstr "Read key details"
 
+#: src/plugins/fan-control/curve.tsx
+msgid "调整保护温度：拖动或使用左右方向键"
+msgstr "Adjust protection temperature: drag or use the left and right arrow keys"
+
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/curve.tsx
 msgid "调整第 {0} 档：拖动或使用方向键"
@@ -2251,14 +2269,6 @@ msgstr "Adjust step {0}: drag or use the arrow keys"
 #: src/web/storage.tsx
 msgid "资料库"
 msgstr "Library"
-
-#: src/web/overview.tsx
-msgid "资源指标"
-msgstr "Resource metrics"
-
-#: src/web/overview.tsx
-msgid "资源走势"
-msgstr "Resource trends"
 
 #: src/web/App.tsx
 msgid "跳到工作区"
@@ -2391,6 +2401,10 @@ msgstr "Reload node policy"
 #: src/web/App.tsx
 msgid "重试连接"
 msgstr "Retry connection"
+
+#: src/plugins/fan-control/curve.tsx
+msgid "阴影：达到保护温度时使用最高转速"
+msgstr "Shaded area: maximum speed at the protection temperature"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "降档滞回（°C）"

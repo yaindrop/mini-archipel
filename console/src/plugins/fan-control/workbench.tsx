@@ -31,7 +31,13 @@ import { api, message } from "../../web/api.ts";
 import { refreshFleet } from "../../web/useFleet.ts";
 import { PageTitle, Section } from "../../web/ui.tsx";
 import { TimeChart } from "../../web/chart.tsx";
-import { activeJob, controllable, fanData, readyState } from "./domain.ts";
+import {
+  activeJob,
+  controllable,
+  fanData,
+  readyState,
+  withProtectionTemperature,
+} from "./domain.ts";
 import {
   errorText,
   PolicySchema,
@@ -542,7 +548,7 @@ function Editor({
         {!valid ? (
           <Alert
             type="error"
-            title={t`温度必须递增、转速不能递减，最后一档须达到最高转速，所有阈值不得超过保护温度。`}
+            title={t`温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。`}
           />
         ) : null}
         <div className="fan-editor-grid">
@@ -559,15 +565,31 @@ function Editor({
             </div>
             {policy.curve.map((p, i) => (
               <div className="fan-point" key={i}>
+                {i === policy.curve.length - 1 ? (
+                  <span className="fan-protection-note">{t`保护档：达到此温度，立即使用最高转速（100%）。`}</span>
+                ) : null}
                 <InputNumber
-                  aria-label={t`第 ${String(i + 1)} 档温度`}
-                  value={p.t}
-                  min={0}
-                  max={policy.critical_temp}
+                  aria-label={
+                    i === policy.curve.length - 1
+                      ? t`保护温度`
+                      : t`第 ${String(i + 1)} 档温度`
+                  }
+                  value={i === 0 ? 20 : p.t}
+                  min={
+                    i === policy.curve.length - 1
+                      ? Math.max(40, (policy.curve.at(-2)?.t ?? 0) + 1)
+                      : 20
+                  }
+                  max={
+                    i === policy.curve.length - 1 ? 100 : policy.critical_temp
+                  }
                   disabled={i === 0}
                   suffix="°C"
                   onChange={(v) => {
-                    if (v !== null)
+                    if (v === null) return;
+                    if (i === policy.curve.length - 1)
+                      change(withProtectionTemperature(policy, v));
+                    else
                       patch({
                         curve: policy.curve.map((p, j) =>
                           i === j ? { ...p, t: v } : p,
@@ -575,23 +597,33 @@ function Editor({
                       });
                   }}
                 />
-                <InputNumber
-                  aria-label={t`第 ${String(i + 1)} 档转速`}
-                  value={p.rpm}
-                  min={policy.min_rpm}
-                  max={policy.max_rpm}
-                  step={50}
-                  disabled={i === 0 || i === policy.curve.length - 1}
-                  suffix="RPM"
-                  onChange={(v) => {
-                    if (v !== null)
-                      patch({
-                        curve: policy.curve.map((p, j) =>
-                          i === j ? { ...p, rpm: v } : p,
-                        ),
-                      });
-                  }}
-                />
+                {i === 0 ? (
+                  <Input
+                    aria-label={t`第 ${String(i + 1)} 档转速`}
+                    value={t`系统默认`}
+                    readOnly
+                  />
+                ) : (
+                  <InputNumber
+                    aria-label={t`第 ${String(i + 1)} 档转速`}
+                    value={p.rpm}
+                    min={policy.min_rpm}
+                    max={policy.max_rpm}
+                    step={50}
+                    disabled={i === policy.curve.length - 1}
+                    suffix={
+                      i === policy.curve.length - 1 ? "RPM · 100%" : "RPM"
+                    }
+                    onChange={(v) => {
+                      if (v !== null)
+                        patch({
+                          curve: policy.curve.map((p, j) =>
+                            i === j ? { ...p, rpm: v } : p,
+                          ),
+                        });
+                    }}
+                  />
+                )}
                 <Button
                   type="text"
                   icon={<Trash2 size={15} />}
@@ -632,7 +664,7 @@ function Editor({
             >{t`增加档位`}</Button>
           </div>
         </div>
-        <Form layout="vertical" className="fan-parameters">
+        <Form layout="vertical" className="fan-parameters fan-limits">
           <Form.Item label={t`最低转速`}>
             <InputNumber
               aria-label={t`最低转速`}
@@ -654,18 +686,6 @@ function Editor({
               suffix="RPM"
               onChange={(v) => {
                 updateLimit("max_rpm", v);
-              }}
-            />
-          </Form.Item>
-          <Form.Item label={t`保护温度`}>
-            <InputNumber
-              aria-label={t`保护温度`}
-              min={40}
-              max={100}
-              value={policy.critical_temp}
-              suffix="°C"
-              onChange={(v) => {
-                if (v !== null) patch({ critical_temp: v });
               }}
             />
           </Form.Item>
