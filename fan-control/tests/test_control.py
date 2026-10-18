@@ -258,12 +258,12 @@ class AuthorityTests(unittest.TestCase):
         self.assertEqual(path.parent.stat().st_mode & 0o777, 0o755)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
-        def call(payload):
+        def call(payload, send=True):
             with socket.socket(socket.AF_UNIX) as peer:
                 peer.settimeout(2)
                 peer.connect(str(path))
-                peer.sendall(payload)
-                peer.shutdown(socket.SHUT_WR)
+                if send:
+                    peer.sendall(payload)
                 response = b''
                 while True:
                     part = peer.recv(65536)
@@ -276,7 +276,8 @@ class AuthorityTests(unittest.TestCase):
             self.assertEqual(json.loads(call(b'{"op":"shell"}\n'))['error'], 'invalid_request')
             self.assertEqual(json.loads(call(b'x'*65537+b'\n'))['error'], 'invalid_request')
             server.uid = os.getuid()+1
-            self.assertEqual(call(b'{"op":"read"}\n'), b'')
+            # Identity rejection must close before receiving any request bytes.
+            self.assertEqual(call(b'', send=False), b'')
         finally:
             server.shutdown()
             server.server_close()

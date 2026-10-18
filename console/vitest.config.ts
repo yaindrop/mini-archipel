@@ -11,6 +11,8 @@ export default defineConfig({
       include: [
         "src/config.ts",
         "src/store.ts",
+        "src/history-db.ts",
+        "src/fleet-wire.ts",
         "src/domain.ts",
         "src/fleet.ts",
         "src/app.ts",

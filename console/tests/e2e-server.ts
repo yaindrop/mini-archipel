@@ -8,6 +8,7 @@ import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { createHash } from "node:crypto";
 import { serverPlugins } from "../src/plugins/catalog.server.ts";
 import { createApp } from "../src/app.ts";
 import { Store } from "../src/store.ts";
@@ -21,14 +22,14 @@ import {
 const dir = mkdtempSync(join(tmpdir(), "fleet-browser-")),
   dbPath = join(dir, "test.db");
 const store = new Store(dbPath);
-store.insertSamples(
+await store.insertSamples(
   config.hosts.flatMap((h, index) =>
     Object.entries(makeHost(index).history).flatMap(([key, points]) =>
       points.map((point) => ({ host: h.name, key, ...point })),
     ),
   ),
 );
-store.close();
+await store.close();
 const offline = new Set<string>(),
   stopped = new Set<string>(),
   interrupted = new Set<string>(),
@@ -36,6 +37,10 @@ const offline = new Set<string>(),
 const scans = new Map<string, ReturnType<typeof makeSnapshot>["disk_scan"]>();
 const exclusive = new Set<string>(),
   runnerJobs = new Map<string, string>();
+type RunnerOperation = NonNullable<
+  ReturnType<typeof fixtureRunnerData>["operations"]
+>[number];
+const runnerOperations = new Map<string, RunnerOperation[]>();
 const directoryResults = new Map<
   string,
   Map<string, ReturnType<typeof makeSnapshot>["disk_scans"][number]>
@@ -221,7 +226,7 @@ const transport: Transport = (url, _token, body) => {
       return Promise.resolve({ ok: true, job_id: body.job_id });
     }
   }
-  if (url.endsWith("/snapshot")) {
+  if (new URL(url).pathname === "/snapshot") {
     const runnerData = fixtureRunnerData(snapshot),
       runners = runnerData.runners;
     if (multiRepo && index === 0 && runners[0])
@@ -237,6 +242,7 @@ const transport: Transport = (url, _token, body) => {
         runner.worker_pid = null;
       if (runnerJobs.get(name) === runner.repo_dir) runner.worker_pid = 1234;
     }
+    runnerData.operations = runnerOperations.get(name) ?? [];
     runnerData.coordination = {
       available: true,
       enabled: exclusive.has(name),
@@ -264,7 +270,18 @@ const transport: Transport = (url, _token, body) => {
         data: null,
         error: null,
       };
-    return Promise.resolve(snapshot);
+    snapshot.disk_revision = createHash("sha256")
+      .update(
+        JSON.stringify(snapshot.disk_scans, (key, value: unknown) =>
+          key === "ts" ? undefined : value,
+        ),
+      )
+      .digest("hex");
+    return Promise.resolve(
+      new URL(url).searchParams.get("disk_revision") === snapshot.disk_revision
+        ? { ...snapshot, disk_scans: undefined }
+        : snapshot,
+    );
   }
   if (
     url.endsWith("/plugins/runners/actions/coordination") &&
@@ -302,6 +319,34 @@ const transport: Transport = (url, _token, body) => {
   ) {
     if (body.enabled) disabledPlugins.delete(name);
     else disabledPlugins.add(name);
+  }
+  if (
+    url.includes("/plugins/runners/actions/") &&
+    body &&
+    typeof body === "object" &&
+    "request_id" in body &&
+    typeof body.request_id === "string"
+  ) {
+    const operation: RunnerOperation = {
+      id: body.request_id,
+      action: url.slice(url.lastIndexOf("/") + 1),
+      request: Object.fromEntries(
+        Object.entries(body).filter(([key]) => key !== "request_id"),
+      ),
+      status: "running",
+      requested_at: Date.now(),
+      finished_at: null,
+      error: null,
+    };
+    runnerOperations.set(name, [
+      ...(runnerOperations.get(name) ?? []),
+      operation,
+    ]);
+    setTimeout(() => {
+      operation.status = "completed";
+      operation.finished_at = Date.now();
+    }, 1500);
+    return Promise.resolve({ ok: true, operation });
   }
   return Promise.resolve({ ok: true });
 };
@@ -372,6 +417,7 @@ app.post("/__test/reset", async () => {
   directoryResults.clear();
   exclusive.clear();
   runnerJobs.clear();
+  runnerOperations.clear();
   offline.clear();
   stopped.clear();
   interrupted.clear();

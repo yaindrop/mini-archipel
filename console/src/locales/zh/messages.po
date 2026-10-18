@@ -167,8 +167,28 @@ msgstr "节点返回了无效数据"
 
 #. js-lingui-explicit-id
 #: src/fleet.ts
+msgid "历史记录暂时无法读取，实时监测仍在运行"
+msgstr "历史记录暂时无法读取，实时监测仍在运行"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史缓冲已满，部分样本未保存"
+msgstr "历史缓冲已满，部分样本未保存"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史记录暂时无法保存，实时监测仍在运行"
+msgstr "历史记录暂时无法保存，实时监测仍在运行"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
 msgid "节点数据校验失败"
 msgstr "节点数据校验失败"
+
+#. js-lingui-explicit-id
+#: src/fleet.ts
+msgid "历史归档暂时失败，实时监测仍在运行"
+msgstr "历史归档暂时失败，实时监测仍在运行"
 
 #. js-lingui-explicit-id
 #: src/plugins/runtime.ts
@@ -209,6 +229,11 @@ msgstr "插件未启用"
 #: src/plugins/runtime.ts
 msgid "插件暂不可用，请检查插件状态"
 msgstr "插件暂不可用，请检查插件状态"
+
+#. js-lingui-explicit-id
+#: src/plugins/runtime.ts
+msgid "插件正在切换状态，请稍后重试"
+msgstr "插件正在切换状态，请稍后重试"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/server.ts
@@ -449,6 +474,11 @@ msgstr "{0} 下钻深度"
 msgid "{0} 个 ↗"
 msgstr "{0} 个 ↗"
 
+#. placeholder {0}: String(fleet.historyDropped)
+#: src/web/App.tsx
+msgid "{0} 个历史样本未保存，实时监测仍在运行。"
+msgstr "{0} 个历史样本未保存，实时监测仍在运行。"
+
 #. placeholder {0}: String(host.snapshot.host.cores)
 #. placeholder {1}: formatNumber(host.snapshot.host.load[0], 2)
 #: src/web/node.tsx
@@ -491,26 +521,6 @@ msgstr "{0} 台已上报"
 msgid "{0} 台物理机 · {1} 台虚拟机"
 msgstr "{0} 台物理机 · {1} 台虚拟机"
 
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已停止接单"
-msgstr "{0} 已停止接单"
-
-#. placeholder {0}: displayName(host)
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已关闭接单互斥"
-msgstr "{0} 已关闭接单互斥"
-
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已启动接单"
-msgstr "{0} 已启动接单"
-
-#. placeholder {0}: displayName(host)
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 已开启接单互斥"
-msgstr "{0} 已开启接单互斥"
-
 #. placeholder {0}: displayName(host)
 #: src/plugins/runners/workbench.tsx
 msgid "{0} 接单互斥"
@@ -520,11 +530,6 @@ msgstr "{0} 接单互斥"
 #: src/web/overview.tsx
 msgid "{0} 核 · 按在线节点核心数加权"
 msgstr "{0} 核 · 按在线节点核心数加权"
-
-#. placeholder {0}: variables.runner.agent_name ?? variables.runner.repo_dir
-#: src/plugins/runners/workbench.tsx
-msgid "{0} 的作业已在本地中断"
-msgstr "{0} 的作业已在本地中断"
 
 #. placeholder {0}: displayName(h)
 #: src/web/overview.tsx
@@ -1269,13 +1274,13 @@ msgstr "将校准建议导入草稿"
 msgid "尚无主动检查记录"
 msgstr "尚无主动检查记录"
 
+#: src/plugins/runners/workbench.tsx
+msgid "尚无已注册 Runner，节点上报注册信息后会自动显示。"
+msgstr "尚无已注册 Runner，节点上报注册信息后会自动显示。"
+
 #: src/web/storage.tsx
 msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
 msgstr "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
-
-#: src/plugins/runners/workbench.tsx
-msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
-msgstr "尚未发现 runner，节点上报安装信息后会自动显示。"
 
 #: src/web/storage.tsx
 msgid "尚未扫描下级目录"
@@ -1530,6 +1535,10 @@ msgstr "扫描已排队"
 msgid "扫描此目录"
 msgstr "扫描此目录"
 
+#: src/web/storage-errors.ts
+msgid "扫描状态无法保存，请检查节点可用空间和目录权限。"
+msgstr "扫描状态无法保存，请检查节点可用空间和目录权限。"
+
 #: src/web/storage.tsx
 msgid "扫描范围"
 msgstr "扫描范围"
@@ -1640,9 +1649,25 @@ msgstr "搜索进程"
 msgid "操作"
 msgstr "操作"
 
+#: src/plugins/runners/workbench.tsx
+msgid "操作处理中"
+msgstr "操作处理中"
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作已完成"
+msgstr "操作已完成"
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作未确认完成，请核对当前节点状态"
+msgstr "操作未确认完成，请核对当前节点状态"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "操作请求已提交，请查看节点操作状态"
+msgstr "操作请求已提交，请查看节点操作状态"
 
 #: src/web/api.ts
 msgid "收到的数据不符合接口约定，请刷新后重试"
@@ -1665,6 +1690,7 @@ msgstr "放弃未保存的目录规则？"
 msgid "散热状态异常"
 msgstr "散热状态异常"
 
+#: src/web/node.tsx
 #: src/web/ui.tsx
 msgid "数据已过期"
 msgstr "数据已过期"
@@ -1762,6 +1788,10 @@ msgstr "未开启"
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "未检测到节点失联、低磁盘余量或散热告警。"
+
+#: src/web/storage-errors.ts
+msgid "未获得有效目录统计，请查看节点诊断日志。"
+msgstr "未获得有效目录统计，请查看节点诊断日志。"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
@@ -2100,14 +2130,26 @@ msgstr "监听 / 可接单"
 msgid "目录"
 msgstr "目录"
 
+#: src/web/storage-errors.ts
+msgid "目录不可读取，请检查节点访问权限。"
+msgstr "目录不可读取，请检查节点访问权限。"
+
 #. placeholder {0}: formatBytes(scan.bytes)
 #: src/web/storage.tsx
 msgid "目录分类，共 {0}"
 msgstr "目录分类，共 {0}"
 
+#: src/web/storage-errors.ts
+msgid "目录已不在缓存中，请重新扫描上级目录。"
+msgstr "目录已不在缓存中，请重新扫描上级目录。"
+
 #: src/web/App.tsx
 msgid "目录扫描"
 msgstr "目录扫描"
+
+#: src/web/storage-errors.ts
+msgid "目录条目超过限制，请降低下钻深度后重试。"
+msgstr "目录条目超过限制，请降低下钻深度后重试。"
 
 #: src/web/storage.tsx
 msgid "目录空间分析"
@@ -2165,6 +2207,10 @@ msgstr "私有工作空间"
 #: src/plugins/runners/workbench.tsx
 msgid "符合"
 msgstr "符合"
+
+#: src/plugins/runners/workbench.tsx
+msgid "空间统计每分钟更新，进程状态独立实时更新"
+msgstr "空间统计每分钟更新，进程状态独立实时更新"
 
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
@@ -2241,6 +2287,15 @@ msgstr "系统报告 critical"
 #: src/domain.ts
 msgid "系统报告 serious"
 msgstr "系统报告 serious"
+
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "系统指标已过期"
+msgstr "系统指标已过期"
+
+#: src/web/node.tsx
+msgid "系统指标已过期，显示最后有效读数"
+msgstr "系统指标已过期，显示最后有效读数"
 
 #: src/web/storage.tsx
 msgid "系统根目录"
@@ -2337,6 +2392,11 @@ msgstr "节点 Runners"
 msgid "节点不存在"
 msgstr "节点不存在"
 
+#. js-lingui-explicit-id
+#: src/domain.ts
+msgid "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
+msgstr "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
+
 #: src/web/node.tsx
 msgid "节点信息"
 msgstr "节点信息"
@@ -2348,6 +2408,10 @@ msgstr "节点可能已从集群配置中移除。"
 #: src/web/ui.tsx
 msgid "节点在线"
 msgstr "节点在线"
+
+#: src/web/ui.tsx
+msgid "节点在线，指标已过期"
+msgstr "节点在线，指标已过期"
 
 #: src/web/App.tsx
 msgid "节点导航"
@@ -2481,6 +2545,10 @@ msgstr "诊断日志"
 #: src/web/preferences.tsx
 msgid "语言：{languageLabel}"
 msgstr "语言：{languageLabel}"
+
+#: src/plugins/runners/workbench.tsx
+msgid "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
+msgstr "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
 
 #. placeholder {0}: String(response.status)
 #: src/web/api.ts
@@ -2623,6 +2691,10 @@ msgstr "通过"
 #: src/web/storage.tsx
 msgid "部分不可读取"
 msgstr "部分不可读取"
+
+#: src/web/node.tsx
+msgid "部分传感器已过期，显示最后有效读数"
+msgstr "部分传感器已过期，显示最后有效读数"
 
 #: src/web/storage.tsx
 msgid "部分目录不可读取 · "

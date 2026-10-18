@@ -32,6 +32,7 @@ import {
 import { api, message } from "./api.ts";
 import { classification } from "./storage-classes.ts";
 import { DirectoryRules } from "./storage-rules.tsx";
+import { scanFailure } from "./storage-errors.ts";
 import { PageTitle, Section } from "./ui.tsx";
 type DirectoryRow = Omit<ScanNode, "children"> & {
   key: string;
@@ -300,7 +301,7 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
           type="error"
           showIcon
           title={t`扫描失败，保留上次结果。`}
-          description={job.error}
+          description={scanFailure(job.error, _)}
           role="alert"
         />
       ) : null}

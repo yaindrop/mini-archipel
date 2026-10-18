@@ -1,10 +1,28 @@
 import { afterEach, describe, it, expect } from "vitest";
-import { Store } from "../src/store.ts";
+import { HistoryDatabase as Store } from "../src/history-db.ts";
 let store: Store;
 afterEach(() => {
   store.close();
 });
 describe("bounded multiresolution history", () => {
+  it("weights uneven sample buckets by the number of source readings", () => {
+    store = new Store(":memory:");
+    const base = 1_800_000_000_000,
+      day = 86_400_000;
+    store.insertSamples([
+      { host: "a", key: "cpu", ts: base, value: 100 },
+      ...Array.from({ length: 9 }, (_, i) => ({
+        host: "a",
+        key: "cpu",
+        ts: base + 10_000 + i * 1000,
+        value: 0,
+      })),
+    ]);
+    store.downsampleAndPrune(base + 31 * day);
+    expect(
+      store.queryRange("a", "cpu", base, base + 60_000).map((p) => p.value),
+    ).toEqual([10]);
+  });
   it("reads recent, mid and coarse samples together and sorts them", () => {
     store = new Store(":memory:");
     const now = Date.now(),

@@ -37,6 +37,7 @@ import {
   nodeIdentityLabel,
   NODE_COLORS,
   stale,
+  sampleFresh,
   uptime,
 } from "../domain.ts";
 import { HostIdentity, Metric, NodeStatus, PageTitle, Section } from "./ui.tsx";
@@ -145,11 +146,23 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
     mem = host.snapshot?.sys?.mem,
     fan = host.snapshot?.fan,
     mac = host.snapshot?.macmon;
-  const thermal =
+  const thermalFresh = sampleFresh(host.snapshot?.thermal, now, 30_000);
+  const thermalLabel =
     [t`正常`, t`温暖`, t`严重`, t`危急`][host.snapshot?.thermal?.state ?? -1] ??
     t`未上报`;
+  const thermal =
+    host.snapshot?.thermal && !thermalFresh
+      ? `${thermalLabel} · ${t`数据已过期`}`
+      : thermalLabel;
   const overview = (
     <>
+      {host.snapshot?.sys && !sampleFresh(host.snapshot.sys, now) && (
+        <Alert
+          showIcon
+          type="warning"
+          title={t`系统指标已过期，显示最后有效读数`}
+        />
+      )}
       <div className="metrics-row">
         <Metric
           label={t`CPU 占用`}
@@ -213,6 +226,16 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
           </Section>
         ))}
         <Section title={t`传感器`}>
+          {!isVirtual(host) &&
+            [fan, mac].some(
+              (sample) => sample && !sampleFresh(sample, now),
+            ) && (
+              <Alert
+                type="warning"
+                showIcon
+                title={t`部分传感器已过期，显示最后有效读数`}
+              />
+            )}
           {!isVirtual(host) ? (
             <div className="sensor-list">
               <div>
@@ -345,7 +368,7 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
                 children: (
                   <Badge
                     status={
-                      (host.snapshot?.thermal?.state ?? 0) >= 2
+                      !thermalFresh || (host.snapshot?.thermal?.state ?? 0) >= 2
                         ? "warning"
                         : "default"
                     }

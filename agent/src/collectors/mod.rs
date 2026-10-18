@@ -22,9 +22,11 @@ pub struct SharedState {
     pub thermal: Option<thermal::ThermalInfo>,
     pub fan: Option<serde_json::Value>,
     pub disk_scans: std::collections::HashMap<String, disk::TreeScan>,
+    pub disk_revision: u64,
     pub disk_scan: disk::ScanJob,
     pub disk_cancel: Arc<std::sync::atomic::AtomicBool>,
     pub disk_stopping: bool,
+    pub disk_control: Arc<tokio::sync::Mutex<()>>,
     pub disk_rescan_flag: std::sync::atomic::AtomicBool,
     pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
     pub started_at: u64,
@@ -39,7 +41,7 @@ impl SharedState {
         }
     }
 
-    pub fn render(&self) -> Snapshot {
+    pub fn render(&self, include_disk: bool) -> Snapshot {
         Snapshot {
             agent: AgentInfo {
                 version: env!("CARGO_PKG_VERSION"),
@@ -51,7 +53,8 @@ impl SharedState {
             macmon: self.macmon.clone(),
             thermal: self.thermal.clone(),
             fan: self.fan.clone(),
-            disk_scans: self.disk_scans.values().cloned().collect(),
+            disk_revision: format!("{}:{}", self.started_at, self.disk_revision),
+            disk_scans: include_disk.then(|| self.disk_scans.values().cloned().collect()),
             disk_scan: self.disk_scan.clone(),
             plugins: self.plugins.clone(),
         }
@@ -73,7 +76,9 @@ pub struct Snapshot {
     pub macmon: Option<macmon::MacmonSample>,
     pub thermal: Option<thermal::ThermalInfo>,
     pub fan: Option<serde_json::Value>,
-    pub disk_scans: Vec<disk::TreeScan>,
+    pub disk_revision: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disk_scans: Option<Vec<disk::TreeScan>>,
     pub disk_scan: disk::ScanJob,
     pub plugins: std::collections::BTreeMap<String, crate::plugins::Envelope>,
 }

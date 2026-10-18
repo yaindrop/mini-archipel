@@ -21,7 +21,7 @@ async function main() {
     process.once(signal, () => {
       void app.close();
     });
-  console.log(`mini-archipel console 0.10.0 listening on ${config.bind}`);
+  console.log(`mini-archipel console 0.11.0 listening on ${config.bind}`);
 }
 main().catch((error: unknown) => {
   console.error(

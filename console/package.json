@@ -1,6 +1,6 @@
 {
   "name": "mini-archipel-console",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.10.1",
@@ -18,11 +18,11 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:browser": "playwright test",
-    "build": "pnpm i18n:check && vite build && esbuild src/server.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/server.cjs",
+    "build": "pnpm i18n:check && vite build && esbuild src/server.ts src/store-worker.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist --out-extension:.js=.cjs --define:import.meta.url=__archipel_module_url --banner:js='const __archipel_module_url=require(\"node:url\").pathToFileURL(__filename).href;'",
     "start": "node dist/server.cjs",
     "check": "pnpm i18n:check && pnpm typecheck && pnpm lint && pnpm lint:ui && pnpm format:check && pnpm deadcode && pnpm test:coverage && pnpm build",
     "lint:ui": "biome lint src/web src/plugins",
-    "test:agent": "node --test scripts/verify-agent.ts scripts/verify-operations.ts scripts/verify-fan-control.ts scripts/verify-runner-policy.ts scripts/verify-storage.ts",
+    "test:agent": "node --test scripts/verify-agent.ts scripts/verify-operations.ts scripts/verify-fan-control.ts scripts/verify-runner-policy.ts scripts/verify-runner-operations.ts scripts/verify-storage.ts",
     "check:agent": "cd ../agent && cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings && cargo test --locked && cargo build --release --locked && cd ../console && pnpm test:agent",
     "i18n:extract": "lingui extract --clean --workers 1",
     "i18n:check": "lingui check sync --workers 1 && lingui check missing --mode catalog --workers 1",
@@ -81,7 +81,8 @@
   "knip": {
     "entry": [
       "lingui.config.ts",
-      "scripts/verify-*.ts"
+      "scripts/verify-*.ts",
+      "src/store-worker.ts"
     ]
   }
 }

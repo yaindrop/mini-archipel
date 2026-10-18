@@ -47,23 +47,62 @@ import { displayName, formatBytes } from "../../domain.ts";
 import { api, message } from "../../web/api.ts";
 import { Metric, PageTitle, Section } from "../../web/ui.tsx";
 
+function OperationStatus({
+  operation,
+}: {
+  operation: { status: string; error: string | null } | undefined;
+}) {
+  const { t } = useLinguiMacro();
+  if (!operation) return null;
+  const pending = ["queued", "running"].includes(operation.status);
+  return (
+    <Alert
+      showIcon
+      type={
+        pending
+          ? "info"
+          : operation.status === "completed"
+            ? "success"
+            : "warning"
+      }
+      title={
+        pending
+          ? t`操作处理中`
+          : operation.status === "completed"
+            ? t`操作已完成`
+            : t`操作未确认完成，请核对当前节点状态`
+      }
+      description={
+        operation.error
+          ? t`请刷新节点状态，查看本地进程及接单互斥设置后再重试。`
+          : undefined
+      }
+    />
+  );
+}
 function NodeCoordination({ host, now }: { host: Host; now: number }) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
   const client = useQueryClient(),
     { message: feedback } = App.useApp();
   const data = agentData(host),
-    policy = data?.coordination;
+    policy = data?.coordination,
+    operation = data?.operations?.findLast(
+      (job) => job.action === "coordination",
+    ),
+    pending = operation
+      ? ["queued", "running"].includes(operation.status)
+      : false;
   const mutation = useMutation({
     mutationFn: (enable: boolean) =>
-      api.pluginAction("runners", "coordination", { host: host.name, enable }),
-    onSuccess: async (_data, enable) => {
+      api.pluginAction("runners", "coordination", {
+        request_id: crypto.randomUUID(),
+        host: host.name,
+        enable,
+      }),
+    onSuccess: async () => {
       await refreshFleet(client);
-      void feedback.success(
-        enable
-          ? t`${displayName(host)} 已开启接单互斥`
-          : t`${displayName(host)} 已关闭接单互斥`,
-      );
+      void feedback.success(t`操作请求已提交，请查看节点操作状态`);
     },
   });
   return (
@@ -75,12 +114,13 @@ function NodeCoordination({ host, now }: { host: Host; now: number }) {
         <Switch
           aria-label={t`${displayName(host)} 接单互斥`}
           checked={policy?.enabled ?? false}
-          loading={mutation.isPending}
+          loading={mutation.isPending || pending}
           disabled={
             !current(host, now) ||
             !data?.control_allowed ||
             !policy?.available ||
-            mutation.isPending
+            mutation.isPending ||
+            pending
           }
           onChange={(enable) => {
             mutation.mutate(enable);
@@ -100,6 +140,7 @@ function NodeCoordination({ host, now }: { host: Host; now: number }) {
                   ? t`已开启，空闲时所有 Runner 正常接单`
                   : t`未开启`}
       </Typography.Text>
+      <OperationStatus operation={operation} />
       {mutation.isError ? (
         <Alert
           type="error"
@@ -150,25 +191,21 @@ export function RunnerList({
       interrupt
         ? api.pluginAction("runners", "interrupt", {
             host: host.name,
+            request_id: crypto.randomUUID(),
             repo: runner.repo,
             runner: runner.repo_dir,
             worker_pid: runner.worker_pid,
           })
         : api.pluginAction("runners", "toggle", {
             host: host.name,
+            request_id: crypto.randomUUID(),
             repo: runner.repo,
             runner: runner.repo_dir,
             enable,
           }),
-    onSuccess: async (_data, variables) => {
+    onSuccess: async () => {
       await refreshFleet(client);
-      void feedback.success(
-        variables.interrupt
-          ? t`${variables.runner.agent_name ?? variables.runner.repo_dir} 的作业已在本地中断`
-          : variables.enable
-            ? t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已启动接单`
-            : t`${variables.runner.agent_name ?? variables.runner.repo_dir} 已停止接单`,
-      );
+      void feedback.success(t`操作请求已提交，请查看节点操作状态`);
       setConfirm(null);
     },
   });
@@ -183,7 +220,7 @@ export function RunnerList({
         description={
           unavailable.length
             ? t`节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。`
-            : t`尚未发现 runner，节点上报安装信息后会自动显示。`
+            : t`尚无已注册 Runner，节点上报注册信息后会自动显示。`
         }
       />
     );
@@ -226,6 +263,12 @@ export function RunnerList({
             <div className="runner-list">
               {group.rows.map(({ host, runner }) => {
                 const status = runnerState(host, runner, remoteRunners, now),
+                  operation = agentData(host)?.operations?.findLast(
+                    (job) => job.request.runner === runner.repo_dir,
+                  ),
+                  pending = operation
+                    ? ["queued", "running"].includes(operation.status)
+                    : false,
                   enabled = runner.listener_pid !== null,
                   remote = matchingRemote(runner, remoteRunners),
                   disabled =
@@ -234,7 +277,8 @@ export function RunnerList({
                     status === "waiting" ||
                     !current(host, now) ||
                     !agentData(host)?.control_allowed ||
-                    mutation.isPending;
+                    mutation.isPending ||
+                    pending;
                 return (
                   <Card
                     className="runner-card"
@@ -277,7 +321,8 @@ export function RunnerList({
                               !runner.repo ||
                               !current(host, now) ||
                               !agentData(host)?.control_allowed ||
-                              mutation.isPending
+                              mutation.isPending ||
+                              pending
                             }
                             onClick={() => {
                               mutation.reset();
@@ -330,6 +375,7 @@ export function RunnerList({
                       </Space>
                     }
                   >
+                    <OperationStatus operation={operation} />
                     <Descriptions
                       column={{
                         xs: 2,
@@ -341,7 +387,11 @@ export function RunnerList({
                       items={[
                         {
                           key: "work",
-                          label: t`工作区`,
+                          label: (
+                            <Tooltip
+                              title={t`空间统计每分钟更新，进程状态独立实时更新`}
+                            >{t`工作区`}</Tooltip>
+                          ),
                           children: (
                             <span className="num">
                               {formatBytes(runner.work_bytes)}

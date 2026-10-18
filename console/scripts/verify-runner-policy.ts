@@ -172,7 +172,10 @@ await test(
           "content-type": "application/json",
           ...(authenticated ? { authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          request_id: crypto.randomUUID(),
+          ...(body as Record<string, unknown>),
+        }),
       });
     function worker(repo: string) {
       const child = spawn(
@@ -201,6 +204,7 @@ await test(
       400,
     );
     assert.equal((await command({ enable: true })).status, 200);
+    await until(async () => (await data()).coordination?.enabled === true);
     const first = worker("first");
     await until(() => existsSync(join(home, "first.ready")));
     await until(
@@ -238,6 +242,7 @@ await test(
     const recovered = (await data()).coordination;
     assert.equal(recovered?.active_repo, null);
     assert.equal((await command({ enable: false })).status, 200);
+    await until(async () => (await data()).coordination?.enabled === false);
     const persisted: unknown = JSON.parse(
       readFileSync(
         join(home, ".local/state/mini-ci/runner-policy.json"),

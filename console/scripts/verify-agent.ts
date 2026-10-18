@@ -54,6 +54,21 @@ await test(
       encoding: "utf8",
     }).trim();
     const original = readFileSync(path, "utf8");
+    for (const field of [
+      "proc_interval_ms",
+      "thermal_interval_ms",
+      "fan_interval_ms",
+      "disk_interval_ms",
+    ]) {
+      const invalid = join(dir, "invalid.toml");
+      writeFileSync(
+        invalid,
+        original.replace("[collectors]", `[collectors]\n${field} = 0`),
+      );
+      assert.throws(() =>
+        execFileSync(binary, ["check-config", invalid], { stdio: "pipe" }),
+      );
+    }
     for (const [directory, repo] of [
       ["first", "owner-a/project"],
       ["second", "owner-b/project"],

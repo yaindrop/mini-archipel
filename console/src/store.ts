@@ -1,90 +1,90 @@
-import { DatabaseSync } from "node:sqlite";
-import { PointSchema, type Point } from "./contracts.ts";
-const DAY = 86_400_000;
+import { Worker } from "node:worker_threads";
+import { PointSchema } from "./contracts.ts";
+export interface Sample {
+  host: string;
+  key: string;
+  ts: number;
+  value: number;
+}
 export class Store {
-  private readonly db: DatabaseSync;
+  private readonly worker: Worker;
+  private readonly pending = new Map<
+    number,
+    { resolve: (value: unknown) => void; reject: (reason: Error) => void }
+  >();
+  private next = 0;
+  private closing = false;
+  private closePromise: Promise<void> | undefined;
+  private failure: Error | null = null;
   constructor(path: string) {
-    this.db = new DatabaseSync(path);
-    this.db.exec(`PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS samples_raw (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL);
-      CREATE INDEX IF NOT EXISTS raw_lookup ON samples_raw(host, key, ts);
-      CREATE TABLE IF NOT EXISTS samples_mid (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(host,key,ts));
-      CREATE TABLE IF NOT EXISTS samples_coarse (host TEXT NOT NULL, key TEXT NOT NULL, ts INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(host,key,ts));`);
-  }
-  insertSamples(
-    rows: { host: string; key: string; ts: number; value: number }[],
-  ): void {
-    if (!rows.length) return;
-    const insert = this.db.prepare(
-      "INSERT INTO samples_raw (host,key,ts,value) VALUES (?,?,?,?)",
+    this.worker = new Worker(
+      new URL(
+        import.meta.url.endsWith(".ts")
+          ? "./store-worker.ts"
+          : "./store-worker.cjs",
+        import.meta.url,
+      ),
+      { workerData: path },
     );
-    this.db.exec("BEGIN");
-    try {
-      for (const row of rows) insert.run(row.host, row.key, row.ts, row.value);
-      this.db.exec("COMMIT");
-    } catch (error) {
-      this.db.exec("ROLLBACK");
-      throw error;
-    }
+    this.worker.on(
+      "message",
+      (message: { id: number; result?: unknown; error?: string }) => {
+        const pending = this.pending.get(message.id);
+        if (!pending) return;
+        this.pending.delete(message.id);
+        if (message.error) pending.reject(new Error(message.error));
+        else pending.resolve(message.result);
+      },
+    );
+    this.worker.on("error", () => {
+      this.fail(new Error("history worker unavailable"));
+    });
+    this.worker.on("exit", (code) => {
+      if (!this.closing || code !== 0 || this.pending.size > 0)
+        this.fail(new Error("history worker stopped"));
+    });
   }
-  queryRange(host: string, key: string, fromTs: number, toTs: number): Point[] {
-    // Include every retention tier: a 7-day query still needs the last day of raw samples.
-    const bucket = Math.max(1, Math.ceil((toTs - fromTs) / 1200));
+  private fail(error: Error) {
+    this.failure = error;
+    for (const pending of this.pending.values()) pending.reject(error);
+    this.pending.clear();
+  }
+  private call(action: string, args: unknown[] = []): Promise<unknown> {
+    if (this.failure) return Promise.reject(this.failure);
+    if (this.closing && action !== "close")
+      return Promise.reject(new Error("history store is closing"));
+    if (action !== "close" && this.pending.size >= 256)
+      return Promise.reject(new Error("history queue is full"));
+    const id = ++this.next;
+    return new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      this.worker.postMessage({ id, action, args });
+    });
+  }
+  async insertSamples(rows: Sample[]): Promise<void> {
+    if (rows.length) await this.call("insert", [rows]);
+  }
+  async queryRange(host: string, key: string, from: number, to: number) {
     return PointSchema.array().parse(
-      this.db
-        .prepare(
-          `SELECT CAST(ts / ? AS INTEGER) * ? AS ts, AVG(value) AS value FROM (
-      SELECT ts,value FROM samples_coarse WHERE host=? AND key=? AND ts BETWEEN ? AND ?
-      UNION ALL SELECT ts,value FROM samples_mid WHERE host=? AND key=? AND ts BETWEEN ? AND ?
-      UNION ALL SELECT ts,value FROM samples_raw WHERE host=? AND key=? AND ts BETWEEN ? AND ?
-    ) GROUP BY CAST(ts / ? AS INTEGER) ORDER BY ts`,
-        )
-        .all(
-          bucket,
-          bucket,
-          host,
-          key,
-          fromTs,
-          toTs,
-          host,
-          key,
-          fromTs,
-          toTs,
-          host,
-          key,
-          fromTs,
-          toTs,
-          bucket,
-        ),
+      await this.call("query", [host, key, from, to]),
     );
   }
-  downsampleAndPrune(now = Date.now()): void {
-    const rawCutoff = Math.floor((now - DAY) / 10_000) * 10_000;
-    const midCutoff = Math.floor((now - 30 * DAY) / 60_000) * 60_000;
-    this.db.exec("BEGIN");
-    try {
-      this.db
-        .prepare(
-          `INSERT OR IGNORE INTO samples_mid SELECT host,key,CAST(ts / 10000 AS INTEGER)*10000,AVG(value) FROM samples_raw WHERE ts < ? GROUP BY host,key,CAST(ts / 10000 AS INTEGER)`,
-        )
-        .run(rawCutoff);
-      this.db.prepare("DELETE FROM samples_raw WHERE ts < ?").run(rawCutoff);
-      this.db
-        .prepare(
-          `INSERT OR IGNORE INTO samples_coarse SELECT host,key,CAST(ts / 60000 AS INTEGER)*60000,AVG(value) FROM samples_mid WHERE ts < ? GROUP BY host,key,CAST(ts / 60000 AS INTEGER)`,
-        )
-        .run(midCutoff);
-      this.db.prepare("DELETE FROM samples_mid WHERE ts < ?").run(midCutoff);
-      this.db
-        .prepare("DELETE FROM samples_coarse WHERE ts < ?")
-        .run(now - 365 * DAY);
-      this.db.exec("COMMIT");
-    } catch (error) {
-      this.db.exec("ROLLBACK");
-      throw error;
-    }
+  async latestTimestamp(host: string, key: string): Promise<number> {
+    return Number(await this.call("latest", [host, key]));
   }
-  close(): void {
-    this.db.close();
+  async downsampleAndPrune(now = Date.now()): Promise<void> {
+    await this.call("prune", [now]);
+  }
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    this.closing = true;
+    this.closePromise = (async () => {
+      try {
+        await this.call("close");
+      } finally {
+        await this.worker.terminate();
+      }
+    })();
+    return this.closePromise;
   }
 }

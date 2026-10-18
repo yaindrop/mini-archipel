@@ -266,6 +266,42 @@ test("repository tabs isolate runners and controls across nodes", async ({
     page.getByRole("button", { name: "启动接单", exact: true }),
   ).toBeEnabled();
 });
+test("Runner receipts survive reload and directory deltas retain their baseline", async ({
+  page,
+}) => {
+  const sizes: number[] = [];
+  const directoryFrames: boolean[] = [];
+  page.on("websocket", (socket) =>
+    socket.on("framereceived", ({ payload }) => {
+      sizes.push(payload.length);
+      directoryFrames.push(String(payload).includes('"disk_scans":'));
+    }),
+  );
+  await page.goto("/nodes/yd-mini?view=runners");
+  const runner = page.locator(".runner-card").first();
+  const requested = page.waitForRequest((request) =>
+    request.url().endsWith("/api/plugins/runners/actions/toggle"),
+  );
+  await runner.getByRole("button", { name: "停止接单", exact: true }).click();
+  await page.getByRole("button", { name: "确认停止", exact: true }).click();
+  const body = (await requested).postDataJSON() as { request_id: string };
+  expect(body.request_id).toMatch(/^[0-9a-f-]{36}$/);
+  await expect(
+    page.getByText("操作请求已提交，请查看节点操作状态"),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.locator(".runner-card").first().getByText("操作已完成"),
+  ).toBeVisible();
+  await page.goto("/storage");
+  await expect(
+    page.getByRole("rowheader").filter({ hasText: "Library" }),
+  ).toBeVisible();
+  await expect.poll(() => sizes.length).toBeGreaterThan(2);
+  expect(directoryFrames).toContain(true);
+  expect(directoryFrames).toContain(false);
+  expect(Math.min(...sizes)).toBeLessThan(Math.max(...sizes));
+});
 test("node runner mutual exclusion persists and reflects job pause and recovery", async ({
   page,
 }) => {

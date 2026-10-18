@@ -45,6 +45,7 @@ pub struct RunnerInstall {
     pub listener_pid: Option<u32>,
     pub worker_pid: Option<u32>,
     pub work_bytes: Option<u64>,
+    pub sizes_ts: Option<u64>,
     pub diag_bytes: Option<u64>,
     pub diag_latest: Option<String>,
     pub run: Option<RunReport>,
@@ -60,6 +61,7 @@ fn now_unix() -> u64 {
 
 fn dir_size(path: &Path, cancelled: &AtomicBool) -> Option<u64> {
     let mut total = 0u64;
+    let started = std::time::Instant::now();
     let mut stack = vec![path.to_path_buf()];
     while let Some(dir) = stack.pop() {
         if cancelled.load(Ordering::Relaxed) {
@@ -67,6 +69,11 @@ fn dir_size(path: &Path, cancelled: &AtomicBool) -> Option<u64> {
         }
         let read = std::fs::read_dir(&dir).ok()?;
         for entry in read.filter_map(|e| e.ok()) {
+            if started.elapsed() > std::time::Duration::from_secs(2)
+                || cancelled.load(Ordering::Relaxed)
+            {
+                return None;
+            }
             let meta = entry.path().symlink_metadata().ok()?;
             if meta.is_dir() {
                 stack.push(entry.path());
@@ -147,18 +154,15 @@ fn pgrep(pattern: &str) -> Option<u32> {
 }
 
 fn latest_diag(dir: &PathBuf) -> Option<String> {
-    let mut entries: Vec<_> = std::fs::read_dir(dir)
+    let entries = std::fs::read_dir(dir)
         .ok()?
         .filter_map(|e| e.ok())
         .filter(|e| {
             let name = e.file_name().to_string_lossy().to_string();
             name.starts_with("Worker_") || name.starts_with("Runner_")
         })
-        .collect();
-    entries.sort_by_key(|e| e.file_name());
-    entries
-        .pop()
-        .map(|e| e.file_name().to_string_lossy().to_string())
+        .max_by_key(|e| e.file_name());
+    entries.map(|e| e.file_name().to_string_lossy().to_string())
 }
 
 fn read_run(path: &Path, worker_pid: Option<u32>) -> Option<RunReport> {
@@ -188,13 +192,14 @@ fn read_run(path: &Path, worker_pid: Option<u32>) -> Option<RunReport> {
     Some(report)
 }
 
-fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
+fn discover(cancelled: &AtomicBool, include_sizes: bool) -> Result<Vec<RunnerInstall>, Failure> {
+    let table = processes()?;
     let base = dirs_home().join("runners");
     let mut installs: Vec<RunnerInstall> = Vec::new();
     if let Ok(entries) = std::fs::read_dir(&base) {
         for entry in entries.filter_map(|e| e.ok()) {
             if cancelled.load(Ordering::Relaxed) {
-                return Vec::new();
+                return Ok(Vec::new());
             }
             let repo_dir = entry.path();
             if !repo_dir.is_dir() || !repo_dir.join(".runner").is_file() {
@@ -204,10 +209,23 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
             let registration = parse_runner_file(&repo_dir.join(".runner"));
             let repo = registration.github_url.as_deref().and_then(repository);
             let work_folder = registration.work_folder;
-            let listener_pid = pgrep(&process_pattern(&repo_dir, "Runner.Listener"));
-            let worker_pid = pgrep(&process_pattern(&repo_dir, "Runner.Worker"));
-            let work_bytes = work_folder
-                .as_ref()
+            let listener_pid = table
+                .iter()
+                .find(|p| {
+                    p.uid == libc_getuid()
+                        && p.command == repo_dir.join("bin/Runner.Listener").to_string_lossy()
+                })
+                .map(|p| p.pid);
+            let worker_pid = table
+                .iter()
+                .find(|p| {
+                    p.uid == libc_getuid()
+                        && p.command == repo_dir.join("bin/Runner.Worker").to_string_lossy()
+                })
+                .map(|p| p.pid);
+            let work_bytes = include_sizes
+                .then_some(work_folder.as_ref())
+                .flatten()
                 .map(|wf| {
                     let p = repo_dir.join(wf);
                     if p.is_dir() {
@@ -218,8 +236,16 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
                 })
                 .and_then(|p| dir_size(&p, cancelled));
             let diag = repo_dir.join("_diag");
-            let diag_bytes = dir_size(&diag, cancelled);
-            let diag_latest = latest_diag(&diag);
+            let diag_bytes = if include_sizes {
+                dir_size(&diag, cancelled)
+            } else {
+                None
+            };
+            let diag_latest = if include_sizes {
+                latest_diag(&diag)
+            } else {
+                None
+            };
             let run = read_run(
                 &dirs_home()
                     .join(".local/state/mini-ci/reports")
@@ -236,6 +262,7 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
                 listener_pid,
                 worker_pid,
                 work_bytes,
+                sizes_ts: include_sizes.then(now_unix),
                 diag_bytes,
                 diag_latest,
                 run,
@@ -243,7 +270,7 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
             });
         }
     }
-    installs
+    Ok(installs)
 }
 
 #[derive(Deserialize)]
@@ -296,20 +323,27 @@ async fn lease_command(action: &str, body: Option<Value>) -> Result<Value, Failu
     } else {
         drop(child.stdin.take());
     }
-    let output = tokio::time::timeout(std::time::Duration::from_secs(6), child.wait_with_output())
-        .await
-        .map_err(|_| unavailable())?
-        .map_err(|_| unavailable())?;
+    let output = tokio::time::timeout(
+        std::time::Duration::from_secs(if action == "state" { 6 } else { 45 }),
+        child.wait_with_output(),
+    )
+    .await
+    .map_err(|_| unavailable())?
+    .map_err(|_| unavailable())?;
     if !output.status.success() {
         return Err((
-            StatusCode::CONFLICT,
-            "node runner policy rejected the command; refresh and check shared job hooks".into(),
+            StatusCode::SERVICE_UNAVAILABLE,
+            "node runner policy rejected the command; inspect local state before retrying".into(),
         ));
     }
     serde_json::from_slice(&output.stdout).map_err(|_| unavailable())
 }
 
-pub struct Runners;
+#[derive(Default)]
+pub struct Runners {
+    operations: crate::plugins::runner_operations::Operations,
+    policy_generation: Arc<std::sync::atomic::AtomicU64>,
+}
 impl Plugin for Runners {
     fn id(&self) -> &'static str {
         "runners"
@@ -326,22 +360,103 @@ impl Plugin for Runners {
     fn run(&self, context: Context, value: Value) -> Task<'_, Result<(), String>> {
         Box::pin(async move {
             let settings = options(value)?;
+            let mut sizes: std::collections::HashMap<String, RunnerInstall> =
+                std::collections::HashMap::new();
+            let mut size_task: Option<
+                tokio::task::JoinHandle<Result<Vec<RunnerInstall>, Failure>>,
+            > = None;
+            let mut policy_task: Option<tokio::task::JoinHandle<Result<Value, Failure>>> = None;
+            let mut generation = self.policy_generation.load(Ordering::Relaxed);
+            let mut last_sizes = std::time::Instant::now() - std::time::Duration::from_secs(60);
+            let mut last_policy = std::time::Instant::now() - std::time::Duration::from_secs(60);
+            let mut coordination = json!({"available":false,"enabled":false,"active_repo":null,"paused":[],"waiting":[],"error":null});
             loop {
-                let coordination = lease_command("state", None).await.unwrap_or(json!({
-                    "available": false, "enabled": false, "active_repo": null,
-                    "paused": [], "waiting": [], "error": "node runner policy unavailable; check shared job hooks"
-                }));
+                let current = self.policy_generation.load(Ordering::Relaxed);
+                if current != generation {
+                    let shared = context.state.read().await;
+                    if let Some(value) = shared
+                        .plugins
+                        .get("runners")
+                        .map(|entry| entry.data["coordination"].clone())
+                        .filter(Value::is_object)
+                    {
+                        coordination = value;
+                    }
+                    generation = current;
+                    if let Some(task) = policy_task.take() {
+                        task.abort();
+                    }
+                    last_policy = std::time::Instant::now() - std::time::Duration::from_secs(60);
+                }
+                if size_task.as_ref().is_some_and(|task| task.is_finished()) {
+                    if let Ok(Ok(rows)) = size_task.take().unwrap().await {
+                        sizes = rows.into_iter().map(|r| (r.repo_dir.clone(), r)).collect();
+                    }
+                }
+                if size_task.is_none() && last_sizes.elapsed() >= std::time::Duration::from_secs(60)
+                {
+                    let cancelled = Arc::clone(&context.cancelled);
+                    size_task = Some(tokio::task::spawn_blocking(move || {
+                        discover(&cancelled, true)
+                    }));
+                    last_sizes = std::time::Instant::now();
+                }
+                if let Some(task) = policy_task.as_ref() {
+                    let task: &tokio::task::JoinHandle<Result<Value, Failure>> = task;
+                    if task.is_finished() {
+                        match policy_task.take().unwrap().await {
+                            Ok(Ok(value)) => coordination = value,
+                            _ => {
+                                coordination["available"] = json!(false);
+                                coordination["error"] =
+                                    json!("node runner policy temporarily unavailable");
+                            }
+                        }
+                    }
+                }
+                if policy_task.is_none()
+                    && last_policy.elapsed()
+                        >= std::time::Duration::from_millis(settings.interval_ms)
+                {
+                    policy_task = Some(tokio::spawn(lease_command("state", None)));
+                    last_policy = std::time::Instant::now();
+                }
                 let cancelled = Arc::clone(&context.cancelled);
-                let runners = tokio::task::spawn_blocking(move || discover(&cancelled))
+                let rows = tokio::task::spawn_blocking(move || discover(&cancelled, false))
                     .await
                     .map_err(|_| "runner discovery failed")?;
-                context
-                    .publish(
-                        json!({ "runners": runners, "interval_ms": settings.interval_ms,
-                    "control_allowed": settings.allow_control, "coordination": coordination }),
-                    )
-                    .await;
-                tokio::time::sleep(std::time::Duration::from_millis(settings.interval_ms)).await;
+                match rows {
+                    Ok(mut runners) => {
+                        for runner in &mut runners {
+                            if let Some(stats) = sizes.get(&runner.repo_dir) {
+                                runner.work_bytes = stats.work_bytes;
+                                runner.diag_bytes = stats.diag_bytes;
+                                runner.diag_latest = stats.diag_latest.clone();
+                                runner.sizes_ts = stats.sizes_ts;
+                            }
+                        }
+                        let data = json!({"runners":runners,"operations":self.operations.read().await.map_err(|(_,e)|e)?,"interval_ms":1000,"control_allowed":settings.allow_control,"coordination":coordination});
+                        let mut shared = context.state.write().await;
+                        if generation == self.policy_generation.load(Ordering::Relaxed) {
+                            if let Some(entry) = shared.plugins.get_mut("runners") {
+                                if entry.enabled && !context.cancelled.load(Ordering::Relaxed) {
+                                    entry.data = data;
+                                    entry.status = "ready".into();
+                                    entry.error = None;
+                                    entry.ts = now_unix();
+                                }
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        if let Some(entry) = context.state.write().await.plugins.get_mut("runners")
+                        {
+                            entry.status = "error".into();
+                            entry.error = Some("local process inspection unavailable".into());
+                        }
+                    }
+                }
+                tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
             }
         })
     }
@@ -353,107 +468,239 @@ impl Plugin for Runners {
         body: Value,
     ) -> Task<'_, Result<Value, Failure>> {
         Box::pin(async move {
-            if action != "toggle" && action != "interrupt" && action != "coordination" {
+            if !matches!(action.as_str(), "toggle" | "interrupt" | "coordination") {
                 return Err((StatusCode::NOT_FOUND, "plugin action not found".into()));
             }
-            let settings = options(value).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+            let settings = options(value.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
             if !settings.allow_control {
                 return Err((StatusCode::FORBIDDEN, "runner control is disabled".into()));
             }
-            if action == "coordination" {
-                #[derive(Deserialize)]
-                #[serde(deny_unknown_fields)]
-                struct PolicyRequest {
-                    enable: bool,
-                }
-                let request: PolicyRequest = serde_json::from_value(body).map_err(|_| {
-                    (
-                        StatusCode::BAD_REQUEST,
-                        "invalid runner policy command".into(),
-                    )
-                })?;
-                let coordination =
-                    lease_command("policy", Some(json!({"enable": request.enable}))).await?;
-                let mut data = context.state.read().await.plugins["runners"].data.clone();
-                data["coordination"] = coordination;
-                context.publish(data).await;
-                return Ok(json!({"ok": true}));
-            }
-            #[derive(Deserialize)]
-            #[serde(deny_unknown_fields)]
-            struct Request {
-                repo: String,
-                runner: String,
-                enable: Option<bool>,
-                worker_pid: Option<u32>,
-            }
-            let request: Request = serde_json::from_value(body)
-                .map_err(|_| (StatusCode::BAD_REQUEST, "invalid runner command".into()))?;
-            let installs: Vec<RunnerInstall> = {
-                let shared = context.state.read().await;
-                let data = shared
-                    .plugins
-                    .get("runners")
-                    .map(|p| p.data["runners"].clone())
-                    .unwrap_or(Value::Null);
-                serde_json::from_value(data).map_err(|_| {
-                    (
-                        StatusCode::CONFLICT,
-                        "plugin has no current snapshot".into(),
-                    )
-                })?
+            let mut body = body;
+            let object = body
+                .as_object_mut()
+                .ok_or((StatusCode::BAD_REQUEST, "invalid runner command".into()))?;
+            let id = object
+                .remove("request_id")
+                .and_then(|v| v.as_str().map(str::to_owned))
+                .ok_or((
+                    StatusCode::BAD_REQUEST,
+                    "operation request ID is required".into(),
+                ))?;
+            let allowed = match action.as_str() {
+                "coordination" => vec!["enable"],
+                "toggle" => vec!["repo", "runner", "enable"],
+                _ => vec!["repo", "runner", "worker_pid"],
             };
-            let runner = installs
-                .into_iter()
-                .find(|r| {
-                    r.repo.as_deref() == Some(request.repo.as_str()) && r.repo_dir == request.runner
-                })
-                .ok_or((StatusCode::NOT_FOUND, "runner not found".into()))?;
-            if action == "toggle" && lease_helper().is_file() {
-                let enable = request
-                    .enable
-                    .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
-                if request.worker_pid.is_some() {
-                    return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
+            if object.len() != allowed.len()
+                || object.keys().any(|key| !allowed.contains(&key.as_str()))
+                || (action != "interrupt" && !body["enable"].is_boolean())
+                || (action != "coordination"
+                    && (body["repo"].as_str().is_none() || body["runner"].as_str().is_none()))
+                || (action == "interrupt"
+                    && body["worker_pid"]
+                        .as_u64()
+                        .is_none_or(|id| id == 0 || id > u32::MAX as u64))
+            {
+                return Err((StatusCode::BAD_REQUEST, "invalid runner command".into()));
+            }
+            let check_context = context.clone();
+            let check_body = body.clone();
+            let check_action = action.clone();
+            let validate = Box::pin(async move {
+                if check_action != "coordination" {
+                    let shared = check_context.state.read().await;
+                    let runners: Vec<RunnerInstall> = serde_json::from_value(
+                        shared
+                            .plugins
+                            .get("runners")
+                            .map(|p| p.data["runners"].clone())
+                            .unwrap_or(Value::Null),
+                    )
+                    .map_err(|_| {
+                        (
+                            StatusCode::CONFLICT,
+                            "plugin has no current snapshot".into(),
+                        )
+                    })?;
+                    let runner = runners
+                        .into_iter()
+                        .find(|r| {
+                            r.repo.as_deref() == check_body["repo"].as_str()
+                                && Some(r.repo_dir.as_str()) == check_body["runner"].as_str()
+                        })
+                        .ok_or((StatusCode::NOT_FOUND, "runner not found".into()))?;
+                    drop(shared);
+                    let expected = check_body["worker_pid"].as_u64();
+                    let interrupt = check_action == "interrupt";
+                    tokio::task::spawn_blocking(move || {
+                        let directory = dirs_home().join("runners").join(&runner.repo_dir);
+                        let table = processes()?;
+                        let worker = table.iter().find(|p| {
+                            p.uid == libc_getuid()
+                                && p.command
+                                    == directory.join("bin/Runner.Worker").to_string_lossy()
+                        });
+                        if interrupt {
+                            if worker.is_none_or(|p| Some(u64::from(p.pid)) != expected) {
+                                return Err((
+                                    StatusCode::CONFLICT,
+                                    "active job changed; refresh before interrupting".into(),
+                                ));
+                            }
+                        } else if worker.is_some() {
+                            return Err((StatusCode::CONFLICT, "runner is running a job".into()));
+                        }
+                        Ok(())
+                    })
+                    .await
+                    .map_err(|_| {
+                        (
+                            StatusCode::SERVICE_UNAVAILABLE,
+                            "could not inspect local processes".into(),
+                        )
+                    })??;
                 }
-                lease_command(
-                    "service",
-                    Some(json!({"repo": request.repo, "runner": request.runner, "enable": enable})),
+                Ok(())
+            });
+            let request = body.clone();
+            let context_for_receipt = context.clone();
+            let receipt = self
+                .operations
+                .submit(
+                    id,
+                    action.clone(),
+                    request,
+                    validate,
+                    Box::pin(execute_action(
+                        context,
+                        value,
+                        action,
+                        body,
+                        Arc::clone(&self.policy_generation),
+                    )),
                 )
                 .await?;
-                return Ok(json!({"ok": true}));
+            let jobs = self.operations.read().await?;
+            if let Some(entry) = context_for_receipt
+                .state
+                .write()
+                .await
+                .plugins
+                .get_mut("runners")
+            {
+                entry.data["operations"] = json!(jobs);
             }
-            let operation = action.clone();
-            tokio::task::spawn_blocking(move || {
-                if operation == "interrupt" {
-                    let pid = request.worker_pid.ok_or((
-                        StatusCode::BAD_REQUEST,
-                        "expected Worker PID is required".into(),
-                    ))?;
-                    if request.enable.is_some() {
-                        return Err((StatusCode::BAD_REQUEST, "invalid interrupt command".into()));
-                    }
-                    interrupt_worker(&runner, pid)
-                } else {
-                    let enable = request
-                        .enable
-                        .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
-                    if request.worker_pid.is_some() {
-                        return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
-                    }
-                    toggle_service(&runner, enable)
-                }
-            })
-            .await
-            .map_err(|_| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "runner operation failed".into(),
-                )
-            })??;
-            Ok(json!({ "ok": true }))
+            Ok(receipt)
         })
     }
+}
+
+async fn execute_action(
+    context: Context,
+    value: Value,
+    action: String,
+    body: Value,
+    generation: Arc<std::sync::atomic::AtomicU64>,
+) -> Result<Value, Failure> {
+    if action != "toggle" && action != "interrupt" && action != "coordination" {
+        return Err((StatusCode::NOT_FOUND, "plugin action not found".into()));
+    }
+    let settings = options(value).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    if !settings.allow_control {
+        return Err((StatusCode::FORBIDDEN, "runner control is disabled".into()));
+    }
+    if action == "coordination" {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct PolicyRequest {
+            enable: bool,
+        }
+        let request: PolicyRequest = serde_json::from_value(body).map_err(|_| {
+            (
+                StatusCode::BAD_REQUEST,
+                "invalid runner policy command".into(),
+            )
+        })?;
+        let coordination = lease_command("policy", Some(json!({"enable": request.enable}))).await?;
+        let mut shared = context.state.write().await;
+        if let Some(entry) = shared.plugins.get_mut("runners") {
+            entry.data["coordination"] = coordination;
+            entry.ts = now_unix();
+        }
+        generation.fetch_add(1, Ordering::Relaxed);
+        return Ok(json!({"ok": true}));
+    }
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Request {
+        repo: String,
+        runner: String,
+        enable: Option<bool>,
+        worker_pid: Option<u32>,
+    }
+    let request: Request = serde_json::from_value(body)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "invalid runner command".into()))?;
+    let installs: Vec<RunnerInstall> = {
+        let shared = context.state.read().await;
+        let data = shared
+            .plugins
+            .get("runners")
+            .map(|p| p.data["runners"].clone())
+            .unwrap_or(Value::Null);
+        serde_json::from_value(data).map_err(|_| {
+            (
+                StatusCode::CONFLICT,
+                "plugin has no current snapshot".into(),
+            )
+        })?
+    };
+    let runner = installs
+        .into_iter()
+        .find(|r| r.repo.as_deref() == Some(request.repo.as_str()) && r.repo_dir == request.runner)
+        .ok_or((StatusCode::NOT_FOUND, "runner not found".into()))?;
+    if action == "toggle" && lease_helper().is_file() {
+        let enable = request
+            .enable
+            .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
+        if request.worker_pid.is_some() {
+            return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
+        }
+        lease_command(
+            "service",
+            Some(json!({"repo": request.repo, "runner": request.runner, "enable": enable})),
+        )
+        .await?;
+        return Ok(json!({"ok": true}));
+    }
+    let operation = action.clone();
+    tokio::task::spawn_blocking(move || {
+        if operation == "interrupt" {
+            let pid = request.worker_pid.ok_or((
+                StatusCode::BAD_REQUEST,
+                "expected Worker PID is required".into(),
+            ))?;
+            if request.enable.is_some() {
+                return Err((StatusCode::BAD_REQUEST, "invalid interrupt command".into()));
+            }
+            interrupt_worker(&runner, pid)
+        } else {
+            let enable = request
+                .enable
+                .ok_or((StatusCode::BAD_REQUEST, "enable is required".into()))?;
+            if request.worker_pid.is_some() {
+                return Err((StatusCode::BAD_REQUEST, "invalid service command".into()));
+            }
+            toggle_service(&runner, enable)
+        }
+    })
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "runner operation failed".into(),
+        )
+    })??;
+    Ok(json!({ "ok": true }))
 }
 
 fn toggle_service(runner: &RunnerInstall, enable: bool) -> Result<(), Failure> {
@@ -581,6 +828,7 @@ struct Process {
     uid: u32,
     started: String,
     command: String,
+    stopped: bool,
 }
 fn processes() -> Result<Vec<Process>, Failure> {
     let output = std::process::Command::new("/bin/ps")
@@ -611,6 +859,7 @@ fn processes() -> Result<Vec<Process>, Failure> {
                 uid: fields[2].parse().ok()?,
                 started: fields[4..9].join(" "),
                 command: fields[9..].join(" "),
+                stopped: fields[3].contains('T'),
             })
         })
         .collect())
@@ -620,6 +869,21 @@ fn same_process(left: &Process, right: &Process) -> bool {
         && left.uid == right.uid
         && left.started == right.started
         && left.command == right.command
+}
+struct FrozenTree(Vec<Process>);
+impl Drop for FrozenTree {
+    fn drop(&mut self) {
+        // A failure before termination must not leave a running job suspended.
+        if let Ok(live) = processes() {
+            for process in &self.0 {
+                if live.iter().any(|p| same_process(process, p)) {
+                    unsafe {
+                        libc::kill(process.pid as i32, libc::SIGCONT);
+                    }
+                }
+            }
+        }
+    }
 }
 fn interrupt_worker(runner: &RunnerInstall, expected_pid: u32) -> Result<(), Failure> {
     let directory = dirs_home().join("runners").join(&runner.repo_dir);
@@ -645,48 +909,78 @@ fn interrupt_worker(runner: &RunnerInstall, expected_pid: u32) -> Result<(), Fai
             StatusCode::CONFLICT,
             "active job changed; refresh before interrupting".into(),
         ))?;
+    let mut frozen = FrozenTree(vec![]);
     let mut tree = vec![worker.clone()];
+    let started = std::time::Instant::now();
     loop {
-        let added: Vec<_> = all
-            .iter()
-            .filter(|p| {
-                p.uid == worker.uid
-                    && !tree.iter().any(|t| t.pid == p.pid)
-                    && tree.iter().any(|t| t.pid == p.parent)
-            })
-            .cloned()
-            .collect();
-        if added.is_empty() {
-            break;
-        }
-        tree.extend(added);
-    }
-    // Capture identity before signalling; never signal the Listener or a reused PID.
-    for signal in [libc::SIGTERM, libc::SIGKILL] {
         let live = processes()?;
-        for process in tree.iter().rev() {
-            if live.iter().any(|p| same_process(process, p)) {
-                let result = unsafe { libc::kill(process.pid as i32, signal) };
-                if result != 0
+        for process in &tree {
+            if !frozen.0.iter().any(|p| same_process(p, process))
+                && live.iter().any(|p| same_process(p, process))
+            {
+                if unsafe { libc::kill(process.pid as i32, libc::SIGSTOP) } != 0
                     && std::io::Error::last_os_error().raw_os_error() != Some(libc::ESRCH)
                 {
                     return Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "could not interrupt a local job process".into(),
+                        StatusCode::SERVICE_UNAVAILABLE,
+                        "could not suspend local job process tree".into(),
                     ));
                 }
+                frozen.0.push(process.clone());
             }
         }
-        for _ in 0..20 {
-            let live = processes()?;
-            if !tree.iter().any(|t| live.iter().any(|p| same_process(t, p))) {
-                return Ok(());
-            }
-            std::thread::sleep(std::time::Duration::from_millis(100));
+        let live = processes()?;
+        let added: Vec<_> = live
+            .iter()
+            .filter(|p| {
+                p.uid == worker.uid
+                    && !tree.iter().any(|t| same_process(t, p))
+                    && tree.iter().any(|t| {
+                        t.pid == p.parent && live.iter().any(|parent| same_process(t, parent))
+                    })
+            })
+            .cloned()
+            .collect();
+        if added.is_empty()
+            && tree.iter().all(|p| {
+                live.iter()
+                    .find(|q| same_process(p, q))
+                    .is_none_or(|p| p.stopped)
+            })
+        {
+            break;
+        }
+        tree.extend(added);
+        if tree.len() > 4096 || started.elapsed() > std::time::Duration::from_secs(10) {
+            return Err((
+                StatusCode::SERVICE_UNAVAILABLE,
+                "could not quiesce local job process tree".into(),
+            ));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+    // Quiesce before killing: children cannot fork between discovery and termination.
+    let live = processes()?;
+    for process in tree.iter().rev() {
+        if live.iter().any(|p| same_process(p, process))
+            && unsafe { libc::kill(process.pid as i32, libc::SIGKILL) } != 0
+            && std::io::Error::last_os_error().raw_os_error() != Some(libc::ESRCH)
+        {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "could not interrupt a local job process".into(),
+            ));
         }
     }
+    for _ in 0..30 {
+        let live = processes()?;
+        if !tree.iter().any(|t| live.iter().any(|p| same_process(t, p))) {
+            return Ok(());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
     Err((
-        StatusCode::INTERNAL_SERVER_ERROR,
+        StatusCode::SERVICE_UNAVAILABLE,
         "local job processes have not stopped".into(),
     ))
 }
