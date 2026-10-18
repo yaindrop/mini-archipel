@@ -10,7 +10,7 @@
   "stages": [
     {
       "id": "provisioning",
-      "prepare": "uv python install 3.14 && cd provisioning && uv sync --locked --all-groups --python 3.14",
+      "prepare": "(command -v shellcheck >/dev/null || brew install shellcheck) && uv python install 3.14 && cd provisioning && uv sync --locked --all-groups --python 3.14",
       "require": [
         {"kind": "tool", "tool": "python3", "version": "3.14"},
         {"kind": "tool", "tool": "uv", "version": "0.13"},
@@ -40,7 +40,7 @@
     },
     {
       "id": "fan-control",
-      "prepare": "uv python install 3.14",
+      "prepare": "(command -v shellcheck >/dev/null || brew install shellcheck) && uv python install 3.14",
       "require": [
         {"kind": "file", "file": "/usr/bin/python3"},
         {"kind": "tool", "tool": "uv", "version": "0.13"},

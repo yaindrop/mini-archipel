@@ -229,14 +229,47 @@ def run_shell(command, env, cwd):
 
 
 def probe(argv, env, cwd):
-    completed = subprocess.run(
-        argv,
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
+    try:
+        completed = subprocess.run(
+            argv,
+            cwd=cwd,
+            env=env,
+            text=True,
+            capture_output=True,
+        )
+    except FileNotFoundError:
+        name = argv[0] if argv else "command"
+        return 127, f"{name} is not on PATH"
+    except OSError as exc:
+        name = argv[0] if argv else "command"
+        return 127, f"{name}: {exc}"
     return completed.returncode, (completed.stdout or "") + (completed.stderr or "")
+
+
+def host_path_prefixes(env):
+    home = Path(env.get("HOME", str(Path.home())))
+    prefixes = [
+        Path("/opt/homebrew/bin"),
+        Path("/opt/homebrew/sbin"),
+        home / ".local" / "bin",
+        home / ".cargo" / "bin",
+    ]
+    return [str(path) for path in prefixes if path.is_dir()]
+
+
+def with_host_path(env):
+    if env.get("MINI_CI_HOST_PATH") == "0":
+        return env
+    prefixes = host_path_prefixes(env)
+    if not prefixes:
+        return env
+    updated = dict(env)
+    parts = [part for part in updated.get("PATH", "").split(os.pathsep) if part]
+    for prefix in reversed(prefixes):
+        if prefix not in parts:
+            parts.insert(0, prefix)
+    updated["PATH"] = os.pathsep.join(parts)
+    return updated
 
 
 def tool_candidates(kind, version, env):
@@ -361,7 +394,7 @@ def promote_required_tools(env, stage, workspace):
 
 
 def stage_environment(base, stage, workspace):
-    env = dict(base)
+    env = with_host_path(dict(base))
     extra = stage.get("env") or {}
     if not isinstance(extra, dict):
         raise Stop("infrastructure", f"stage {stage['id']} env must be an object")

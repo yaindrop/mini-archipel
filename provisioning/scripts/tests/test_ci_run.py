@@ -66,6 +66,7 @@ class LifecycleTests(unittest.TestCase):
             "MINI_CI_ATTEMPT": "2",
             "MINI_CI_NODE": "yd-mini",
             "MINI_CI_SHARED_REF": "a" * 40,
+            "MINI_CI_HOST_PATH": "0",
         }
         (root / "home").mkdir()
         return workspace, state, env
@@ -149,6 +150,16 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(calls, ["echo prepare"])
         self.assertIn("missing.txt", report["failure"])
         self.assertEqual(report["stages"][0]["accept"][0]["ok"], False)
+
+    def test_missing_executable_is_environment_not_infrastructure(self):
+        _workspace, _state, report = self.execute_case(
+            stage(require=[{"kind": "tool", "tool": "missing-ci-tool"}]),
+            shell=lambda *_: (0, "", ""),
+        )
+        self.assertEqual(report["conclusion"], "environment")
+        self.assertFalse(report["env_ok"])
+        self.assertIn("missing-ci-tool", report["failure"])
+        self.assertNotEqual(report["conclusion"], "infrastructure")
 
     def test_toolchain_mismatch_stops_before_prepare(self):
         calls = []
