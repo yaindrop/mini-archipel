@@ -159,7 +159,7 @@ export function createApp(
   });
   app.get("/api/state", view);
   app.get("/api/config", () => ({
-    version: "0.8.1",
+    version: "0.9.0",
     hosts: config.hosts.map(({ name, url }) => ({
       name,
       url,
@@ -248,11 +248,12 @@ export function createApp(
     const input = z
       .object({
         host: z.string(),
+        path: z.string().min(1).max(4096).optional(),
       })
       .safeParse(request.body);
-    const host = monitor
-      .state()
-      .hosts.find((h) => h.name === (input.success ? input.data.host : ""));
+    if (!input.success)
+      return reply.code(400).send({ error: /*i18n*/ "缺少有效的节点或目录" });
+    const host = monitor.state().hosts.find((h) => h.name === input.data.host);
     if (!host)
       return reply.code(404).send({
         error: /*i18n*/ "节点不存在",
@@ -261,7 +262,13 @@ export function createApp(
       return reply.code(409).send({
         error: /*i18n*/ "节点离线，扫描未执行",
       });
-    OkSchema.parse(await monitor.command(host.name, "rescan-disk", {}));
+    OkSchema.parse(
+      await monitor.command(
+        host.name,
+        "rescan-disk",
+        input.data.path ? { path: input.data.path } : {},
+      ),
+    );
     await monitor.pollHost(host.name);
     return {
       ok: true,

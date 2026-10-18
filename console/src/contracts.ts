@@ -12,6 +12,9 @@ export interface ScanNode {
   ts: number;
   duration_ms: number;
   partial: boolean;
+  children_status:
+    "unscanned" | "complete" | "partial" | "unreadable" | "excluded";
+  error: string | null;
 }
 const ScanSchema: z.ZodType<ScanNode> = z.lazy(() =>
   z.object({
@@ -22,6 +25,10 @@ const ScanSchema: z.ZodType<ScanNode> = z.lazy(() =>
     ts: bytes,
     duration_ms: bytes,
     partial: z.boolean(),
+    children_status: z
+      .enum(["unscanned", "complete", "partial", "unreadable", "excluded"])
+      .default("unscanned"),
+    error: z.string().nullable().default(null),
   }),
 );
 const DiskScanJobSchema = z.object({
@@ -40,6 +47,7 @@ const DiskScanJobSchema = z.object({
   started_at: bytes.nullable(),
   finished_at: bytes.nullable(),
   current_root: z.string().nullable(),
+  target: z.string().nullable().default(null),
   error: z.string().nullable(),
 });
 export const SnapshotSchema = z.object({

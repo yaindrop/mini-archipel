@@ -1,3 +1,4 @@
+import type { ScanNode } from "../src/contracts.ts";
 import { fanFixture } from "./plugins/fan-fixture.ts";
 import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -31,6 +32,28 @@ const offline = new Set<string>(),
 const scans = new Map<string, ReturnType<typeof makeSnapshot>["disk_scan"]>();
 const exclusive = new Set<string>(),
   runnerJobs = new Map<string, string>();
+const directoryResults = new Map<
+  string,
+  Map<string, ReturnType<typeof makeSnapshot>["disk_scans"][number]>
+>();
+function applyDirectories(
+  name: string,
+  snapshot: ReturnType<typeof makeSnapshot>,
+) {
+  for (const [path, replacement] of directoryResults.get(name) ?? []) {
+    for (const root of snapshot.disk_scans) {
+      if (!path.startsWith(root.root + "/")) continue;
+      let current = root;
+      for (const part of path.slice(root.root.length + 1).split("/")) {
+        const child = current.children.find((row) => row.root === part);
+        if (!child) break;
+        current = child;
+      }
+      if (current.root === replacement.root)
+        Object.assign(current, structuredClone(replacement));
+    }
+  }
+}
 let multiRepo = false;
 let fanEnabled = false;
 const fans = new Map<string, ReturnType<typeof fanFixture>>();
@@ -40,6 +63,7 @@ const transport: Transport = (url, _token, body) => {
   if (offline.has(name))
     return Promise.reject(new UpstreamError(502, "模拟节点离线"));
   const snapshot = makeSnapshot(index);
+  applyDirectories(name, snapshot);
   snapshot.disk_scan = scans.get(name) ?? snapshot.disk_scan;
   snapshot.disk_scans.reverse(); // Transport order must not determine the root selector order.
   if (url.endsWith("/rescan-disk")) {
@@ -50,7 +74,20 @@ const transport: Transport = (url, _token, body) => {
       requested_at: now,
       started_at: now,
       finished_at: null,
-      current_root: "/",
+      current_root:
+        body &&
+        typeof body === "object" &&
+        "path" in body &&
+        typeof body.path === "string"
+          ? body.path
+          : "/",
+      target:
+        body &&
+        typeof body === "object" &&
+        "path" in body &&
+        typeof body.path === "string"
+          ? body.path
+          : null,
       error: null,
     });
   }
@@ -247,12 +284,57 @@ app.post<{ Params: { name: string }; Body: { offline: boolean } }>(
     return { ok: true };
   },
 );
+app.post<{ Body: { host: string } }>(
+  "/__test/scan-complete",
+  async (request) => {
+    const name = request.body.host,
+      job = scans.get(name);
+    if (!job?.target) throw Error("No subtree job");
+    const snapshot = makeSnapshot(
+      config.hosts.findIndex((h) => h.name === name),
+    );
+    applyDirectories(name, snapshot);
+    const root = snapshot.disk_scans.find((root) =>
+      job.target?.startsWith(root.root + "/"),
+    );
+    if (!root) throw Error("Missing root");
+    let node: ScanNode = root;
+    for (const part of job.target.slice(node.root.length + 1).split("/")) {
+      const next: ScanNode | undefined = node.children.find(
+        (row) => row.root === part,
+      );
+      if (!next) throw Error("Missing directory");
+      node = next;
+    }
+    node.children_status = "complete";
+    node.children = [
+      {
+        ...node,
+        root: node.root === "runners" ? "flowbit" : "_work",
+        children: [],
+        children_status: "unscanned",
+      },
+    ];
+    const results = directoryResults.get(name) ?? new Map<string, ScanNode>();
+    results.set(job.target, node);
+    directoryResults.set(name, results);
+    scans.set(name, {
+      ...job,
+      status: "completed",
+      finished_at: Date.now(),
+      current_root: null,
+    });
+    await monitor.poll();
+    return { ok: true };
+  },
+);
 app.post("/__test/reset", async () => {
   multiRepo = false;
   fanEnabled = false;
   fans.clear();
   await plugins.setEnabled("fan-control", false);
   scans.clear();
+  directoryResults.clear();
   exclusive.clear();
   runnerJobs.clear();
   offline.clear();

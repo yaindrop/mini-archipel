@@ -21,7 +21,7 @@ struct AppState {
     core: Shared,
     token: String,
     plugins: Arc<plugins::Manager>,
-    disk_enabled: bool,
+    disk_roots: Vec<String>,
 }
 
 #[tokio::main]
@@ -57,13 +57,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .await?,
     );
-    let disk_enabled = !config.collectors.disk_roots.is_empty();
+    let disk_roots = config.collectors.disk_roots.clone();
     collectors::spawn_all(Arc::clone(&core), config.collectors, Arc::clone(&plugins)).await;
     let state = AppState {
         core,
         token: config.token,
         plugins,
-        disk_enabled,
+        disk_roots,
     };
     let app = Router::new()
         .route("/health", get(|| async { AGENT_VERSION }))
@@ -136,21 +136,30 @@ async fn plugin_action(
     response(state.plugins.action(&id, action, body).await)
 }
 
-async fn rescan_disk(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ScanRequest {
+    #[serde(default)]
+    path: Option<String>,
+}
+async fn rescan_disk(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<ScanRequest>,
+) -> impl IntoResponse {
     if !authorized(&headers, &state.token) {
         return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
     }
-    if !state.disk_enabled {
+    if state.disk_roots.is_empty() {
         return response(Err((
             StatusCode::CONFLICT,
             "disk scanning is disabled".into(),
         )));
     }
     response(
-        collectors::disk::request(&state.core)
+        collectors::disk::request(&state.core, &state.disk_roots, body.path)
             .await
-            .map(|job| json!({ "ok": true, "job": job }))
-            .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error)),
+            .map(|job| json!({ "ok": true, "job": job })),
     )
 }
 

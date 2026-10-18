@@ -1,0 +1,227 @@
+# Built-in macOS storage policy. Node rules override exact paths; plugin rules add paths.
+# depth controls prefetched child levels, independently from class.
+
+[[rules]]
+path = "/"
+depth = 0
+class = "system"
+
+[[rules]]
+path = "/Users"
+depth = 1
+class = "user"
+
+[[rules]]
+path = "/System"
+depth = 1
+class = "system"
+
+[[rules]]
+path = "/System/Library"
+depth = 1
+
+[[rules]]
+path = "/private"
+depth = 1
+class = "system"
+
+[[rules]]
+path = "/private/var"
+depth = 1
+
+[[rules]]
+path = "/Library"
+depth = 1
+class = "library"
+
+[[rules]]
+path = "/Library/Caches"
+depth = 1
+class = "reclaimable"
+
+[[rules]]
+path = "/Library/Application Support"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "/Library/Developer"
+depth = 1
+class = "toolchain"
+
+[[rules]]
+path = "/Library/Logs"
+depth = 1
+class = "library"
+
+[[rules]]
+path = "/usr"
+depth = 1
+class = "system"
+
+[[rules]]
+path = "/opt"
+depth = 1
+class = "apps"
+
+[[rules]]
+path = "/opt/homebrew"
+depth = 1
+class = "toolchain"
+
+[[rules]]
+path = "/opt/homebrew/var"
+depth = 0
+class = "appdata"
+
+[[rules]]
+path = "/opt/homebrew/etc"
+depth = 0
+class = "user"
+
+[[rules]]
+path = "/Applications"
+depth = 1
+class = "apps"
+
+[[rules]]
+path = "~"
+depth = 0
+class = "user"
+
+[[rules]]
+path = "~/Applications"
+depth = 1
+class = "apps"
+
+[[rules]]
+path = "~/.local"
+depth = 1
+class = "user"
+
+[[rules]]
+path = "~/.local/bin"
+depth = 0
+class = "toolchain"
+
+[[rules]]
+path = "~/.local/state"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "~/.local/share"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "~/.cache"
+depth = 1
+class = "reclaimable"
+
+[[rules]]
+path = "~/Library"
+depth = 1
+class = "library"
+
+[[rules]]
+path = "~/Library/Caches"
+depth = 1
+class = "reclaimable"
+
+[[rules]]
+path = "~/Library/Application Support"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "~/Library/Containers"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "~/Library/Group Containers"
+depth = 1
+class = "appdata"
+
+[[rules]]
+path = "~/Library/Developer"
+depth = 1
+class = "toolchain"
+
+[[rules]]
+path = "~/Library/Logs"
+depth = 1
+class = "library"
+
+[[rules]]
+path = "~/.cargo"
+depth = 0
+class = "user"
+
+[[rules]]
+path = "~/.cargo/bin"
+depth = 0
+class = "toolchain"
+
+[[rules]]
+path = "~/.cargo/registry"
+depth = 0
+class = "reclaimable"
+
+[[rules]]
+path = "~/.cargo/git"
+depth = 0
+class = "reclaimable"
+
+[[rules]]
+path = "~/.rustup"
+depth = 0
+class = "toolchain"
+
+[[rules]]
+path = "~/.codex"
+depth = 0
+class = "agentic"
+
+[[rules]]
+path = "~/.zcode"
+depth = 0
+class = "agentic"
+
+[[rules]]
+path = "~/Library/Developer/Xcode/DerivedData"
+class = "reclaimable"
+
+[[rules]]
+path = "~/Library/Developer/Xcode/Archives"
+class = "appdata"
+
+[[rules]]
+path = "~/Library/Developer/CoreSimulator"
+class = "appdata"
+
+[[rules]]
+path = "/usr/local"
+depth = 1
+class = "apps"
+
+[[rules]]
+path = "/usr/local/Homebrew"
+class = "toolchain"
+
+[[rules]]
+path = "/usr/local/Cellar"
+class = "toolchain"
+
+[[rules]]
+path = "/usr/local/Caskroom"
+class = "toolchain"
+
+[[rules]]
+path = "/usr/local/var"
+class = "appdata"
+
+[[rules]]
+path = "/usr/local/etc"
+class = "user"

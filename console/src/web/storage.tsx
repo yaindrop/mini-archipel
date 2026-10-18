@@ -16,6 +16,7 @@ import {
   Statistic,
   Table,
   Tag,
+  Spin,
   Typography,
   type TableColumnsType,
 } from "antd";
@@ -74,6 +75,9 @@ const CLASSES: Record<
       color: "#c47a66",
     };
   },
+  get appdata() {
+    return { label: msg`应用数据`, color: "#7197ad" };
+  },
   get library() {
     return {
       label: msg`资料库`,
@@ -91,19 +95,34 @@ function classification(key: string) {
 }
 type DirectoryRow = Omit<ScanNode, "children"> & {
   key: string;
+  path: string;
+  detail?: boolean;
   children?: DirectoryRow[];
 };
-function directoryRows(nodes: ScanNode[], parent = ""): DirectoryRow[] {
+function directoryRows(
+  nodes: ScanNode[],
+  root: string,
+  parent = "",
+): DirectoryRow[] {
   return nodes.map(({ children, ...node }) => {
-    const key = `${parent}/${node.root}`;
+    const key = `${parent}/${node.root}`,
+      path = `${root === "/" ? "" : root}${key}`;
+    const pending = ["unscanned", "unreadable", "partial"].includes(
+      node.children_status,
+    );
     return {
       ...node,
       key,
+      path,
       ...(children.length
-        ? {
-            children: directoryRows(children, key),
-          }
-        : {}),
+        ? { children: directoryRows(children, root, key) }
+        : pending
+          ? {
+              children: [
+                { ...node, key: `${key}/__scan__`, path, detail: true },
+              ],
+            }
+          : {}),
     };
   });
 }
@@ -149,8 +168,10 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
   const waiting =
     job && ["queued", "running", "cancelling"].includes(job.status);
   const mutation = useMutation({
-    mutationFn: (cancel: boolean) =>
-      cancel && job ? api.cancelScan(host.name, job.id) : api.rescan(host.name),
+    mutationFn: (action: { cancel?: boolean; path?: string }) =>
+      action.cancel && job
+        ? api.cancelScan(host.name, job.id)
+        : api.rescan(host.name, action.path),
     onSuccess: () => refreshFleet(client),
   });
   const classes = scan ? storageClasses(scan) : new Map<string, number>(),
@@ -161,16 +182,55 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
       key: "name",
       rowScope: "row",
       sorter: (a, b) => a.root.localeCompare(b.root),
-      render: (_value: unknown, node) => (
-        <Space className="folder-label">
-          <Folder size={16} />
-          {node.root}
-        </Space>
-      ),
+      onCell: (node) => (node.detail ? { colSpan: 4 } : {}),
+      render: (_value: unknown, node) =>
+        node.detail ? (
+          <div className="directory-scan-detail">
+            {waiting && job.target === node.path ? <Spin size="small" /> : null}
+            <Typography.Text type="secondary">
+              {waiting && job.target === node.path
+                ? t`正在后台扫描此目录，保留上次结果`
+                : node.children_status === "unreadable"
+                  ? t`此目录不可读取，未将其视为空目录。`
+                  : t`尚未扫描下级目录`}
+            </Typography.Text>
+            <Button
+              size="small"
+              disabled={
+                stale(host, now) || Boolean(waiting) || mutation.isPending
+              }
+              onClick={() => {
+                mutation.mutate({ path: node.path });
+              }}
+            >
+              {node.children_status === "unreadable"
+                ? t`重试扫描`
+                : t`扫描此目录`}
+            </Button>
+          </div>
+        ) : (
+          <div className="directory-name">
+            <Space className="folder-label">
+              <Folder size={16} />
+              <span>{node.root}</span>
+            </Space>
+            {node.children_status === "unreadable" ? (
+              <Typography.Text type="warning">{t`不可读取`}</Typography.Text>
+            ) : node.partial ? (
+              <Typography.Text type="warning">{t`部分不可读取`}</Typography.Text>
+            ) : null}
+            {node.children_status === "complete" &&
+            node.bytes === 0 &&
+            !node.children?.length ? (
+              <Typography.Text type="secondary">{t`无子目录`}</Typography.Text>
+            ) : null}
+          </div>
+        ),
     },
     {
       title: t`用途`,
       key: "class",
+      onCell: (node) => (node.detail ? { colSpan: 0 } : {}),
       responsive: ["sm"],
       render: (_v: unknown, node) => {
         const cls = classification(node.class);
@@ -190,6 +250,7 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
     {
       title: t`占当前目录`,
       key: "proportion",
+      onCell: (node) => (node.detail ? { colSpan: 0 } : {}),
       responsive: ["md"],
       render: (_v: unknown, node) => (
         <div className="size-proportion">
@@ -208,11 +269,16 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
     {
       title: t`大小`,
       key: "bytes",
+      onCell: (node) => (node.detail ? { colSpan: 0 } : {}),
       align: "right",
       defaultSortOrder: "descend",
       sorter: (a, b) => a.bytes - b.bytes,
       render: (_v: unknown, node) => (
-        <span className="num">{formatBytes(node.bytes)}</span>
+        <span className="num">
+          {node.children_status === "unreadable"
+            ? "—"
+            : formatBytes(node.bytes)}
+        </span>
       ),
     },
   ];
@@ -226,9 +292,9 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
             <Button
               danger
               disabled={stale(host, now) || job.status === "cancelling"}
-              loading={mutation.isPending && mutation.variables}
+              loading={mutation.isPending && Boolean(mutation.variables.cancel)}
               onClick={() => {
-                mutation.mutate(true);
+                mutation.mutate({ cancel: true });
               }}
             >
               {job.status === "cancelling" ? t`取消中…` : t`取消扫描`}
@@ -236,10 +302,10 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
           ) : null}
           <Button
             icon={<RefreshCw size={15} />}
-            loading={mutation.isPending && !mutation.variables}
+            loading={mutation.isPending && !mutation.variables.cancel}
             disabled={stale(host, now) || Boolean(waiting)}
             onClick={() => {
-              mutation.mutate(false);
+              mutation.mutate({});
             }}
           >
             {waiting
@@ -314,7 +380,13 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
                   <span className="storage-root-icon" aria-hidden="true">
                     <span>{s.root === "/" ? "/" : "~"}</span>
                   </span>
-                  <span>{s.root === "/" ? t`系统根目录` : t`用户目录`}</span>
+                  <span>
+                    {s.root === "/"
+                      ? t`系统根目录`
+                      : s.root.startsWith("/Users/")
+                        ? t`用户目录`
+                        : s.root}
+                  </span>
                 </span>
               ),
             }))}
@@ -382,17 +454,54 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
               </div>
             </div>
           </div>
-          <Typography.Text className="storage-root-path" type="secondary">
-            {scan.root}
-          </Typography.Text>
+          <div className="directory-toolbar">
+            <Typography.Text className="storage-root-path" type="secondary">
+              {scan.root}
+            </Typography.Text>
+            {search.getAll("dir").length ? (
+              <Button
+                type="text"
+                size="small"
+                disabled={
+                  stale(host, now) || Boolean(waiting) || mutation.isPending
+                }
+                onClick={() => {
+                  const key = search.getAll("dir").at(-1);
+                  if (key)
+                    mutation.mutate({
+                      path: `${scan.root === "/" ? "" : scan.root}${key}`,
+                    });
+                }}
+              >{t`重新扫描展开目录`}</Button>
+            ) : null}
+          </div>
           <Table<DirectoryRow>
             key={`${host.name}:${scan.root}`}
             className="storage-table"
             rowKey="key"
             columns={columns}
-            dataSource={directoryRows(scan.children)}
+            dataSource={directoryRows(scan.children, scan.root)}
             expandable={{
-              rowExpandable: (row) => Boolean(row.children?.length),
+              rowExpandable: (row) =>
+                !row.detail && Boolean(row.children?.length),
+              expandedRowKeys: search.getAll("dir"),
+              onExpand: (expanded, row) => {
+                const next = new URLSearchParams(search);
+                const keys = new Set(next.getAll("dir"));
+                if (expanded) keys.add(row.key);
+                else keys.delete(row.key);
+                next.delete("dir");
+                for (const key of keys) next.append("dir", key);
+                setSearch(next, { replace: true });
+                if (
+                  expanded &&
+                  row.children_status === "unscanned" &&
+                  !row.children?.some((child) => !child.detail) &&
+                  !waiting &&
+                  !mutation.isPending
+                )
+                  mutation.mutate({ path: row.path });
+              },
             }}
             pagination={false}
             size="middle"

@@ -58,11 +58,15 @@ await test(
           ts: 1,
           duration_ms: 1,
           partial: false,
+          children_status: "unscanned",
+          error: null,
         },
       ],
       ts: Date.now(),
       duration_ms: 1,
       partial: false,
+      children_status: "unscanned",
+      error: null,
     };
     const data = join(home, ".local/share/mini-archipel");
     mkdirSync(data, { recursive: true });

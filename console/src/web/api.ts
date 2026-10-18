@@ -106,11 +106,12 @@ export const api = {
         }),
       },
     ),
-  rescan: (host: string) =>
+  rescan: (host: string, path?: string) =>
     request("/api/disk/rescan", OkSchema, {
       method: "POST",
       body: JSON.stringify({
         host,
+        path,
       }),
     }),
   cancelScan: (host: string, id: number) =>

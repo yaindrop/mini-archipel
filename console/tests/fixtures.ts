@@ -32,6 +32,10 @@ function scan(
     ts: Date.now(),
     duration_ms: 2300,
     partial: false,
+    children_status: root.toLowerCase().endsWith(".app")
+      ? "excluded"
+      : "complete",
+    error: null,
   };
 }
 export function makeSnapshot(index = 0): Snapshot {
@@ -46,6 +50,7 @@ export function makeSnapshot(index = 0): Snapshot {
       started_at: now - 2300,
       finished_at: now,
       current_root: null,
+      target: null,
       error: null,
     },
     host: {
@@ -140,7 +145,7 @@ export function makeSnapshot(index = 0): Snapshot {
         `/Users/${config.hosts[index]?.name ?? "yd-mini"}`,
         30 * 2 ** 30 + 2 ** 20,
         [
-          scan("runners", 18 * 2 ** 30),
+          { ...scan("runners", 18 * 2 ** 30), children_status: "unscanned" },
           scan(
             "Library",
             6 * 2 ** 30,
@@ -161,6 +166,13 @@ export function makeSnapshot(index = 0): Snapshot {
             "library",
           ),
           scan(".rustup", 3 * 2 ** 30, [], "toolchain"),
+          {
+            ...scan("Protected", 0),
+            partial: true,
+            children_status: "unreadable",
+            error: "Operation not permitted",
+          },
+          scan("Empty", 0),
           scan(
             "Applications",
             2 * 2 ** 30,
@@ -183,17 +195,17 @@ export function makeSnapshot(index = 0): Snapshot {
               scan(
                 "share",
                 2 ** 19,
-                [scan("mini-archipel", 2 ** 19, [], "toolchain")],
-                "toolchain",
+                [scan("mini-archipel", 2 ** 19, [], "appdata")],
+                "appdata",
               ),
               scan(
                 "state",
                 2 ** 19,
-                [scan("mini-ci", 2 ** 19, [], "toolchain")],
-                "toolchain",
+                [scan("mini-ci", 2 ** 19, [], "appdata")],
+                "appdata",
               ),
             ],
-            "toolchain",
+            "user",
           ),
         ],
       ),

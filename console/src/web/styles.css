@@ -1857,3 +1857,38 @@ a:hover .host-identity strong {
     padding: 0;
   }
 }
+
+.directory-scan-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-block: 4px;
+}
+.directory-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.directory-toolbar {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-bottom: 15px;
+}
+.directory-toolbar .storage-root-path {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.directory-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.directory-name > .ant-typography {
+  font-size: 12px;
+}

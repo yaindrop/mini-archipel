@@ -34,6 +34,11 @@ msgstr "A valid plugin setting is required"
 
 #. js-lingui-explicit-id
 #: src/app.ts
+msgid "缺少有效的节点或目录"
+msgstr "A valid node or directory is required"
+
+#. js-lingui-explicit-id
+#: src/app.ts
 #: src/fleet.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
@@ -675,6 +680,10 @@ msgstr "WELCOME BACK"
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "The previous scan was interrupted by a node restart. Previous results are retained."
 
+#: src/web/storage.tsx
+msgid "不可读取"
+msgstr "Unreadable"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "与节点一致"
 msgstr "Matches node"
@@ -1175,6 +1184,10 @@ msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
 msgstr "No runners found yet. Installed runners appear when nodes report them."
 
 #: src/web/storage.tsx
+msgid "尚未扫描下级目录"
+msgstr "Subdirectories have not been scanned"
+
+#: src/web/storage.tsx
 msgid "尚未配置节点"
 msgstr "No nodes configured"
 
@@ -1300,6 +1313,10 @@ msgstr "Applications"
 msgid "应用到节点"
 msgstr "Apply to node"
 
+#: src/web/storage.tsx
+msgid "应用数据"
+msgstr "Application data"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "应用风扇曲线"
 msgstr "Apply fan curve"
@@ -1393,6 +1410,10 @@ msgstr "The scan was cancelled. Previous results are retained."
 #: src/web/storage.tsx
 msgid "扫描已排队"
 msgstr "Scan queued"
+
+#: src/web/storage.tsx
+msgid "扫描此目录"
+msgstr "Scan this directory"
 
 #: src/web/storage.tsx
 msgid "扫描范围"
@@ -1524,6 +1545,10 @@ msgstr "Data is stale or the node is unavailable. Control is temporarily disable
 #: src/plugins/fan-control/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 msgstr "The daemon must confirm loading the new revision. Validation or reload failure restores the previous configuration."
+
+#: src/web/storage.tsx
+msgid "无子目录"
+msgstr "No subdirectories"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "无日志输出"
@@ -1700,6 +1725,10 @@ msgstr "Cancelling scan"
 msgid "正在后台扫描，保留上次结果"
 msgstr "Scanning in the background; previous results are retained"
 
+#: src/web/storage.tsx
+msgid "正在后台扫描此目录，保留上次结果"
+msgstr "Scanning this directory in the background; previous results remain available"
+
 #: src/web/App.tsx
 msgid "正在恢复连接"
 msgstr "Reconnecting…"
@@ -1739,6 +1768,10 @@ msgstr "This feature is provided by an optional plugin."
 #: src/plugins/fan-control/workbench.tsx
 msgid "此操作将产生全核心 CPU 负载并逐档调整风扇，约需数分钟。可随时取消；建议曲线只会导入草稿，不会自动应用。"
 msgstr "This loads every CPU core and adjusts the fan in steps for several minutes. You can cancel at any time. The suggested curve can be imported into a draft and is never applied automatically."
+
+#: src/web/storage.tsx
+msgid "此目录不可读取，未将其视为空目录。"
+msgstr "This directory is unreadable; it is not treated as empty."
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "此节点仅允许查看风扇，尚未授权控制。"
@@ -2350,6 +2383,10 @@ msgid "退出工作台"
 msgstr "Sign out"
 
 #: src/web/storage.tsx
+msgid "部分不可读取"
+msgstr "Partially unreadable"
+
+#: src/web/storage.tsx
 msgid "部分目录不可读取 · "
 msgstr "Some directories are unreadable · "
 
@@ -2386,6 +2423,10 @@ msgstr "Reload"
 msgid "重新扫描"
 msgstr "Rescan"
 
+#: src/web/storage.tsx
+msgid "重新扫描展开目录"
+msgstr "Rescan expanded directory"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "重新载入服务"
 msgstr "Reload service"
@@ -2397,6 +2438,10 @@ msgstr "Reload temperature service"
 #: src/plugins/fan-control/workbench.tsx
 msgid "重新载入节点曲线"
 msgstr "Reload node policy"
+
+#: src/web/storage.tsx
+msgid "重试扫描"
+msgstr "Retry scan"
 
 #: src/web/App.tsx
 msgid "重试连接"

@@ -34,6 +34,11 @@ msgstr "缺少有效的插件开关"
 
 #. js-lingui-explicit-id
 #: src/app.ts
+msgid "缺少有效的节点或目录"
+msgstr "缺少有效的节点或目录"
+
+#. js-lingui-explicit-id
+#: src/app.ts
 #: src/fleet.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
@@ -675,6 +680,10 @@ msgstr "欢迎回来"
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "上次扫描因节点重启而中断，保留上次结果。"
 
+#: src/web/storage.tsx
+msgid "不可读取"
+msgstr "不可读取"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "与节点一致"
 msgstr "与节点一致"
@@ -1175,6 +1184,10 @@ msgid "尚未发现 runner，节点上报安装信息后会自动显示。"
 msgstr "尚未发现 runner，节点上报安装信息后会自动显示。"
 
 #: src/web/storage.tsx
+msgid "尚未扫描下级目录"
+msgstr "尚未扫描下级目录"
+
+#: src/web/storage.tsx
 msgid "尚未配置节点"
 msgstr "尚未配置节点"
 
@@ -1300,6 +1313,10 @@ msgstr "应用"
 msgid "应用到节点"
 msgstr "应用到节点"
 
+#: src/web/storage.tsx
+msgid "应用数据"
+msgstr "应用数据"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "应用风扇曲线"
 msgstr "应用风扇曲线"
@@ -1393,6 +1410,10 @@ msgstr "扫描已取消，保留上次结果。"
 #: src/web/storage.tsx
 msgid "扫描已排队"
 msgstr "扫描已排队"
+
+#: src/web/storage.tsx
+msgid "扫描此目录"
+msgstr "扫描此目录"
 
 #: src/web/storage.tsx
 msgid "扫描范围"
@@ -1524,6 +1545,10 @@ msgstr "数据过期或节点不可用，控制操作暂不可用。"
 #: src/plugins/fan-control/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 msgstr "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
+
+#: src/web/storage.tsx
+msgid "无子目录"
+msgstr "无子目录"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "无日志输出"
@@ -1700,6 +1725,10 @@ msgstr "正在取消扫描"
 msgid "正在后台扫描，保留上次结果"
 msgstr "正在后台扫描，保留上次结果"
 
+#: src/web/storage.tsx
+msgid "正在后台扫描此目录，保留上次结果"
+msgstr "正在后台扫描此目录，保留上次结果"
+
 #: src/web/App.tsx
 msgid "正在恢复连接"
 msgstr "正在恢复连接"
@@ -1739,6 +1768,10 @@ msgstr "此功能由可选插件提供。"
 #: src/plugins/fan-control/workbench.tsx
 msgid "此操作将产生全核心 CPU 负载并逐档调整风扇，约需数分钟。可随时取消；建议曲线只会导入草稿，不会自动应用。"
 msgstr "此操作将产生全核心 CPU 负载并逐档调整风扇，约需数分钟。可随时取消；建议曲线只会导入草稿，不会自动应用。"
+
+#: src/web/storage.tsx
+msgid "此目录不可读取，未将其视为空目录。"
+msgstr "此目录不可读取，未将其视为空目录。"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "此节点仅允许查看风扇，尚未授权控制。"
@@ -2350,6 +2383,10 @@ msgid "退出工作台"
 msgstr "退出工作台"
 
 #: src/web/storage.tsx
+msgid "部分不可读取"
+msgstr "部分不可读取"
+
+#: src/web/storage.tsx
 msgid "部分目录不可读取 · "
 msgstr "部分目录不可读取 · "
 
@@ -2386,6 +2423,10 @@ msgstr "重新加载"
 msgid "重新扫描"
 msgstr "重新扫描"
 
+#: src/web/storage.tsx
+msgid "重新扫描展开目录"
+msgstr "重新扫描展开目录"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "重新载入服务"
 msgstr "重新载入服务"
@@ -2397,6 +2438,10 @@ msgstr "重新载入温控服务"
 #: src/plugins/fan-control/workbench.tsx
 msgid "重新载入节点曲线"
 msgstr "重新载入节点曲线"
+
+#: src/web/storage.tsx
+msgid "重试扫描"
+msgstr "重试扫描"
 
 #: src/web/App.tsx
 msgid "重试连接"

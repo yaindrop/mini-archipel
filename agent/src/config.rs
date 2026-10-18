@@ -29,6 +29,8 @@ pub struct CollectorConfig {
     pub disk_interval_ms: u64,
     #[serde(default = "default_disk_roots")]
     pub disk_roots: Vec<String>,
+    #[serde(default)]
+    pub disk: crate::collectors::disk_rules::DiskRulesConfig,
 }
 
 impl Default for CollectorConfig {
@@ -41,6 +43,7 @@ impl Default for CollectorConfig {
             fanctl: default_fanctl(),
             disk_interval_ms: default_disk_interval(),
             disk_roots: default_disk_roots(),
+            disk: Default::default(),
         }
     }
 }
@@ -80,6 +83,14 @@ pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
                 *root = format!("{home}/{rest}");
             }
         }
+    }
+    crate::collectors::disk_rules::Rules::new(
+        &config.collectors.disk,
+        std::path::Path::new(&home),
+        &[],
+    )?;
+    for root in &config.collectors.disk_roots {
+        crate::collectors::disk_rules::expand(root, std::path::Path::new(&home))?;
     }
     Ok(config)
 }

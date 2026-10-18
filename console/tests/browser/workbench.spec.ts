@@ -208,17 +208,19 @@ test("storage segments and legends highlight each other without tooltips", async
   });
   expect(highlightedLegend.x).toBe(originalLegend.x);
   expect(highlightedLegend.y).toBe(originalLegend.y - 2);
-  expect(
-    await legends.first().evaluate((label) => {
-      const style = getComputedStyle(label);
-      const number = label.querySelector("strong");
-      return [
-        style.backgroundColor,
-        style.color,
-        number && getComputedStyle(number).color,
-      ];
-    }),
-  ).toEqual(["rgb(35, 52, 74)", "rgb(255, 255, 255)", "rgb(255, 255, 255)"]);
+  await expect
+    .poll(() =>
+      legends.first().evaluate((label) => {
+        const style = getComputedStyle(label);
+        const number = label.querySelector("strong");
+        return [
+          style.backgroundColor,
+          style.color,
+          number && getComputedStyle(number).color,
+        ];
+      }),
+    )
+    .toEqual(["rgb(35, 52, 74)", "rgb(255, 255, 255)", "rgb(255, 255, 255)"]);
   await page.getByRole("heading", { name: "存储空间", exact: true }).hover();
   await expect(page.locator(".storage-legend > .is-active")).toHaveCount(0);
   await expect(segments.nth(1)).toHaveCSS("opacity", "1");
@@ -745,6 +747,7 @@ test("four nodes remain visible on a compact desktop", async ({ page }) => {
 test("dark theme keeps accessible contrast across the workbench", async ({
   page,
 }) => {
+  test.setTimeout(90_000); // Seven full accessibility audits also run on WebKit.
   await page.goto("/");
   await page.getByRole("button", { name: /^主题：/ }).click();
   await page.getByRole("menuitem", { name: "深色", exact: true }).click();
@@ -1038,4 +1041,63 @@ test("page layout and resource bars have no width transitions", async ({
       );
     expect(animated).toEqual([]);
   }
+});
+
+test("lazy directory scans survive refresh, cancel, retry and deeper expansion", async ({
+  page,
+}) => {
+  await page.goto("/storage");
+  const table = page.locator(".storage-table"),
+    row = table.locator('tr[data-row-key="/runners"]');
+  await expect(table.locator('tr[data-row-key="/Empty"]')).toContainText("0 B");
+  await expect(
+    table.locator('tr[data-row-key="/Empty"]').getByRole("button"),
+  ).toHaveCount(0);
+  const protectedRow = table.locator('tr[data-row-key="/Protected"]');
+  await expect(protectedRow).toContainText("不可读取");
+  await expect(protectedRow).not.toContainText("0 B");
+  const request = page.waitForRequest((request) =>
+    request.url().endsWith("/api/disk/rescan"),
+  );
+  await row.getByRole("button", { name: "展开行" }).click();
+  expect((await request).postDataJSON()).toEqual({
+    host: "yd-mini",
+    path: "/Users/yd-mini/runners",
+  });
+  await expect(
+    page.getByText("正在后台扫描此目录，保留上次结果", { exact: true }),
+  ).toBeVisible();
+  await expect(table.locator('tr[data-row-key="/.rustup"]')).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("正在后台扫描此目录，保留上次结果", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "取消扫描", exact: true }).click();
+  await expect(
+    page.getByText("扫描已取消，保留上次结果。", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "扫描此目录", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "取消扫描", exact: true }),
+  ).toBeVisible();
+  await page.request.post("/__test/scan-complete", {
+    data: { host: "yd-mini" },
+  });
+  const repo = table.locator('tr[data-row-key="/runners/flowbit"]');
+  await expect(repo).toBeVisible();
+  await repo.getByRole("button", { name: "展开行" }).click();
+  await expect(
+    page.getByRole("button", { name: "取消扫描", exact: true }),
+  ).toBeVisible();
+  await page.request.post("/__test/scan-complete", {
+    data: { host: "yd-mini" },
+  });
+  await expect(
+    table.locator('tr[data-row-key="/runners/flowbit/_work"]'),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    table.locator('tr[data-row-key="/runners/flowbit/_work"]'),
+  ).toBeVisible();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
