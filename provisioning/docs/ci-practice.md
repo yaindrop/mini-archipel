@@ -31,7 +31,7 @@
 7. 执行检查。只有该阶段验收通过才运行 `check`。
 8. 汇总与清理。阶段可以声明 `cleanup`，检查失败也会执行。
 
-主机系统和架构在安装依赖之前核对。主机升级、系统授权不在作业里做。工具链版本不对或二进制不存在时，结论是环境失败，后面的 `check` 不运行。
+主机系统和架构在安装依赖之前核对。主机升级、系统授权不在作业里做。工具链版本不对或二进制不存在时，结论是环境失败，后面的 `check` 不运行。版本钉到次版本（例如 Node 26.12、Ruff 0.17、Rust 1.99），补丁号随已安装版本走。
 
 多阶段项目逐段验收。任一段环境失败或检查失败后，后续阶段不再开始。已成功阶段保留在报告里。
 
@@ -95,8 +95,8 @@ uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@<40位提交
 
 | | Flowbit | flowbit-knowledge | in-frames | mini-archipel |
 | --- | --- | --- | --- | --- |
-| 质量入口 | `pnpm check:all` | `pnpm check`，然后镜像构建与 `pnpm test:deployment` | `make check` | provisioning 测试、fan-control、console（Node 24.21.0 与 26.12.0）、agent |
-| 版本声明 | `.node-version` 26.11.1，`packageManager` pnpm 12.10.1，`rust-toolchain.toml` 1.98.1，nightly rustfmt `nightly-2026-08-02` | 沿用现入口的 Node 26.12.0，`packageManager` pnpm 11.22.0 | Node 26.12.0，pnpm 11.22.0，Python 3.12 | Node 24.21.0 / 26.12.0，Rust 1.96.0，Ruff 0.17.0，`console/package-lock.json` |
+| 质量入口 | `pnpm check:all` | `pnpm check`，然后镜像构建与 `pnpm test:deployment` | `make check` | provisioning 测试、fan-control、console（Node 26.12）、agent |
+| 版本声明 | `.node-version` 26.11.1，`packageManager` pnpm 12.10.1，`rust-toolchain.toml` 1.98.1，nightly rustfmt `nightly-2026-08-02` | 沿用现入口的 Node 26.12，`packageManager` pnpm 11.22.0 | Node 26.12，pnpm 11.22.0，Python 3.12 | Node 26.12（console 与 agent），`agent/rust-toolchain.toml` 1.99，Ruff 0.17，`console/package-lock.json` 与 `agent/Cargo.lock` |
 | 节点标签 | `self-hosted, macOS, ARM64, ci` | 同上，另加 `container` | 同 Flowbit | 同 Flowbit |
 | 服务 | 无 | Colima 与 Docker；虚拟机不接这个标签 | 无 | 无 |
 | 浏览器 | 仍在 `pnpm check:all` 内 | 无单独门禁 | Chromium，在 `make check` 前安装并验收 | Chromium 与 WebKit，安装后验收 |

@@ -373,14 +373,27 @@ class LifecycleTests(unittest.TestCase):
             [
                 "provisioning",
                 "fan-control",
-                "console-node-24",
-                "console-node-26",
+                "console",
                 "agent",
             ],
         )
-        for item in data["stages"]:
-            if item["id"].startswith("console-node"):
-                self.assertIn("playwright", json.dumps(item["require"]))
+        by_id = {item["id"]: item for item in data["stages"]}
+        self.assertIn("git", json.dumps(by_id["provisioning"]["require"]))
+        self.assertIn("ruff>=0.17,<0.18", json.dumps(by_id["provisioning"]["require"]))
+        self.assertIn("pypi.org", json.dumps(by_id["provisioning"]["require"]))
+        self.assertIn("clang", json.dumps(by_id["fan-control"]["require"]))
+        self.assertIn("/usr/bin/python3", json.dumps(by_id["fan-control"]["require"]))
+        self.assertEqual(by_id["console"]["toolchain"]["node"], "26.12")
+        self.assertIn("playwright", json.dumps(by_id["console"]["require"]))
+        self.assertIn(".node-version", json.dumps(by_id["console"]["require"]))
+        self.assertEqual(by_id["agent"]["toolchain"]["node"], "26.12")
+        self.assertIn("rustup toolchain install", by_id["agent"]["prepare"])
+        self.assertIn("cargo fetch", by_id["agent"]["prepare"])
+        self.assertIn("rust-toolchain.toml", json.dumps(by_id["agent"]["require"]))
+        self.assertIn("1.99", json.dumps(by_id["agent"]["require"]))
+        self.assertIn("Cargo.lock", json.dumps(by_id["agent"]["require"]))
+        self.assertIn("clippy", json.dumps(by_id["agent"]["require"]))
+        self.assertNotIn("RUSTUP_TOOLCHAIN", json.dumps(by_id["agent"]))
         self.assertEqual(
             ci_run.audit_reusable(
                 (ROOT / ".github/workflows/reusable-quality.yml").read_text()
@@ -442,6 +455,15 @@ class LifecycleTests(unittest.TestCase):
                 ],
                 cwd=ROOT,
             )
+
+    def test_version_ok_accepts_patch_within_minor(self):
+        self.assertTrue(ci_run.version_ok("v26.12.0", "26.12"))
+        self.assertTrue(ci_run.version_ok("v26.12.1", "26.12"))
+        self.assertTrue(ci_run.version_ok("ruff 0.17.1\n", "0.17"))
+        self.assertTrue(ci_run.version_ok("rustc 1.99.1 (9a7dcb4 2026-10-01)", "1.99"))
+        self.assertFalse(ci_run.version_ok("v26.13.0", "26.12"))
+        self.assertFalse(ci_run.version_ok("ruff 0.18.0", "0.17"))
+        self.assertFalse(ci_run.version_ok("rustc 1.98.1", "1.99"))
 
 
 if __name__ == "__main__":

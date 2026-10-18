@@ -62,8 +62,8 @@ npm run test:browser
 
 ```sh
 python3 -m unittest discover -s provisioning/scripts/tests -v
-uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
-uvx ruff@0.17.0 format --check provisioning/scripts
+uvx 'ruff>=0.17,<0.18' check --select E,F,I provisioning/scripts
+uvx 'ruff>=0.17,<0.18' format --check provisioning/scripts
 shellcheck provisioning/scripts/*.sh
 clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
 ```
@@ -81,7 +81,7 @@ ARCHIPEL_WEB_DIR=dist/web npm run dev:server -- .preview/config.json
 npm run dev
 ```
 
-单独命令：`i18n:extract`、`i18n:check`、`audit`、`typecheck`、`lint`、`lint:ui`、`format:check`、`deadcode`、`test:coverage`、`test:browser`、`build`。CI 在 Node 24 / 26 上执行同样的门禁、依赖审计和浏览器测试。实现边界与版本依据见 [console/ENGINEERING.md](console/ENGINEERING.md)。
+单独命令：`i18n:extract`、`i18n:check`、`audit`、`typecheck`、`lint`、`lint:ui`、`format:check`、`deadcode`、`test:coverage`、`test:browser`、`build`。CI 在 Node 26.12 上执行同样的门禁、依赖审计和浏览器测试。实现边界与版本依据见 [console/ENGINEERING.md](console/ENGINEERING.md)。
 
 `PR Quality` 与 Flowbit 一样，只在明确给本仓库 PR 添加 `run-ci` 标签后运行，
 作业开始后消费标签；再次添加可复跑。push、创建/更新 PR 与定时事件不运行质量检查。

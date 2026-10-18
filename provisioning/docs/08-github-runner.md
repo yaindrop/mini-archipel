@@ -46,7 +46,7 @@ Agent 不主动加标签或触发 CI，除非人明确要求验证。等待机�
 | `flowbit` | `pnpm check:all`，保留现有分阶段完整检查和结果汇总 |
 | `flowbit-knowledge` | `pnpm check`、`pnpm test:deployment` |
 | `in-frames` | `make setup` 后 `make check` |
-| `mini-archipel` | Node 24 / 26 的 Console 门禁、审计、浏览器测试，以及 Rust Agent 检查 |
+| `mini-archipel` | Node 26 的 Console 门禁、审计、浏览器测试，以及 Rust Agent 检查 |
 
 仓库保留的专项诊断只可显式手动调用，不添加 push、普通 PR 或 schedule 入口。
 工具版本由各仓库锁文件和 workflow 指定；不通过修改机器的全局默认版本迁就某个项目。
