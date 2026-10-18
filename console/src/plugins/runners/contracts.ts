@@ -7,7 +7,7 @@ const RepoSchema = z
     value.split("/").every((part) => part !== "." && part !== ".."),
   )
   .toLowerCase();
-export const RunReportSchema = z.object({
+const RunReportSchema = z.object({
   schema: z.literal(1),
   phase: z.string(),
   conclusion: z.enum([
@@ -28,7 +28,6 @@ export const RunReportSchema = z.object({
   failure: z.string().nullable(),
   diagnostics: z.string().nullable(),
 });
-export type RunReport = z.infer<typeof RunReportSchema>;
 const RunnerSchema = z.object({
   repo_dir: z.string(),
   repo: RepoSchema.nullable(),

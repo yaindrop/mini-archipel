@@ -2205,12 +2205,12 @@ msgid "私有工作空间"
 msgstr "Private workspace"
 
 #: src/plugins/runners/workbench.tsx
-msgid "符合"
-msgstr "Matches"
-
-#: src/plugins/runners/workbench.tsx
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "Storage usage updates every minute; process status updates independently in real time."
+
+#: src/plugins/runners/workbench.tsx
+msgid "符合"
+msgstr "Matches"
 
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
