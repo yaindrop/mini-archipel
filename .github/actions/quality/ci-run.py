@@ -357,13 +357,36 @@ def uv_python_bindir(version, env, cwd):
     return shim.parent
 
 
+def path_tool_bins(kind, version, env):
+    found = []
+    for directory in env.get("PATH", "").split(os.pathsep):
+        if directory:
+            found.append(Path(directory) / kind)
+    major = version.split(".")[0]
+    if kind == "node" and major.isdigit():
+        found.append(Path(f"/opt/homebrew/opt/node@{major}/bin/node"))
+    return found
+
+
 def find_tool_bin(kind, version, env, cwd):
-    for candidate in tool_candidates(kind, version, env):
+    seen = []
+    candidates = [
+        *tool_candidates(kind, version, env),
+        *path_tool_bins(kind, version, env),
+    ]
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.append(candidate)
         if not candidate.is_file() or not os.access(candidate, os.X_OK):
             continue
         code, output = probe([str(candidate), "--version"], env, cwd)
         if code == 0 and version_ok(output, version):
-            return candidate.parent
+            bindir = candidate.parent
+            current = [part for part in env.get("PATH", "").split(os.pathsep) if part]
+            if current and current[0] == str(bindir):
+                return None
+            return bindir
     code, output = probe([kind, "--version"], env, cwd)
     if code == 0 and version_ok(output, version):
         return None
