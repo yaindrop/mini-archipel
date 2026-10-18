@@ -263,6 +263,39 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(report["_code"], 0, report.get("failure"))
         self.assertTrue(seen["path"].startswith(str(new)))
 
+    def test_promoting_pnpm_keeps_the_selected_node(self):
+        old = Path(self.temp.name) / "pinned" / "bin"
+        new = Path(self.temp.name) / "node-new"
+        old.mkdir(parents=True)
+        new.mkdir()
+        (old / "node").write_text("#!/bin/sh\necho v26.11.1\n", encoding="utf-8")
+        (old / "pnpm").write_text("#!/bin/sh\necho 12.10.1\n", encoding="utf-8")
+        (new / "node").write_text("#!/bin/sh\necho v26.12.0\n", encoding="utf-8")
+        for path in (old / "node", old / "pnpm", new / "node"):
+            path.chmod(path.stat().st_mode | stat.S_IEXEC)
+        workspace, state, env = self.workspace(
+            stage(
+                toolchain={"node": "26.12"},
+                require=[
+                    {"kind": "tool", "tool": "node", "version": "26.12"},
+                    {"kind": "tool", "tool": "pnpm", "version": "12.10"},
+                ],
+            )
+        )
+        env["PATH"] = str(old) + os.pathsep + str(new) + os.pathsep + "/usr/bin:/bin"
+        env["RUNNER_TEMP"] = str(Path(self.temp.name) / "runner-temp")
+        env["MINI_CI_TOOLCHAIN_ROOT"] = str(Path(self.temp.name) / "pinned")
+        report = ci_run.execute(workspace, env, state)
+        self.assertEqual(report["conclusion"], "passed", report.get("failure"))
+        actual = {
+            item["required"].get("tool"): item["actual"]
+            for item in report["stages"][0]["accept"]
+            if item["required"].get("tool")
+        }
+        self.assertIn("v26.12.0", actual["node"])
+        self.assertNotIn("26.11.1", actual["node"])
+        self.assertIn("12.10.1", actual["pnpm"])
+
     def test_declared_pnpm_wins_over_path_pnpm(self):
         bindir = Path(self.temp.name) / "bin"
         bindir.mkdir()

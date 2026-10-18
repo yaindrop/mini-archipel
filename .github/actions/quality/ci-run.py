@@ -304,6 +304,38 @@ def shim_bindir(env, kind, version):
     return bindir
 
 
+def expose_tool(env, binary, kind):
+    """Return a directory that provides `kind` and nothing else.
+
+    Shared bins such as flowbit-ci-pinned contain several tools. Prepending
+    the whole directory to surface pnpm 12.10 also surfaces the pinned Node,
+    which can be older than the Node stage_environment already selected.
+    """
+    parent = binary.parent
+    try:
+        shared = any(
+            entry.name != kind
+            and not entry.name.startswith(".")
+            and entry.is_file()
+            and os.access(entry, os.X_OK)
+            for entry in parent.iterdir()
+        )
+    except OSError:
+        return parent
+    if not shared:
+        return parent
+    stat = binary.stat()
+    digest = f"{stat.st_mtime_ns:x}-{stat.st_size:x}-{stat.st_ino:x}"
+    bindir = shim_bindir(env, kind, digest)
+    link = bindir / kind
+    target = binary.resolve()
+    if not link.is_symlink() or link.resolve() != target:
+        if link.is_symlink() or link.exists():
+            link.unlink()
+        link.symlink_to(target)
+    return bindir
+
+
 def declared_pnpm_version(workspace):
     for path in (
         workspace / "package.json",
@@ -382,7 +414,7 @@ def find_tool_bin(kind, version, env, cwd):
             continue
         code, output = probe([str(candidate), "--version"], env, cwd)
         if code == 0 and version_ok(output, version):
-            bindir = candidate.parent
+            bindir = expose_tool(env, candidate, kind)
             current = [part for part in env.get("PATH", "").split(os.pathsep) if part]
             if current and current[0] == str(bindir):
                 return None
