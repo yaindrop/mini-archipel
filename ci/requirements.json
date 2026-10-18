@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "capabilities": ["self-hosted", "macOS", "ARM64", "ci"],
+  "services": [],
+  "graphics": ["chromium", "webkit"],
+  "network": ["github", "npm"],
+  "credentials": [],
+  "data": [],
+  "permissions": [],
+  "stages": [
+    {
+      "id": "provisioning",
+      "prepare": "true",
+      "require": [
+        {"kind": "tool", "tool": "python3", "version_prefix": "Python 3."},
+        {"kind": "command", "command": ["shellcheck", "--version"], "matches": "version:"},
+        {"kind": "command", "command": ["clang", "--version"], "matches": "clang"},
+        {"kind": "command", "command": ["uvx", "--version"], "matches": "uvx"},
+        {
+          "kind": "command",
+          "command": [
+            "python3",
+            "-c",
+            "import socket; s=socket.create_connection(('github.com', 443), 5); s.close()"
+          ]
+        }
+      ],
+      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && uvx ruff@0.17.0 check --select E,F,I provisioning/scripts .github/actions/quality && uvx ruff@0.17.0 format --check provisioning/scripts .github/actions/quality && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
+    },
+    {
+      "id": "fan-control",
+      "prepare": "true",
+      "require": [
+        {"kind": "tool", "tool": "python3", "version_prefix": "Python 3."},
+        {"kind": "command", "command": ["shellcheck", "--version"], "matches": "version:"},
+        {"kind": "file", "file": "/usr/bin/plutil"}
+      ],
+      "check": "fan-control/check-source.sh && fan-control/test.sh && shellcheck -x -P SCRIPTDIR fan-control/*.sh fan-control/deploy/*.sh agent/sign-local.sh && python3 -c 'import ast; from pathlib import Path; ast.parse(Path(\"fan-control/deploy/verify-hardware.py\").read_text())' && plutil -lint fan-control/deploy/*.plist && fan-control/build.sh"
+    },
+    {
+      "id": "console-node-24",
+      "toolchain": {"node": "24.21.0"},
+      "prepare": "cd console && npm ci && npx playwright install chromium webkit",
+      "require": [
+        {"kind": "tool", "tool": "node", "version": "24.21.0"},
+        {"kind": "file", "file": "console/package-lock.json"},
+        {"kind": "playwright", "playwright": ["chromium", "webkit"]}
+      ],
+      "check": "cd console && npm run check && npm run audit && npm run test:browser"
+    },
+    {
+      "id": "console-node-26",
+      "toolchain": {"node": "26.12.0"},
+      "prepare": "cd console && npm ci && npx playwright install chromium webkit",
+      "require": [
+        {"kind": "tool", "tool": "node", "version": "26.12.0"},
+        {"kind": "file", "file": "console/package-lock.json"},
+        {"kind": "playwright", "playwright": ["chromium", "webkit"]}
+      ],
+      "check": "cd console && npm run check && npm run audit && npm run test:browser"
+    },
+    {
+      "id": "agent",
+      "env": {"RUSTUP_TOOLCHAIN": "1.96.0"},
+      "prepare": "rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt",
+      "require": [
+        {"kind": "tool", "tool": "rustc", "version": "1.96.0"}
+      ],
+      "check": "cd console && npm run check:agent"
+    }
+  ]
+}

@@ -39,6 +39,7 @@ import {
   runnerState,
   matchingRemote,
   repositoryGroups,
+  conclusionLabel,
 } from "./domain.ts";
 import { RunnerStatus } from "./status.tsx";
 import { readEnvelope } from "../contracts.ts";
@@ -384,8 +385,37 @@ export function RunnerList({
                             ? `${remote.status}${remote.busy ? " · busy" : ""}`
                             : t`未取得远端状态`,
                         },
+                        {
+                          key: "phase",
+                          label: t`当前阶段`,
+                          children: runner.run
+                            ? `${runner.run.phase} · ${runner.run.sha.slice(0, 12)}`
+                            : t`尚无主动检查记录`,
+                        },
+                        {
+                          key: "env",
+                          label: t`环境验收`,
+                          children:
+                            runner.run?.env_ok === true
+                              ? t`符合`
+                              : runner.run?.env_ok === false
+                                ? t`不符合`
+                                : t`未验收`,
+                        },
+                        {
+                          key: "conclusion",
+                          label: t`最近结论`,
+                          children: runner.run
+                            ? conclusionLabel(runner.run.conclusion, _)
+                            : t`尚无主动检查记录`,
+                        },
                       ]}
                     />
+                    {runner.run?.failure ? (
+                      <Typography.Text type="warning">
+                        {runner.run.failure}
+                      </Typography.Text>
+                    ) : null}
                     {remote?.labels.length ? (
                       <Space size={[4, 4]} wrap className="runner-labels">
                         {remote.labels.map((label) => (

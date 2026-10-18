@@ -8,6 +8,31 @@ use std::sync::{
     Arc,
 };
 
+/// Latest explicit CI summary written by the shared quality lifecycle.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct RunReport {
+    pub schema: u64,
+    pub phase: String,
+    pub conclusion: String,
+    pub sha: String,
+    #[serde(default)]
+    pub pr: Option<u64>,
+    #[serde(default)]
+    pub run_id: Option<String>,
+    #[serde(default)]
+    pub run_attempt: Option<u64>,
+    #[serde(default)]
+    pub requester: Option<String>,
+    #[serde(default)]
+    pub shared_ref: Option<String>,
+    #[serde(default)]
+    pub env_ok: Option<bool>,
+    #[serde(default)]
+    pub failure: Option<String>,
+    #[serde(default)]
+    pub diagnostics: Option<String>,
+}
+
 /// GitHub Actions self-hosted runner discovery under ~/runners/<repo>.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RunnerInstall {
@@ -22,6 +47,7 @@ pub struct RunnerInstall {
     pub work_bytes: Option<u64>,
     pub diag_bytes: Option<u64>,
     pub diag_latest: Option<String>,
+    pub run: Option<RunReport>,
     pub ts: u64,
 }
 
@@ -135,6 +161,33 @@ fn latest_diag(dir: &PathBuf) -> Option<String> {
         .map(|e| e.file_name().to_string_lossy().to_string())
 }
 
+fn read_run(path: &Path, worker_pid: Option<u32>) -> Option<RunReport> {
+    let text = std::fs::read_to_string(path).ok()?;
+    let mut report: RunReport = serde_json::from_str(&text).ok()?;
+    if report.schema != 1
+        || report.sha.is_empty()
+        || !matches!(
+            report.conclusion.as_str(),
+            "passed" | "environment" | "check" | "infrastructure" | "interrupted" | "incomplete"
+        )
+    {
+        return None;
+    }
+    if let Some(failure) = report.failure.as_mut() {
+        if failure.chars().count() > 500 {
+            *failure = failure.chars().take(500).collect();
+        }
+    }
+    // A dead Worker cannot still be inside a stage. Keep finished conclusions.
+    if report.conclusion == "incomplete" && worker_pid.is_none() {
+        report.conclusion = "interrupted".into();
+        if report.failure.as_deref().unwrap_or("").is_empty() {
+            report.failure = Some("worker exited before the run finished".into());
+        }
+    }
+    Some(report)
+}
+
 fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
     let base = dirs_home().join("runners");
     let mut installs: Vec<RunnerInstall> = Vec::new();
@@ -167,6 +220,12 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
             let diag = repo_dir.join("_diag");
             let diag_bytes = dir_size(&diag, cancelled);
             let diag_latest = latest_diag(&diag);
+            let run = read_run(
+                &dirs_home()
+                    .join(".local/state/mini-ci/reports")
+                    .join(format!("{repo_name}.json")),
+                worker_pid,
+            );
             installs.push(RunnerInstall {
                 repo_dir: repo_name,
                 repo,
@@ -179,6 +238,7 @@ fn discover(cancelled: &AtomicBool) -> Vec<RunnerInstall> {
                 work_bytes,
                 diag_bytes,
                 diag_latest,
+                run,
                 ts: now_unix(),
             });
         }
@@ -632,7 +692,7 @@ fn interrupt_worker(runner: &RunnerInstall, expected_pid: u32) -> Result<(), Fai
 }
 #[cfg(test)]
 mod runner_service_tests {
-    use super::{process_pattern, repository, runner_service_location};
+    use super::{process_pattern, read_run, repository, runner_service_location};
     use std::path::Path;
 
     #[test]
@@ -691,5 +751,37 @@ mod runner_service_tests {
         ] {
             assert!(runner_service_location(home, value).is_err());
         }
+    }
+
+    #[test]
+    fn recovers_an_unfinished_run_after_the_worker_is_gone() {
+        let dir = std::env::temp_dir().join(format!("mini-ci-run-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("report.json");
+        std::fs::write(
+            &path,
+            r#"{"schema":1,"phase":"check:unit","conclusion":"incomplete","sha":"abc","env_ok":null,"failure":null}"#,
+        )
+        .unwrap();
+        let recovered = read_run(&path, None).unwrap();
+        assert_eq!(recovered.conclusion, "interrupted");
+        assert!(recovered.failure.unwrap().contains("worker"));
+        let live = read_run(&path, Some(7)).unwrap();
+        assert_eq!(live.conclusion, "incomplete");
+        std::fs::write(
+            &path,
+            r#"{"schema":1,"phase":"summary","conclusion":"passed","sha":"abc","env_ok":true}"#,
+        )
+        .unwrap();
+        assert_eq!(read_run(&path, None).unwrap().conclusion, "passed");
+        std::fs::write(&path, "{").unwrap();
+        assert!(read_run(&path, None).is_none());
+        std::fs::write(
+            &path,
+            r#"{"schema":2,"phase":"summary","conclusion":"passed","sha":"abc"}"#,
+        )
+        .unwrap();
+        assert!(read_run(&path, None).is_none());
+        let _ = std::fs::remove_dir_all(dir);
     }
 }

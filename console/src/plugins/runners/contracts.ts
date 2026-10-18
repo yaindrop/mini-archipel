@@ -7,6 +7,28 @@ const RepoSchema = z
     value.split("/").every((part) => part !== "." && part !== ".."),
   )
   .toLowerCase();
+export const RunReportSchema = z.object({
+  schema: z.literal(1),
+  phase: z.string(),
+  conclusion: z.enum([
+    "passed",
+    "environment",
+    "check",
+    "infrastructure",
+    "interrupted",
+    "incomplete",
+  ]),
+  sha: z.string(),
+  pr: z.number().int().nonnegative().nullable(),
+  run_id: z.string().nullable(),
+  run_attempt: z.number().int().positive().nullable(),
+  requester: z.string().nullable(),
+  shared_ref: z.string().nullable(),
+  env_ok: z.boolean().nullable(),
+  failure: z.string().nullable(),
+  diagnostics: z.string().nullable(),
+});
+export type RunReport = z.infer<typeof RunReportSchema>;
 const RunnerSchema = z.object({
   repo_dir: z.string(),
   repo: RepoSchema.nullable(),
@@ -19,6 +41,7 @@ const RunnerSchema = z.object({
   work_bytes: bytes.nullable(),
   diag_bytes: bytes.nullable(),
   diag_latest: z.string().nullable(),
+  run: RunReportSchema.nullable().default(null),
   ts: bytes,
 });
 export type Runner = z.infer<typeof RunnerSchema>;

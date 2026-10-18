@@ -309,6 +309,23 @@ export function makeSnapshot(index = 0): Snapshot {
               work_bytes: (18 + index) * 2 ** 30,
               diag_bytes: 3 * 2 ** 20,
               diag_latest: "Runner_20261017-040000-utc.log",
+              run:
+                index === 0
+                  ? {
+                      schema: 1,
+                      phase: "summary",
+                      conclusion: "passed",
+                      sha: "abcdef1234567890",
+                      pr: 12,
+                      run_id: "99",
+                      run_attempt: 1,
+                      requester: "ada",
+                      shared_ref: "fedcba0987654321fedcba0987654321fedcba09",
+                      env_ok: true,
+                      failure: null,
+                      diagnostics: null,
+                    }
+                  : null,
               ts: now,
             },
           ],

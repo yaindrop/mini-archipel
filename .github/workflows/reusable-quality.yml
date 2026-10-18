@@ -1,0 +1,67 @@
+name: Reusable Quality
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: JSON array of self-hosted runner labels.
+        required: true
+        type: string
+      timeout-minutes:
+        description: Job timeout.
+        type: number
+        default: 150
+      checkout-clean:
+        description: Let checkout delete untracked files.
+        type: boolean
+        default: true
+      fetch-depth:
+        description: History depth. Zero fetches all history.
+        type: number
+        default: 1
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  quality:
+    name: Quality
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Consume run-ci request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels/run-ci" || {
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels" --jq 'all(.name != "run-ci")' | grep -qx true
+          }
+      - name: Check out the pinned merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          clean: ${{ inputs.checkout-clean }}
+          fetch-depth: ${{ inputs.fetch-depth }}
+          persist-credentials: false
+      - name: Run the quality lifecycle
+        uses: ./.github/actions/quality
+        with:
+          shared-ref: ${{ github.workflow_sha }}
+          runs-on: ${{ inputs.runs-on }}
+          pr: ${{ github.event.pull_request.number }}
+        env:
+          MINI_CI_REQUEST: run-ci
+      - name: Upload the quality report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: quality-report-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            ci-report.json
+            ci-report.md
+            ci-diagnostics
+            test-results
+            console/playwright-report
+            console/test-results

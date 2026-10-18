@@ -13,6 +13,7 @@ import {
   runnerState,
   runnersFor,
   repositoryGroups,
+  conclusionLabel,
 } from "../../src/plugins/runners/domain.ts";
 import { runnersPlugin } from "../../src/plugins/runners/server.ts";
 import type { PluginContext } from "../../src/plugins/runtime.ts";
@@ -113,6 +114,31 @@ describe("runner plugin domain", () => {
         },
       ];
     expect(runnerState(host, runner, remote)).toBe(status);
+  });
+  it("shows the local explicit run without reading it from GitHub", () => {
+    const host = makeHost(),
+      runner = runnersFor(host)[0];
+    if (!runner?.run) throw Error("fixture");
+    expect(runner.run.conclusion).toBe("passed");
+    expect(runner.run.env_ok).toBe(true);
+    expect(conclusionLabel("passed")).toBe("通过");
+    expect(conclusionLabel("environment")).toBe("环境失败");
+    expect(conclusionLabel("check")).toBe("项目检查失败");
+    expect(conclusionLabel("infrastructure")).toBe("基础设施故障");
+    expect(conclusionLabel("interrupted")).toBe("中断");
+    expect(conclusionLabel("incomplete")).toBe("未完成");
+    expect(
+      runnerState(host, runner, [
+        {
+          repo: "yaindrop/flowbit",
+          id: runner.agent_id ?? 0,
+          name: runner.agent_name ?? "",
+          status: "online",
+          busy: false,
+          labels: [],
+        },
+      ]),
+    ).toBe("ready");
   });
   it("protects an active Worker even when the matching remote identity reports idle", () => {
     const host = makeHost(3),

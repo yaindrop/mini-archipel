@@ -726,6 +726,10 @@ msgstr "Drill-down depth"
 msgid "不可读取"
 msgstr "Unreadable"
 
+#: src/plugins/runners/workbench.tsx
+msgid "不符合"
+msgstr "Does not match"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "与节点一致"
 msgstr "Matches node"
@@ -733,6 +737,11 @@ msgstr "Matches node"
 #: src/web/node.tsx
 msgid "严重"
 msgstr "Serious"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "中断"
+msgstr "Interrupted"
 
 #: src/plugins/runners/workbench.tsx
 msgid "中断作业"
@@ -912,6 +921,10 @@ msgstr "the last update"
 #: src/web/node.tsx
 msgid "最近 10 分钟"
 msgstr "Last 10 minutes"
+
+#: src/plugins/runners/workbench.tsx
+msgid "最近结论"
+msgstr "Latest conclusion"
 
 #. placeholder {0}: timeLabel(fleet.ts)
 #: src/web/App.tsx
@@ -1149,6 +1162,11 @@ msgstr "Install the fan control helper on the node to view its curve and manage 
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 msgstr "The base step returns control to the system. Rising temperatures advance immediately; falling temperatures follow hysteresis and dwell times."
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "基础设施故障"
+msgstr "Infrastructure failed"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "增加档位"
 msgstr "Add step"
@@ -1246,6 +1264,10 @@ msgstr "Terminate this Worker and its child processes locally, without calling G
 #: src/plugins/fan-control/workbench.tsx
 msgid "将校准建议导入草稿"
 msgstr "Import calibration suggestion into draft"
+
+#: src/plugins/runners/workbench.tsx
+msgid "尚无主动检查记录"
+msgstr "No explicit run yet"
 
 #: src/web/storage.tsx
 msgid "尚无目录扫描结果，点击重新扫描开始采集目录空间。"
@@ -1429,6 +1451,10 @@ msgstr "All clear"
 #: src/plugins/fan-control/workbench.tsx
 msgid "当前适配器支持显式传感器和 force 模式，升档不延迟；不支持 floor 模式或自动枚举。"
 msgstr "This adapter supports explicit sensors and force mode with immediate rising steps. Floor mode and automatic enumeration are unavailable."
+
+#: src/plugins/runners/workbench.tsx
+msgid "当前阶段"
+msgstr "Current phase"
 
 #. placeholder {0}: formatBytes(disk?.total_bytes)
 #: src/web/node.tsx
@@ -1720,6 +1746,11 @@ msgstr "Not reported"
 msgid "未取得远端状态"
 msgstr "Remote status unavailable"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "未完成"
+msgstr "Incomplete"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "未应用的草稿"
 msgstr "Unapplied draft"
@@ -1748,6 +1779,10 @@ msgstr "Unavailable"
 #: src/plugins/runners/workbench.tsx
 msgid "未运行"
 msgstr "Not running"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未验收"
+msgstr "Not checked"
 
 #: src/plugins/runners/status.tsx
 msgid "本地监听中"
@@ -2032,6 +2067,15 @@ msgstr "Unknown"
 msgid "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
 msgstr "Manage console features and node plugins independently. Your settings are saved."
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "环境失败"
+msgstr "Environment failed"
+
+#: src/plugins/runners/workbench.tsx
+msgid "环境验收"
+msgstr "Environment"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "用于曲线"
 msgstr "Used for curve"
@@ -2117,6 +2161,10 @@ msgstr "Low available storage"
 #: src/web/App.tsx
 msgid "私有工作空间"
 msgstr "Private workspace"
+
+#: src/plugins/runners/workbench.tsx
+msgid "符合"
+msgstr "Matches"
 
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
@@ -2567,6 +2615,11 @@ msgstr "Connections"
 msgid "退出工作台"
 msgstr "Sign out"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "通过"
+msgstr "Passed"
+
 #: src/web/storage.tsx
 msgid "部分不可读取"
 msgstr "Partially unreadable"
@@ -2704,6 +2757,11 @@ msgstr "Needs attention"
 #: src/web/plugin-settings.tsx
 msgid "页面、概览扩展、远端集成和控制操作"
 msgstr "Pages, overview extensions, remote integrations, and controls"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "项目检查失败"
+msgstr "Project check failed"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "预期当前值"
