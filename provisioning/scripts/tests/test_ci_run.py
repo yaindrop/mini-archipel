@@ -422,6 +422,27 @@ class LifecycleTests(unittest.TestCase):
         )
         self.assertEqual(ci_run.audit_caller(pinned, False), [])
 
+    def test_cross_repo_callers_pin_the_shared_commit(self):
+        callers = sorted((ROOT / "ci" / "callers").glob("*.yml"))
+        self.assertEqual(
+            [path.name for path in callers],
+            ["flowbit-knowledge.yml", "flowbit.yml", "in-frames.yml"],
+        )
+        for path in callers:
+            text = path.read_text(encoding="utf-8")
+            self.assertEqual(ci_run.audit_caller(text, False), [])
+            sha = text.rsplit("@", 1)[1].split()[0]
+            self.assertEqual(len(sha), 40)
+            subprocess.check_call(
+                [
+                    "git",
+                    "cat-file",
+                    "-e",
+                    sha + ":.github/workflows/reusable-quality.yml",
+                ],
+                cwd=ROOT,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

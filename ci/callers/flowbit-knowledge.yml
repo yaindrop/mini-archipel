@@ -1,0 +1,21 @@
+name: PR Quality
+run-name: "PR #${{ github.event.pull_request.number }} · Quality"
+on:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: pr-quality-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  quality:
+    if: github.event.label.name == 'run-ci' && github.event.pull_request.head.repo.full_name == github.repository
+    uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@2e62bc368836088440e389f75880a0c200fdba36
+    with:
+      runs-on: '["self-hosted","macOS","ARM64","ci","container"]'
+    permissions:
+      contents: read
+      pull-requests: write
+    secrets: inherit
