@@ -152,11 +152,11 @@ printf '%s\n' '{"interval_ms":5000,"allow_control":true}' |
 
 ```sh
 cd console
-npm ci
-npm run check
-npm run check:agent
-npm run test:browser
-npm run audit
+pnpm install --frozen-lockfile
+pnpm check
+pnpm check:agent
+pnpm test:browser
+pnpm audit
 ```
 
 验证覆盖空插件目录、第二个测试插件、未知数据透传、坏数据隔离、生命周期互斥、持久化失败回滚、重启恢复、作业保护、暂停状态下的显式变更，以及浅色／深色和手机界面。架构测试禁止核心模块重新出现 Runner 或 GitHub 依赖。真实 Agent HTTP 测试使用临时配置、随机回环端口和禁用的 CI 控制权限。

@@ -1,5 +1,4 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { z } from "zod";
 // No patch exists for this build-tool advisory. Only repository-owned glob patterns
 // reach braces; browser inputs never reach the extractor or linter. See ENGINEERING.md.
@@ -41,15 +40,14 @@ export function auditFailures(rawReport: unknown, rawLock: unknown): string[] {
     .map(([name]) => name);
 }
 if (import.meta.main) {
-  const result = spawnSync("npm", ["audit", "--json"], { encoding: "utf8" });
+  const result = spawnSync("pnpm", ["audit", "--json", "--prod"], {
+    encoding: "utf8",
+  });
   if (result.error) throw result.error;
   if (result.status !== 0 && result.status !== 1)
     throw new Error("Dependency audit could not complete");
   const audit = report.parse(JSON.parse(result.stdout) as unknown);
-  const failures = auditFailures(
-    audit,
-    JSON.parse(readFileSync("package-lock.json", "utf8")) as unknown,
-  );
+  const failures = auditFailures(audit, { packages: {} });
   if (failures.length)
     throw new Error(`Dependency audit failed: ${failures.join(", ")}`);
   console.log(

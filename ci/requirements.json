@@ -10,17 +10,22 @@
   "stages": [
     {
       "id": "provisioning",
-      "prepare": "true",
+      "prepare": "cd provisioning && uv sync --locked --all-groups",
       "require": [
-        {"kind": "tool", "tool": "python3", "version_prefix": "Python 3."},
+        {"kind": "tool", "tool": "python3", "version": "3.14"},
+        {"kind": "tool", "tool": "uv", "version": "0.13"},
         {"kind": "tool", "tool": "git"},
         {"kind": "tool", "tool": "shellcheck"},
         {"kind": "tool", "tool": "clang"},
-        {"kind": "tool", "tool": "uvx"},
+        {"kind": "file", "file": "provisioning/uv.lock"},
+        {"kind": "file", "file": ".python-version"},
         {
           "kind": "command",
-          "command": ["uvx", "ruff>=0.17,<0.18", "--version"],
-          "matches": "0.17"
+          "command": [
+            "python3",
+            "-c",
+            "from pathlib import Path; raise SystemExit(not Path('.python-version').read_text().strip().startswith('3.14'))"
+          ]
         },
         {
           "kind": "command",
@@ -31,14 +36,14 @@
           ]
         }
       ],
-      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && uvx 'ruff>=0.17,<0.18' check --select E,F,I provisioning/scripts .github/actions/quality && uvx 'ruff>=0.17,<0.18' format --check provisioning/scripts .github/actions/quality && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
+      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && cd provisioning && uv run --no-sync ruff check scripts ../.github/actions/quality && uv run --no-sync ruff format --check scripts ../.github/actions/quality && cd .. && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
     },
     {
       "id": "fan-control",
       "prepare": "true",
       "require": [
         {"kind": "file", "file": "/usr/bin/python3"},
-        {"kind": "tool", "tool": "python3", "version_prefix": "Python 3."},
+        {"kind": "tool", "tool": "python3", "version": "3.14"},
         {"kind": "tool", "tool": "git"},
         {"kind": "tool", "tool": "clang"},
         {"kind": "tool", "tool": "shellcheck"},
@@ -49,11 +54,11 @@
     {
       "id": "console",
       "toolchain": {"node": "26.12"},
-      "prepare": "python3 -c \"import socket; socket.create_connection(('registry.npmjs.org', 443), 5).close()\" && cd console && npm ci && npx playwright install chromium webkit",
+      "prepare": "python3 -c \"import socket; socket.create_connection(('registry.npmjs.org', 443), 5).close()\" && cd console && corepack enable && corepack prepare pnpm@12.10.1 --activate && pnpm install --frozen-lockfile && pnpm exec playwright install chromium webkit",
       "require": [
         {"kind": "tool", "tool": "node", "version": "26.12"},
-        {"kind": "tool", "tool": "npm"},
-        {"kind": "file", "file": "console/package-lock.json"},
+        {"kind": "tool", "tool": "pnpm", "version": "12.10"},
+        {"kind": "file", "file": "console/pnpm-lock.yaml"},
         {"kind": "file", "file": "console/.node-version"},
         {
           "kind": "command",
@@ -65,7 +70,7 @@
         },
         {"kind": "playwright", "playwright": ["chromium", "webkit"]}
       ],
-      "check": "cd console && npm run check && npm run audit && npm run test:browser"
+      "check": "cd console && pnpm check && pnpm audit && pnpm test:browser"
     },
     {
       "id": "agent",
@@ -73,7 +78,7 @@
       "prepare": "cd agent && rustup toolchain install && cargo fetch --locked",
       "require": [
         {"kind": "tool", "tool": "node", "version": "26.12"},
-        {"kind": "tool", "tool": "npm"},
+        {"kind": "tool", "tool": "pnpm", "version": "12.10"},
         {"kind": "tool", "tool": "rustup"},
         {"kind": "file", "file": "agent/rust-toolchain.toml"},
         {"kind": "file", "file": "agent/Cargo.lock"},
@@ -91,7 +96,7 @@
         {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && rustfmt --version"], "matches": "rustfmt"},
         {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && cargo clippy --version"], "matches": "clippy"}
       ],
-      "check": "cd console && npm run check:agent"
+      "check": "cd console && pnpm check:agent"
     }
   ]
 }

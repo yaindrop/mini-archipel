@@ -3,8 +3,9 @@
   "version": "0.10.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.10.1",
   "engines": {
-    "node": "^24.12.0 || ^26.0.0"
+    "node": "^26.12.0"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -17,12 +18,12 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:browser": "playwright test",
-    "build": "npm run i18n:check && vite build && esbuild src/server.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/server.cjs",
+    "build": "pnpm i18n:check && vite build && esbuild src/server.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "check": "npm run i18n:check && npm run typecheck && npm run lint && npm run lint:ui && npm run format:check && npm run deadcode && npm run test:coverage && npm run build",
+    "check": "pnpm i18n:check && pnpm typecheck && pnpm lint && pnpm lint:ui && pnpm format:check && pnpm deadcode && pnpm test:coverage && pnpm build",
     "lint:ui": "biome lint src/web src/plugins",
     "test:agent": "node --test scripts/verify-agent.ts scripts/verify-operations.ts scripts/verify-fan-control.ts scripts/verify-runner-policy.ts scripts/verify-storage.ts",
-    "check:agent": "cd ../agent && cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings && cargo test --locked && cargo build --release --locked && cd ../console && npm run test:agent",
+    "check:agent": "cd ../agent && cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings && cargo test --locked && cargo build --release --locked && cd ../console && pnpm test:agent",
     "i18n:extract": "lingui extract --clean --workers 1",
     "i18n:check": "lingui check sync --workers 1 && lingui check missing --mode catalog --workers 1",
     "i18n:compile": "lingui compile --strict --workers 1",
@@ -82,9 +83,5 @@
       "lingui.config.ts",
       "scripts/verify-*.ts"
     ]
-  },
-  "allowScripts": {
-    "esbuild@0.28.2": true,
-    "fsevents": false
   }
 }

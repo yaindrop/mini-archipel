@@ -53,12 +53,12 @@ TypeScript 7 原生编译器通过 `@typescript/native` npm alias 安装，`type
 ## 验证
 
 ```sh
-npm ci
-npm run check
-npm run check:agent
-npx playwright install chromium webkit
-npm run test:browser
-npm run audit
+pnpm install --frozen-lockfile
+pnpm check
+pnpm check:agent
+pnpm exec playwright install chromium webkit
+pnpm test:browser
+pnpm audit
 ```
 
 - Vitest：状态与格式、存储分类、SQLite 聚合 / 保留 / 回滚、配置、真实本地 HTTP curl transport、会话与跨站拦截、Runner 忙碌保护、上游错误、WebSocket 和关键 UI。

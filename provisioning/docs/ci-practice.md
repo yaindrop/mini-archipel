@@ -41,7 +41,7 @@
 | --- | --- | --- |
 | 主机与系统 | 运维 | 核对 macOS 与 ARM64。不符合则环境失败 |
 | 工具链 | 运维预装，作业按待测提交选择 | 在 `~/.local/share/mini-ci/toolchains`、`~/.local/flowbit-ci-pinned` 或 `RUNNER_TOOL_CACHE` 中选择；当前 PATH 已是该版本时直接使用。作业不改系统包 |
-| 项目依赖 | 仓库的 `prepare` | `npm ci`、`pnpm install --frozen-lockfile`、`uv sync`、`make setup` 等，失败记为环境失败 |
+| 项目依赖 | 仓库的 `prepare` | `pnpm install --frozen-lockfile`、`uv sync`、`make setup` 等，失败记为环境失败 |
 | 执行上下文 | 共用脚本 | 每阶段独立的 `PATH` 和 `MINI_CI_ENV_ID`，不沿用上一阶段的虚拟环境 |
 | 测试服务 | 仓库阶段 | 例如 Knowledge 在 prepare 里启动 Colima，验收 `docker info` 之后才构建 |
 | 浏览器与图形 | 仓库阶段 | 在 prepare 安装、在验收里确认缓存。Flowbit 的浏览器仍在 `pnpm check:all` 内部，见矩阵 |
@@ -96,7 +96,7 @@ uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@<40位提交
 | | Flowbit | flowbit-knowledge | in-frames | mini-archipel |
 | --- | --- | --- | --- | --- |
 | 质量入口 | `pnpm check:all` | `pnpm check`，然后镜像构建与 `pnpm test:deployment` | `make check` | provisioning 测试、fan-control、console（Node 26.12）、agent |
-| 版本声明 | `.node-version` 26.11，`packageManager` pnpm 12.10，`rust-toolchain.toml` 1.98，nightly rustfmt `nightly-2026-08-02` | Node 26.12，`packageManager` pnpm 11.22 | Node 26.12，pnpm 11.22，Python 3.12 | Node 26.12（console 与 agent），`agent/rust-toolchain.toml` 1.99，Ruff 0.17，`console/package-lock.json` 与 `agent/Cargo.lock` |
+| 版本声明 | Node 26.12，pnpm 12.10，Rust 1.99，uv 0.13，Python 3.14；nightly rustfmt `nightly-2026-08-02` | Node 26.12，pnpm 12.10 | Node 26.12，pnpm 12.10，Python 3.14，uv 0.13 | Node 26.12，pnpm 12.10，Rust 1.99，uv 0.13，Python 3.14 |
 | 节点标签 | `self-hosted, macOS, ARM64, ci` | 同上，另加 `container` | 同 Flowbit | 同 Flowbit |
 | 服务 | 无 | Colima 与 Docker；虚拟机不接这个标签 | 无 | 无 |
 | 浏览器 | 仍在 `pnpm check:all` 内 | 无单独门禁 | Chromium，在 `make check` 前安装并验收 | Chromium 与 WebKit，安装后验收 |
