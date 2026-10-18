@@ -596,6 +596,8 @@ class LifecycleTests(unittest.TestCase):
                 "github.event.pull_request.head.repo.full_name == github.repository",
                 "    uses: yaindrop/mini-archipel/.github/workflows/"
                 "reusable-quality.yml@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "    with:",
+                "      engine-ref: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             ]
         )
         self.assertEqual(ci_run.audit_caller(pinned, False), [])

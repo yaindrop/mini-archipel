@@ -861,6 +861,18 @@ def audit_caller(text, same_repo):
         )
     if not same_repo and re.search(r"@(main|master)\b", text):
         errors.append("a branch ref is not a controlled upgrade")
+    pinned = re.search(
+        r"uses:\s*\S+/\.github/workflows/reusable-quality\.yml@([0-9a-f]{40})",
+        text,
+    )
+    engine = re.search(
+        r"engine-ref:\s*([0-9a-f]{40}|\$\{\{\s*github\.sha\s*\}\})",
+        text,
+    )
+    if not engine:
+        errors.append("engine-ref input is missing")
+    elif pinned and engine.group(1) != pinned.group(1):
+        errors.append("engine-ref must repeat the pinned engine commit")
     return errors
 
 
@@ -879,7 +891,7 @@ def audit_reusable(text):
     if (
         "raw.githubusercontent.com/yaindrop/mini-archipel" not in text
         or "ci-run.py" not in text
-        or "GITHUB_WORKFLOW_REF" not in text
+        or "ENGINE_REF: ${{ inputs.engine-ref }}" not in text
         or "GITHUB_SHA" not in text
     ):
         errors.append("the lifecycle must be fetched from the pinned engine commit")
