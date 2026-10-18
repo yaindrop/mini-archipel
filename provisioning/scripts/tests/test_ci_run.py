@@ -10,6 +10,7 @@ import textwrap
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[3]
 SPEC = importlib.util.spec_from_file_location(
@@ -134,6 +135,23 @@ class LifecycleTests(unittest.TestCase):
         )
         self.assertFalse(allowed)
         self.assertIn("fork", reason)
+
+    def test_timeout_factor_follows_the_node_class_and_operator_override(self):
+        self.assertEqual(ci_run.timeout_factor({}, "VirtualMac2,1"), "2")
+        self.assertEqual(ci_run.timeout_factor({}, "Mac18,5"), "1")
+        self.assertEqual(ci_run.timeout_factor({}, ""), "1")
+        self.assertEqual(
+            ci_run.timeout_factor({"MINI_CI_TIMEOUT_FACTOR": "3"}, "VirtualMac2,1"),
+            "3",
+        )
+
+    def test_stage_environment_exports_the_timeout_factor(self):
+        workspace, _state, _env = self.workspace(stage())
+        with mock.patch.object(ci_run, "sysctl_model", return_value="VirtualMac2,1"):
+            env, _missing = ci_run.stage_environment(
+                {}, stage()["stages"][0], workspace
+            )
+        self.assertEqual(env["MINI_CI_TIMEOUT_FACTOR"], "2")
 
     def test_environment_mismatch_does_not_start_the_check(self):
         calls = []

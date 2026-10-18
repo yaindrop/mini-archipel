@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { scaledTestTimeout } from "./scripts/ci-timeout";
 export default defineConfig({
   testDir: "./tests/browser",
   fullyParallel: false,
@@ -36,6 +37,6 @@ export default defineConfig({
     command: "node tests/e2e-server.ts",
     url: "http://127.0.0.1:19101/api/session",
     reuseExistingServer: false,
-    timeout: 30000,
+    timeout: scaledTestTimeout(30000),
   },
 });

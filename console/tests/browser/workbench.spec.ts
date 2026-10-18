@@ -2,6 +2,7 @@ import { test as base, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { FleetSchema } from "../../src/contracts.ts";
 import { TOKEN } from "../fixtures.ts";
+import { scaledTestTimeout } from "../../scripts/ci-timeout";
 const test = base.extend<{ errors: string[] }>({
   errors: [
     async ({ page }, use) => {
@@ -783,7 +784,7 @@ test("four nodes remain visible on a compact desktop", async ({ page }) => {
 test("dark theme keeps accessible contrast across the workbench", async ({
   page,
 }) => {
-  test.setTimeout(90_000); // Seven full accessibility audits also run on WebKit.
+  test.setTimeout(scaledTestTimeout(90_000)); // Seven full accessibility audits also run on WebKit.
   await page.goto("/");
   await page.getByRole("button", { name: /^主题：/ }).click();
   await page.getByRole("menuitem", { name: "深色", exact: true }).click();

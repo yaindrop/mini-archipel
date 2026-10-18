@@ -464,6 +464,30 @@ def promote_required_tools(env, stage, workspace):
     return updated
 
 
+def sysctl_model():
+    try:
+        return subprocess.check_output(
+            ["/usr/sbin/sysctl", "-n", "hw.model"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+
+
+def timeout_factor(env, model):
+    """Virtualized fleet nodes keep the same suites with doubled budgets.
+
+    tart guests report a VirtualMac hardware model while physical nodes
+    report their real model, so consumers can scale per-test timeouts.
+    An operator-provided value always wins.
+    """
+    preset = env.get("MINI_CI_TIMEOUT_FACTOR", "")
+    if preset:
+        return preset
+    return "2" if model.startswith("VirtualMac") else "1"
+
+
 def stage_environment(base, stage, workspace):
     env = with_host_path(dict(base))
     extra = stage.get("env") or {}
@@ -473,6 +497,7 @@ def stage_environment(base, stage, workspace):
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", str(key)):
             raise Stop("infrastructure", f"invalid stage env key {key}")
         env[str(key)] = str(value)
+    env["MINI_CI_TIMEOUT_FACTOR"] = timeout_factor(env, sysctl_model())
     missing = []
     wants_pnpm = "pnpm" in stage.get("toolchain", {}) or any(
         isinstance(item, dict)
