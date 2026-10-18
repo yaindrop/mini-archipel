@@ -43,13 +43,19 @@ jobs:
           fetch-depth: ${{ inputs.fetch-depth }}
           persist-credentials: false
       - name: Run the quality lifecycle
-        uses: ./.github/actions/quality
-        with:
-          shared-ref: ${{ github.workflow_sha }}
-          runs-on: ${{ inputs.runs-on }}
-          pr: ${{ github.event.pull_request.number }}
         env:
           MINI_CI_REQUEST: run-ci
+          MINI_CI_SHARED_REF: ${{ github.workflow_sha }}
+          MINI_CI_RUNS_ON: ${{ inputs.runs-on }}
+          MINI_CI_PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          bindir="$RUNNER_TEMP/mini-ci-shared-${MINI_CI_SHARED_REF}"
+          mkdir -p "$bindir"
+          curl -fsSL --retry 3 --retry-delay 2 \
+            "https://raw.githubusercontent.com/yaindrop/mini-archipel/${MINI_CI_SHARED_REF}/.github/actions/quality/ci-run.py" \
+            -o "$bindir/ci-run.py"
+          python3 "$bindir/ci-run.py"
       - name: Upload the quality report
         if: always()
         continue-on-error: true
