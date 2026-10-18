@@ -115,6 +115,5 @@ pub async fn spawn_all(
     let disk_state = Arc::clone(&state);
     let roots = config.disk_roots.clone();
     let disk_interval = config.disk_interval_ms;
-    let rules = config.disk;
-    tokio::spawn(async move { disk::run(disk_state, roots, disk_interval, rules, plugins).await });
+    tokio::spawn(async move { disk::run(disk_state, roots, disk_interval, plugins).await });
 }

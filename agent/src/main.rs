@@ -72,6 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/plugins/{id}/actions/{action}", post(plugin_action))
         .route("/rescan-disk", post(rescan_disk))
         .route("/cancel-disk-scan", post(cancel_disk_scan))
+        .route("/disk-rules", get(disk_rules).put(update_disk_rules))
         .with_state(state.clone());
     let listener = tokio::net::TcpListener::bind(&bind).await?;
     eprintln!("mini-archipel-agent {AGENT_VERSION} listening on {bind}");
@@ -92,6 +93,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn authorized(headers: &HeaderMap, token: &str) -> bool {
     headers.get("authorization").and_then(|v| v.to_str().ok())
         == Some(format!("Bearer {token}").as_str())
+}
+async fn disk_rules(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
+    }
+    response(Ok(json!(state.plugins.disk_rules().await)))
+}
+async fn update_disk_rules(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<collectors::disk_rules::RulesUpdate>,
+) -> impl IntoResponse {
+    if !authorized(&headers, &state.token) {
+        return response(Err((StatusCode::UNAUTHORIZED, "unauthorized".into())));
+    }
+    response(
+        state
+            .plugins
+            .update_disk_rules(body)
+            .await
+            .map(|view| json!(view)),
+    )
 }
 fn response(result: Result<Value, plugins::Failure>) -> (StatusCode, Json<Value>) {
     match result {

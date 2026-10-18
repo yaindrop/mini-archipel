@@ -1,3 +1,4 @@
+import { DiskRulesViewSchema } from "../src/storage-rules.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn, type ChildProcess } from "node:child_process";
@@ -65,9 +66,9 @@ await test(
         ),
       );
     let agent: ChildProcess | undefined;
-    const request = (path = "snapshot", body?: unknown) =>
+    const request = (path = "snapshot", body?: unknown, method = "POST") =>
       fetch(`${base}/${path}`, {
-        method: body === undefined ? "GET" : "POST",
+        method: body === undefined ? "GET" : method,
         headers: {
           authorization: `Bearer ${token}`,
           "content-type": "application/json",
@@ -160,6 +161,69 @@ await test(
     assert.deepEqual((await snapshot()).disk_scans, state.disk_scans);
     state = await scan();
     assert.equal(node(state, "Library/Caches/pkg/deep/leaf").root, "leaf");
+    // Rules are saved atomically, hot-applied without restarting, and isolated from scan jobs.
+    const original = DiskRulesViewSchema.parse(
+      await (await request("disk-rules")).json(),
+    );
+    assert(original.defaults.some((r) => r.path === "~/Library/Caches"));
+    assert(!JSON.stringify(original).includes(token));
+    assert.equal((await fetch(`${base}/disk-rules`)).status, 401);
+    const baseline = state.disk_scans;
+    const ruleConfig = {
+      ...original.config,
+      rules: [
+        ...original.config.rules.filter((r) => r.path !== "~/work"),
+        { path: "~/work", depth: 3, class: "toolchain" },
+      ],
+    };
+    const update = { revision: original.revision, config: ruleConfig };
+    const changedResponse = await request("disk-rules", update, "PUT");
+    assert.equal(changedResponse.status, 200);
+    const changed = DiskRulesViewSchema.parse(await changedResponse.json());
+    assert.notEqual(changed.revision, original.revision);
+    assert.deepEqual((await snapshot()).disk_scans, baseline);
+    assert.equal((await request("disk-rules", update, "PUT")).status, 409);
+    for (const rules of [
+      [{ path: "~/work", depth: 5 }],
+      [{ path: "~/../etc", depth: 1 }],
+      [{ path: "~/work" }, { path: home + "/work/" }],
+    ]) {
+      assert.equal(
+        (
+          await request(
+            "disk-rules",
+            {
+              revision: changed.revision,
+              config: { use_defaults: true, rules },
+            },
+            "PUT",
+          )
+        ).status,
+        400,
+      );
+    }
+    state = await scan("work");
+    assert.equal(node(state, "work").class, "toolchain");
+    state = await scan();
+    assert.equal(node(state, "work/tree/one/two").class, "toolchain");
+    await stop();
+    await start();
+    assert.equal(
+      DiskRulesViewSchema.parse(await (await request("disk-rules")).json())
+        .revision,
+      changed.revision,
+    );
+    assert.equal(
+      (
+        await request(
+          "disk-rules",
+          { revision: changed.revision, config: original.config },
+          "PUT",
+        )
+      ).status,
+      200,
+    );
+    state = await scan();
     const readableCache = state.disk_scans;
     assert.equal(
       (await request("rescan-disk", { path: join(home, "blocked") })).status,

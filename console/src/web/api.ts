@@ -8,6 +8,7 @@ import {
   SessionSchema,
   ConfigViewSchema,
 } from "../contracts.ts";
+import { DiskRulesViewSchema, type DiskRulesUpdate } from "../storage-rules.ts";
 export class ApiError extends Error {
   readonly status: number;
   constructor(status: number, message: string) {
@@ -105,6 +106,17 @@ export const api = {
           enabled,
         }),
       },
+    ),
+  diskRules: (host: string) =>
+    request(
+      `/api/hosts/${encodeURIComponent(host)}/disk-rules`,
+      DiskRulesViewSchema,
+    ),
+  saveDiskRules: (host: string, update: DiskRulesUpdate) =>
+    request(
+      `/api/hosts/${encodeURIComponent(host)}/disk-rules`,
+      DiskRulesViewSchema,
+      { method: "PUT", body: JSON.stringify(update) },
     ),
   rescan: (host: string, path?: string) =>
     request("/api/disk/rescan", OkSchema, {

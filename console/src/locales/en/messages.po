@@ -34,16 +34,36 @@ msgstr "A valid plugin setting is required"
 
 #. js-lingui-explicit-id
 #: src/app.ts
-msgid "缺少有效的节点或目录"
-msgstr "A valid node or directory is required"
-
-#. js-lingui-explicit-id
-#: src/app.ts
 #: src/fleet.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
 msgstr "Node not found"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则无效，请检查路径、深度和分类"
+msgstr "Invalid rules. Check paths, depths and categories."
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，无法保存目录规则"
+msgstr "Node is offline. Directory rules could not be saved."
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则已变更，请重新载入后再保存"
+msgstr "Directory rules have changed. Reload before saving."
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则无效，请检查路径是否重复"
+msgstr "Invalid rules. Check for duplicate paths."
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "缺少有效的节点或目录"
+msgstr "A valid node or directory is required"
 
 #. js-lingui-explicit-id
 #: src/app.ts
@@ -419,6 +439,11 @@ msgstr "{0} · {1} cores · {2}"
 msgid "{0} {1} 插件"
 msgstr "{0} · {1} plugin"
 
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "{0} 下钻深度"
+msgstr "{0} drill-down depth"
+
 #. placeholder {0}: plugins.length
 #: src/web/overview.tsx
 msgid "{0} 个 ↗"
@@ -439,6 +464,11 @@ msgstr "{0, plural, one {# NODE} other {# NODES}}"
 #: src/web/overview.tsx
 msgid "{0} 内存占用"
 msgstr "{0} memory usage"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "{0} 分类"
+msgstr "{0} category"
 
 #. placeholder {0}: policy.active_repo
 #: src/plugins/runners/workbench.tsx
@@ -566,6 +596,14 @@ msgstr "{v0} d {v1} h"
 msgid "{v0} 小时 {v1} 分钟"
 msgstr "{v0} h {v1} min"
 
+#: src/web/storage-rules.tsx
+msgid "{value} 层"
+msgstr "{value, plural, one {# level} other {# levels}}"
+
+#: src/web/storage-rules.tsx
+msgid "0 · 不预取"
+msgstr "0 · No prefetch"
+
 #: src/web/history.tsx
 msgid "1 小时"
 msgstr "1 hour"
@@ -598,7 +636,7 @@ msgstr "Every 6 hours or manually"
 msgid "7 天"
 msgstr "7 days"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "AI 工具"
 msgstr "AI tools"
 
@@ -680,6 +718,10 @@ msgstr "WELCOME BACK"
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "The previous scan was interrupted by a node restart. Previous results are retained."
 
+#: src/web/storage-rules.tsx
+msgid "下钻深度"
+msgstr "Drill-down depth"
+
 #: src/web/storage.tsx
 msgid "不可读取"
 msgstr "Unreadable"
@@ -757,6 +799,10 @@ msgstr "Job running"
 msgid "作业运行中，暂时不能切换"
 msgstr "A job is running. Wait for it to finish before changing the service."
 
+#: src/web/storage-rules.tsx
+msgid "保存到节点"
+msgstr "Save to node"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "保护档：达到此温度，立即使用最高转速（100%）。"
 msgstr "Protection step: immediately use maximum speed (100%) at this temperature."
@@ -813,6 +859,10 @@ msgstr "Total {0}"
 msgid "共 {0} / {1} 台"
 msgstr "{0} / {1} nodes"
 
+#: src/web/storage-rules.tsx
+msgid "关闭"
+msgstr "Close"
+
 #: src/web/App.tsx
 msgid "关闭导航菜单"
 msgstr "Close navigation"
@@ -821,7 +871,7 @@ msgstr "Close navigation"
 msgid "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
 msgstr "Disabling a plugin stops its monitoring and controls. External services and running jobs keep working."
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "其他"
 msgstr "Other"
 
@@ -881,6 +931,19 @@ msgstr "Maximum speed"
 msgid "写入值"
 msgstr "New value"
 
+#: src/web/storage-rules.tsx
+msgid "分类"
+msgstr "Category"
+
+#: src/web/storage-rules.tsx
+msgid "删除"
+msgstr "Delete"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "删除 {0}"
+msgstr "Delete {0}"
+
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
 msgid "删除第 {0} 档"
@@ -926,6 +989,7 @@ msgstr "History"
 
 #: src/plugins/fan-control/workbench.tsx
 #: src/plugins/runners/workbench.tsx
+#: src/web/storage-rules.tsx
 msgid "取消"
 msgstr "Cancel"
 
@@ -997,7 +1061,7 @@ msgstr "Available storage"
 msgid "可用容量从低到高"
 msgstr "Storage available: low to high"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "可重建缓存"
 msgstr "Rebuildable caches"
 
@@ -1052,6 +1116,10 @@ msgstr "Enable plugin"
 #: src/plugins/fan-control/workbench.tsx
 msgid "启用节点曲线"
 msgstr "Enable node curve"
+
+#: src/web/storage-rules.tsx
+msgid "启用默认规则"
+msgstr "Enable default rules"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "响应参数与传感器"
@@ -1167,6 +1235,10 @@ msgstr "Export diagnostics"
 msgid "导出走势 CSV"
 msgstr "Export samples as CSV"
 
+#: src/web/storage-rules.tsx
+msgid "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
+msgstr "Removes all custom rules and overrides. Enabled plugins keep their rules. Save to apply."
+
 #: src/plugins/runners/workbench.tsx
 msgid "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
 msgstr "Terminate this Worker and its child processes locally, without calling GitHub cancellation. The listener stays running. This cannot be undone."
@@ -1219,7 +1291,7 @@ msgstr "The workbench could not be displayed"
 msgid "工作台版本"
 msgstr "Workbench version"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "工具链"
 msgstr "Toolchains"
 
@@ -1305,7 +1377,7 @@ msgstr "Average temperature"
 msgid "平滑后用于曲线决策"
 msgstr "Smoothed input to curve decisions"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "应用"
 msgstr "Applications"
 
@@ -1313,7 +1385,7 @@ msgstr "Applications"
 msgid "应用到节点"
 msgstr "Apply to node"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "应用数据"
 msgstr "Application data"
 
@@ -1363,13 +1435,30 @@ msgstr "This adapter supports explicit sensors and force mode with immediate ris
 msgid "总容量 {0}"
 msgstr "{0} total"
 
+#: src/web/storage-rules.tsx
+msgid "恢复"
+msgstr "Restore"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "恢复 {0}"
+msgstr "Restore {0}"
+
 #: src/web/App.tsx
 msgid "恢复实时更新"
 msgstr "Resume live updates"
 
+#: src/web/storage-rules.tsx
+msgid "恢复此节点的默认目录规则？"
+msgstr "Restore default directory rules for this node?"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "恢复温控中"
 msgstr "Restoring temperature control"
+
+#: src/web/storage-rules.tsx
+msgid "恢复默认"
+msgstr "Restore defaults"
 
 #: src/web/App.tsx
 msgid "我的集群"
@@ -1480,6 +1569,10 @@ msgstr "Fan helper not ready"
 msgid "提交中…"
 msgstr "Submitting…"
 
+#: src/web/storage-rules.tsx
+msgid "插件"
+msgstr "Plugin"
+
 #: src/web/App.tsx
 msgid "插件异常"
 msgstr "Plugin error"
@@ -1517,6 +1610,10 @@ msgstr "Search node names"
 msgid "搜索进程"
 msgstr "Search processes"
 
+#: src/web/storage-rules.tsx
+msgid "操作"
+msgstr "Actions"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "The node runs this locally. Closing this page will not stop the task. You can cancel it in the task history."
@@ -1524,6 +1621,18 @@ msgstr "The node runs this locally. Closing this page will not stop the task. Yo
 #: src/web/api.ts
 msgid "收到的数据不符合接口约定，请刷新后重试"
 msgstr "The response did not match the expected format. Refresh and try again."
+
+#: src/web/storage-rules.tsx
+msgid "放弃修改"
+msgstr "Discard changes"
+
+#: src/web/storage-rules.tsx
+msgid "放弃未保存的修改并重新载入？"
+msgstr "Discard unsaved changes and reload?"
+
+#: src/web/storage-rules.tsx
+msgid "放弃未保存的目录规则？"
+msgstr "Discard unsaved directory rules?"
 
 #. js-lingui-explicit-id
 #: src/domain.ts
@@ -1598,6 +1707,10 @@ msgstr "Curve control"
 #: src/web/history.tsx
 msgid "更新已暂停"
 msgstr "Updates paused"
+
+#: src/web/storage-rules.tsx
+msgid "有未保存的修改"
+msgstr "Unsaved changes"
 
 #: src/web/node.tsx
 msgid "未上报"
@@ -1789,6 +1902,10 @@ msgstr "The Runner plugin is disabled on this node"
 msgid "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
 msgstr "No directories collected in this scope. Select Rescan to collect them."
 
+#: src/web/storage-rules.tsx
+msgid "此路径已有规则，请直接编辑对应行"
+msgstr "This path already has a rule. Edit its row instead."
+
 #: src/web/history.tsx
 msgid "每 15 秒更新"
 msgstr "Updates every 15 seconds"
@@ -1833,6 +1950,18 @@ msgstr "The browser could not save this draft. Export it first."
 #: src/web/preferences.tsx
 msgid "深色"
 msgstr "Dark"
+
+#: src/web/storage-rules.tsx
+msgid "添加"
+msgstr "Add"
+
+#: src/web/storage-rules.tsx
+msgid "添加目录规则"
+msgstr "Add directory rule"
+
+#: src/web/storage-rules.tsx
+msgid "添加规则"
+msgstr "Add rule"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "温度"
@@ -1907,7 +2036,7 @@ msgstr "Manage console features and node plugins independently. Your settings ar
 msgid "用于曲线"
 msgstr "Used for curve"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "用户数据"
 msgstr "User data"
 
@@ -1943,6 +2072,22 @@ msgstr "Directory usage"
 #: src/web/storage.tsx
 msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
 msgstr "Directory totals and APFS volume capacity are measured differently. “Rebuildable caches” is a category; no data is deleted automatically."
+
+#: src/web/storage-rules.tsx
+msgid "目录规则"
+msgstr "Directory rules"
+
+#: src/web/storage-rules.tsx
+msgid "目录规则 · {label}"
+msgstr "Directory rules · {label}"
+
+#: src/web/storage-rules.tsx
+msgid "目录规则已保存，下次扫描生效。"
+msgstr "Directory rules saved. They apply to the next scan."
+
+#: src/web/storage-rules.tsx
+msgid "目录路径"
+msgstr "Directory path"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "目标转速"
@@ -2012,6 +2157,10 @@ msgstr "Awaiting data"
 msgid "筛选节点类型"
 msgstr "Filter node type"
 
+#: src/web/storage-rules.tsx
+msgid "筛选规则路径"
+msgstr "Filter rule paths"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "管理员授权的写入诊断"
 msgstr "Administrator-permitted write diagnostics"
@@ -2031,7 +2180,7 @@ msgstr "Type"
 
 #: src/web/node.tsx
 #: src/web/preferences.tsx
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "系统"
 msgstr "System"
 
@@ -2066,6 +2215,18 @@ msgstr "Y-axis: 0–100%"
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "Manage runners by repository and verify local status against GitHub."
 
+#: src/web/storage-rules.tsx
+msgid "继承分类"
+msgstr "Inherit category"
+
+#: src/web/storage-rules.tsx
+msgid "继承深度"
+msgstr "Inherit depth"
+
+#: src/web/storage-rules.tsx
+msgid "继续编辑"
+msgstr "Keep editing"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "编辑曲线"
 msgstr "Edit curve"
@@ -2090,6 +2251,14 @@ msgstr "Mini Archipel · Node workbench ({0}/{1})"
 #: src/web/history.tsx
 msgid "群岛-{0}-{1}.csv"
 msgstr "mini-archipel-{0}-{1}.csv"
+
+#: src/web/storage-rules.tsx
+msgid "自定义"
+msgstr "Custom"
+
+#: src/web/storage-rules.tsx
+msgid "自定义字段优先于默认和插件规则；未指定的字段继承原规则或上级目录。恢复某条规则只移除该路径的自定义覆盖。"
+msgstr "Custom fields override defaults and plugin rules. Unspecified fields inherit from the original rule or parent directory. Restoring a rule removes only its custom override."
 
 #: src/web/node.tsx
 msgid "自定义曲线"
@@ -2245,6 +2414,14 @@ msgstr "Virtual machine cooling is managed by the host. Node details show sensor
 msgid "虚线：已应用"
 msgstr "Dashed: applied"
 
+#: src/web/storage-rules.tsx
+msgid "规则只影响此节点。保存后从下一次扫描生效，当前扫描和已有结果会保留。深度为 0 时不预取下级目录，仍可按需展开。分类用于展示，不会自动删除文件。"
+msgstr "Rules apply only to this node, starting with the next scan. Current scans and cached results are kept. A depth of 0 disables prefetching; folders can still be expanded on demand. Categories are for display and never delete files."
+
+#: src/web/storage-rules.tsx
+msgid "规则已与节点同步"
+msgstr "Rules synced with node"
+
 #: src/web/App.tsx
 msgid "访问令牌"
 msgstr "Access token"
@@ -2265,6 +2442,10 @@ msgstr "Request failed ({0})"
 #: src/web/api.ts
 msgid "请求未完成，请重试"
 msgstr "The request could not be completed. Try again."
+
+#: src/web/storage-rules.tsx
+msgid "请输入绝对路径或 ~/ 开头的路径，不允许 .. 或控制字符"
+msgstr "Enter an absolute path or a ~/ path, without .. or control characters."
 
 #: src/web/App.tsx
 msgid "请输入访问令牌"
@@ -2299,9 +2480,13 @@ msgstr "Adjust protection temperature: drag or use the left and right arrow keys
 msgid "调整第 {0} 档：拖动或使用方向键"
 msgstr "Adjust step {0}: drag or use the arrow keys"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "资料库"
 msgstr "Library"
+
+#: src/web/storage-rules.tsx
+msgid "路径与来源"
+msgstr "Path and source"
 
 #: src/web/App.tsx
 msgid "跳到工作区"
@@ -2439,6 +2624,14 @@ msgstr "Reload temperature service"
 msgid "重新载入节点曲线"
 msgstr "Reload node policy"
 
+#: src/web/storage-rules.tsx
+msgid "重新载入规则"
+msgstr "Reload rules"
+
+#: src/web/storage-rules.tsx
+msgid "重试"
+msgstr "Retry"
+
 #: src/web/storage.tsx
 msgid "重试扫描"
 msgstr "Retry scan"
@@ -2549,3 +2742,7 @@ msgstr "Fan speed"
 #: src/plugins/fan-control/curve.tsx
 msgid "风扇阶梯曲线：温度与目标转速"
 msgstr "Stepped fan curve: temperature and target speed"
+
+#: src/web/storage-rules.tsx
+msgid "默认"
+msgstr "Default"

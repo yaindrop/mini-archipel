@@ -1,6 +1,7 @@
 pub mod catalog;
 pub mod cli;
 
+use crate::collectors::disk_rules::{self, PluginRule, RulesUpdate, RulesView};
 use crate::collectors::Shared;
 use crate::config::{Config, PluginConfig};
 use axum::http::StatusCode;
@@ -106,9 +107,10 @@ pub fn now() -> u64 {
 }
 
 impl Manager {
-    pub async fn disk_expansions(&self) -> Vec<PathBuf> {
-        let runtime = self.runtime.lock().await;
-        self.definitions
+    fn disk_rules_view(&self, runtime: &Runtime) -> RulesView {
+        use std::hash::{Hash, Hasher};
+        let plugins: Vec<_> = self
+            .definitions
             .iter()
             .filter(|(id, _)| {
                 runtime.config.plugins.get(*id).is_some_and(|c| c.enabled)
@@ -117,8 +119,54 @@ impl Manager {
                         .get(*id)
                         .is_some_and(|r| !r.task.is_finished())
             })
-            .flat_map(|(_, plugin)| plugin.disk_expansions())
-            .collect()
+            .flat_map(|(id, plugin)| {
+                plugin.disk_expansions().into_iter().map(|path| PluginRule {
+                    plugin: id.clone(),
+                    path: path.to_string_lossy().into(),
+                })
+            })
+            .collect();
+        let config = runtime.config.collectors.disk.clone();
+        let mut hash = std::collections::hash_map::DefaultHasher::new();
+        serde_json::to_string(&(&config, &plugins, &disk_rules::defaults()))
+            .expect("directory rule JSON")
+            .hash(&mut hash);
+        RulesView {
+            revision: format!("{:016x}", hash.finish()),
+            home: std::env::var("HOME").unwrap_or_default(),
+            roots: runtime.config.collectors.disk_roots.clone(),
+            config,
+            defaults: disk_rules::defaults().rules,
+            plugins,
+        }
+    }
+
+    pub async fn disk_rules(&self) -> RulesView {
+        self.disk_rules_view(&*self.runtime.lock().await)
+    }
+
+    pub async fn update_disk_rules(&self, update: RulesUpdate) -> Result<RulesView, Failure> {
+        let mut runtime = self.runtime.lock().await;
+        let current = self.disk_rules_view(&runtime);
+        if update.revision != current.revision {
+            return Err((
+                StatusCode::CONFLICT,
+                "directory rules changed; reload before saving".into(),
+            ));
+        }
+        disk_rules::validate(&update.config, std::path::Path::new(&current.home))
+            .map_err(|error| (StatusCode::BAD_REQUEST, error))?;
+        let mut config = runtime.config.clone();
+        config.collectors.disk = update.config;
+        // The same lock serializes plugin and directory writes to the shared TOML file.
+        crate::config::save(&self.config_path, &config).map_err(|_| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "could not save directory rules".into(),
+            )
+        })?;
+        runtime.config = config;
+        Ok(self.disk_rules_view(&runtime))
     }
 
     pub async fn new(
@@ -356,6 +404,77 @@ mod tests {
         .await
         .unwrap();
     }
+    async fn expansions(manager: &Manager) -> Vec<PathBuf> {
+        manager
+            .disk_rules()
+            .await
+            .plugins
+            .iter()
+            .map(|rule| PathBuf::from(&rule.path))
+            .collect()
+    }
+    #[tokio::test]
+    async fn directory_updates_share_plugin_persistence_and_keep_tasks_alive() {
+        let (config, dir, state) = fixture();
+        let path = dir.join("agent.toml");
+        let manager = Manager::new(
+            config,
+            path.clone(),
+            state.clone(),
+            vec![Arc::new(Probe("alpha")), Arc::new(Probe("beta"))],
+        )
+        .await
+        .unwrap();
+        ready(&state, "alpha").await;
+        let before = manager.disk_rules().await;
+        let plugin_ts = state.read().await.plugins["alpha"].ts;
+        let custom = disk_rules::DiskRulesConfig {
+            use_defaults: true,
+            rules: vec![disk_rules::DirectoryRule {
+                path: "~/Library".into(),
+                depth: Some(3),
+                class: Some(disk_rules::StorageClass::Appdata),
+            }],
+        };
+        let updated = manager
+            .update_disk_rules(RulesUpdate {
+                revision: before.revision.clone(),
+                config: custom.clone(),
+            })
+            .await
+            .unwrap();
+        assert_ne!(updated.revision, before.revision);
+        assert_eq!(state.read().await.plugins["alpha"].ts, plugin_ts);
+        assert!(!state.read().await.disk_rescan_flag.load(Ordering::Relaxed));
+        assert_eq!(
+            manager
+                .update_disk_rules(RulesUpdate {
+                    revision: before.revision,
+                    config: custom.clone()
+                })
+                .await
+                .unwrap_err()
+                .0,
+            StatusCode::CONFLICT
+        );
+        manager.set_enabled("alpha", false).await.unwrap();
+        let persisted = crate::config::load(path.to_str().unwrap()).unwrap();
+        assert_eq!(persisted.collectors.disk.rules[0].depth, Some(3));
+        let current = manager.disk_rules().await;
+        let reset = manager
+            .update_disk_rules(RulesUpdate {
+                revision: current.revision,
+                config: disk_rules::DiskRulesConfig::default(),
+            })
+            .await
+            .unwrap();
+        assert_eq!(reset.plugins.len(), 1);
+        let persisted = crate::config::load(path.to_str().unwrap()).unwrap();
+        assert!(!persisted.plugins["alpha"].enabled);
+        assert!(persisted.collectors.disk.rules.is_empty());
+        drop(manager);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
     #[tokio::test]
     async fn plugins_are_independent_and_disabling_is_persistent() {
         let (config, dir, state) = fixture();
@@ -372,7 +491,7 @@ mod tests {
         ready(&state, "alpha").await;
         ready(&state, "beta").await;
         assert_eq!(
-            manager.disk_expansions().await,
+            expansions(&manager).await,
             vec![PathBuf::from("/test/alpha"), PathBuf::from("/test/beta")]
         );
         assert_eq!(state.read().await.plugins["beta"].version, 2);
@@ -385,7 +504,7 @@ mod tests {
         );
         manager.set_enabled("alpha", false).await.unwrap();
         assert_eq!(
-            manager.disk_expansions().await,
+            expansions(&manager).await,
             vec![PathBuf::from("/test/beta")]
         );
         assert!(state.read().await.disk_rescan_flag.load(Ordering::Relaxed));
@@ -427,7 +546,7 @@ mod tests {
         assert_eq!(state2.read().await.plugins["alpha"].status, "disabled");
         manager.set_enabled("alpha", true).await.unwrap();
         ready(&state2, "alpha").await;
-        assert_eq!(manager.disk_expansions().await.len(), 2);
+        assert_eq!(expansions(&manager).await.len(), 2);
         assert!(
             crate::config::load(dir.join("agent.toml").to_str().unwrap())
                 .unwrap()
@@ -449,6 +568,22 @@ mod tests {
         .await
         .unwrap();
         ready(&state, "alpha").await;
+        let view = manager.disk_rules().await;
+        assert_eq!(
+            manager
+                .update_disk_rules(RulesUpdate {
+                    revision: view.revision.clone(),
+                    config: disk_rules::DiskRulesConfig {
+                        use_defaults: false,
+                        rules: Vec::new()
+                    },
+                })
+                .await
+                .unwrap_err()
+                .0,
+            StatusCode::INTERNAL_SERVER_ERROR
+        );
+        assert_eq!(manager.disk_rules().await.revision, view.revision);
         assert_eq!(
             manager.set_enabled("alpha", false).await.unwrap_err().0,
             StatusCode::INTERNAL_SERVER_ERROR

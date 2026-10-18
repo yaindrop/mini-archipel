@@ -1892,3 +1892,27 @@ a:hover .host-identity strong {
 .directory-name > .ant-typography {
   font-size: 12px;
 }
+
+.directory-rules-content {
+  width: 100%;
+}
+.directory-rules-toolbar,
+.directory-rules-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.directory-rule-path {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.directory-rule-path code {
+  overflow-wrap: anywhere;
+}
+.directory-rules-drawer .ant-select {
+  width: 100%;
+}

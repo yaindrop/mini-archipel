@@ -1,3 +1,7 @@
+import {
+  DiskRulesUpdateSchema,
+  type DiskRulesView,
+} from "../src/storage-rules.ts";
 import type { ScanNode } from "../src/contracts.ts";
 import { fanFixture } from "./plugins/fan-fixture.ts";
 import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
@@ -57,11 +61,41 @@ function applyDirectories(
 let multiRepo = false;
 let fanEnabled = false;
 const fans = new Map<string, ReturnType<typeof fanFixture>>();
+const directoryRules = new Map<string, DiskRulesView>();
+function ruleFixture(name: string): DiskRulesView {
+  return {
+    revision: "v1",
+    home: "/Users/" + name,
+    roots: ["/", "/Users/" + name],
+    config: { use_defaults: true, rules: [] },
+    defaults: [
+      { path: "~/Library", depth: 1, class: "library" },
+      { path: "~/.cache", depth: 1, class: "reclaimable" },
+    ],
+    plugins: [{ plugin: "runners", path: "/Users/" + name + "/runners" }],
+  };
+}
 const transport: Transport = (url, _token, body) => {
   const index = config.hosts.findIndex((h) => url.startsWith(h.url)),
     name = config.hosts[index]?.name ?? "";
   if (offline.has(name))
     return Promise.reject(new UpstreamError(502, "模拟节点离线"));
+  if (url.endsWith("/disk-rules")) {
+    const current = directoryRules.get(name) ?? ruleFixture(name);
+    if (body !== undefined) {
+      const update = DiskRulesUpdateSchema.parse(body);
+      if (update.revision !== current.revision)
+        return Promise.reject(new UpstreamError(409, "conflict"));
+      const next = {
+        ...current,
+        config: update.config,
+        revision: "v" + String(Number(current.revision.slice(1)) + 1),
+      };
+      directoryRules.set(name, next);
+      return Promise.resolve(next);
+    }
+    return Promise.resolve(current);
+  }
   const snapshot = makeSnapshot(index);
   applyDirectories(name, snapshot);
   snapshot.disk_scan = scans.get(name) ?? snapshot.disk_scan;
@@ -334,6 +368,7 @@ app.post("/__test/reset", async () => {
   fans.clear();
   await plugins.setEnabled("fan-control", false);
   scans.clear();
+  directoryRules.clear();
   directoryResults.clear();
   exclusive.clear();
   runnerJobs.clear();

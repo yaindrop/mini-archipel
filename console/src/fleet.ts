@@ -222,7 +222,7 @@ export class FleetMonitor {
   async command(
     name: string,
     path: string,
-    body: unknown,
+    body?: unknown,
     method: "POST" | "PUT" = "POST",
   ): Promise<unknown> {
     const config = this.config.hosts.find((h) => h.name === name);

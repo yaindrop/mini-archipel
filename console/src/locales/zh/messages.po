@@ -34,16 +34,36 @@ msgstr "缺少有效的插件开关"
 
 #. js-lingui-explicit-id
 #: src/app.ts
-msgid "缺少有效的节点或目录"
-msgstr "缺少有效的节点或目录"
-
-#. js-lingui-explicit-id
-#: src/app.ts
 #: src/fleet.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
 msgstr "节点不存在"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则无效，请检查路径、深度和分类"
+msgstr "目录规则无效，请检查路径、深度和分类"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "节点离线，无法保存目录规则"
+msgstr "节点离线，无法保存目录规则"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则已变更，请重新载入后再保存"
+msgstr "目录规则已变更，请重新载入后再保存"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "目录规则无效，请检查路径是否重复"
+msgstr "目录规则无效，请检查路径是否重复"
+
+#. js-lingui-explicit-id
+#: src/app.ts
+msgid "缺少有效的节点或目录"
+msgstr "缺少有效的节点或目录"
 
 #. js-lingui-explicit-id
 #: src/app.ts
@@ -419,6 +439,11 @@ msgstr "{0} · {1} 核 · {2}"
 msgid "{0} {1} 插件"
 msgstr "{0} {1} 插件"
 
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "{0} 下钻深度"
+msgstr "{0} 下钻深度"
+
 #. placeholder {0}: plugins.length
 #: src/web/overview.tsx
 msgid "{0} 个 ↗"
@@ -439,6 +464,11 @@ msgstr "{0} 个节点"
 #: src/web/overview.tsx
 msgid "{0} 内存占用"
 msgstr "{0} 内存占用"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "{0} 分类"
+msgstr "{0} 分类"
 
 #. placeholder {0}: policy.active_repo
 #: src/plugins/runners/workbench.tsx
@@ -566,6 +596,14 @@ msgstr "{v0} 天 {v1} 小时"
 msgid "{v0} 小时 {v1} 分钟"
 msgstr "{v0} 小时 {v1} 分钟"
 
+#: src/web/storage-rules.tsx
+msgid "{value} 层"
+msgstr "{value} 层"
+
+#: src/web/storage-rules.tsx
+msgid "0 · 不预取"
+msgstr "0 · 不预取"
+
 #: src/web/history.tsx
 msgid "1 小时"
 msgstr "1 小时"
@@ -598,7 +636,7 @@ msgstr "6 小时或手动"
 msgid "7 天"
 msgstr "7 天"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "AI 工具"
 msgstr "AI 工具"
 
@@ -680,6 +718,10 @@ msgstr "欢迎回来"
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "上次扫描因节点重启而中断，保留上次结果。"
 
+#: src/web/storage-rules.tsx
+msgid "下钻深度"
+msgstr "下钻深度"
+
 #: src/web/storage.tsx
 msgid "不可读取"
 msgstr "不可读取"
@@ -757,6 +799,10 @@ msgstr "作业运行中"
 msgid "作业运行中，暂时不能切换"
 msgstr "作业运行中，暂时不能切换"
 
+#: src/web/storage-rules.tsx
+msgid "保存到节点"
+msgstr "保存到节点"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "保护档：达到此温度，立即使用最高转速（100%）。"
 msgstr "保护档：达到此温度，立即使用最高转速（100%）。"
@@ -813,6 +859,10 @@ msgstr "共 {0}"
 msgid "共 {0} / {1} 台"
 msgstr "共 {0} / {1} 台"
 
+#: src/web/storage-rules.tsx
+msgid "关闭"
+msgstr "关闭"
+
 #: src/web/App.tsx
 msgid "关闭导航菜单"
 msgstr "关闭导航菜单"
@@ -821,7 +871,7 @@ msgstr "关闭导航菜单"
 msgid "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
 msgstr "关闭插件只停止该插件的监控与操作能力，不会停止其观察的外部服务或正在运行的作业。"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "其他"
 msgstr "其他"
 
@@ -881,6 +931,19 @@ msgstr "最高转速"
 msgid "写入值"
 msgstr "写入值"
 
+#: src/web/storage-rules.tsx
+msgid "分类"
+msgstr "分类"
+
+#: src/web/storage-rules.tsx
+msgid "删除"
+msgstr "删除"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "删除 {0}"
+msgstr "删除 {0}"
+
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
 msgid "删除第 {0} 档"
@@ -926,6 +989,7 @@ msgstr "历史趋势"
 
 #: src/plugins/fan-control/workbench.tsx
 #: src/plugins/runners/workbench.tsx
+#: src/web/storage-rules.tsx
 msgid "取消"
 msgstr "取消"
 
@@ -997,7 +1061,7 @@ msgstr "可用存储容量"
 msgid "可用容量从低到高"
 msgstr "可用容量从低到高"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "可重建缓存"
 msgstr "可重建缓存"
 
@@ -1052,6 +1116,10 @@ msgstr "启用插件"
 #: src/plugins/fan-control/workbench.tsx
 msgid "启用节点曲线"
 msgstr "启用节点曲线"
+
+#: src/web/storage-rules.tsx
+msgid "启用默认规则"
+msgstr "启用默认规则"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "响应参数与传感器"
@@ -1167,6 +1235,10 @@ msgstr "导出诊断记录"
 msgid "导出走势 CSV"
 msgstr "导出走势 CSV"
 
+#: src/web/storage-rules.tsx
+msgid "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
+msgstr "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
+
 #: src/plugins/runners/workbench.tsx
 msgid "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
 msgstr "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
@@ -1219,7 +1291,7 @@ msgstr "工作台暂时无法显示"
 msgid "工作台版本"
 msgstr "工作台版本"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "工具链"
 msgstr "工具链"
 
@@ -1305,7 +1377,7 @@ msgstr "平均温度"
 msgid "平滑后用于曲线决策"
 msgstr "平滑后用于曲线决策"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "应用"
 msgstr "应用"
 
@@ -1313,7 +1385,7 @@ msgstr "应用"
 msgid "应用到节点"
 msgstr "应用到节点"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "应用数据"
 msgstr "应用数据"
 
@@ -1363,13 +1435,30 @@ msgstr "当前适配器支持显式传感器和 force 模式，升档不延迟�
 msgid "总容量 {0}"
 msgstr "总容量 {0}"
 
+#: src/web/storage-rules.tsx
+msgid "恢复"
+msgstr "恢复"
+
+#. placeholder {0}: row.path
+#: src/web/storage-rules.tsx
+msgid "恢复 {0}"
+msgstr "恢复 {0}"
+
 #: src/web/App.tsx
 msgid "恢复实时更新"
 msgstr "恢复实时更新"
 
+#: src/web/storage-rules.tsx
+msgid "恢复此节点的默认目录规则？"
+msgstr "恢复此节点的默认目录规则？"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "恢复温控中"
 msgstr "恢复温控中"
+
+#: src/web/storage-rules.tsx
+msgid "恢复默认"
+msgstr "恢复默认"
 
 #: src/web/App.tsx
 msgid "我的集群"
@@ -1480,6 +1569,10 @@ msgstr "控制端尚未就绪"
 msgid "提交中…"
 msgstr "提交中…"
 
+#: src/web/storage-rules.tsx
+msgid "插件"
+msgstr "插件"
+
 #: src/web/App.tsx
 msgid "插件异常"
 msgstr "插件异常"
@@ -1517,6 +1610,10 @@ msgstr "搜索节点名称"
 msgid "搜索进程"
 msgstr "搜索进程"
 
+#: src/web/storage-rules.tsx
+msgid "操作"
+msgstr "操作"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
@@ -1524,6 +1621,18 @@ msgstr "操作由节点本地执行。关闭页面不会中断任务，可在任
 #: src/web/api.ts
 msgid "收到的数据不符合接口约定，请刷新后重试"
 msgstr "收到的数据不符合接口约定，请刷新后重试"
+
+#: src/web/storage-rules.tsx
+msgid "放弃修改"
+msgstr "放弃修改"
+
+#: src/web/storage-rules.tsx
+msgid "放弃未保存的修改并重新载入？"
+msgstr "放弃未保存的修改并重新载入？"
+
+#: src/web/storage-rules.tsx
+msgid "放弃未保存的目录规则？"
+msgstr "放弃未保存的目录规则？"
 
 #. js-lingui-explicit-id
 #: src/domain.ts
@@ -1598,6 +1707,10 @@ msgstr "曲线控制"
 #: src/web/history.tsx
 msgid "更新已暂停"
 msgstr "更新已暂停"
+
+#: src/web/storage-rules.tsx
+msgid "有未保存的修改"
+msgstr "有未保存的修改"
 
 #: src/web/node.tsx
 msgid "未上报"
@@ -1789,6 +1902,10 @@ msgstr "此节点的 Runner 插件未启用"
 msgid "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
 msgstr "此范围暂无已采集的目录。点击重新扫描获取目录明细。"
 
+#: src/web/storage-rules.tsx
+msgid "此路径已有规则，请直接编辑对应行"
+msgstr "此路径已有规则，请直接编辑对应行"
+
 #: src/web/history.tsx
 msgid "每 15 秒更新"
 msgstr "每 15 秒更新"
@@ -1833,6 +1950,18 @@ msgstr "浏览器无法保存草稿，请先导出文件。"
 #: src/web/preferences.tsx
 msgid "深色"
 msgstr "深色"
+
+#: src/web/storage-rules.tsx
+msgid "添加"
+msgstr "添加"
+
+#: src/web/storage-rules.tsx
+msgid "添加目录规则"
+msgstr "添加目录规则"
+
+#: src/web/storage-rules.tsx
+msgid "添加规则"
+msgstr "添加规则"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "温度"
@@ -1907,7 +2036,7 @@ msgstr "独立管理控制台能力与每台节点的采集插件，开关会持
 msgid "用于曲线"
 msgstr "用于曲线"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "用户数据"
 msgstr "用户数据"
 
@@ -1943,6 +2072,22 @@ msgstr "目录空间分析"
 #: src/web/storage.tsx
 msgid "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
 msgstr "目录统计与 APFS 卷容量的计算口径不同；“可重建缓存”只表示分类，不会自动删除数据。"
+
+#: src/web/storage-rules.tsx
+msgid "目录规则"
+msgstr "目录规则"
+
+#: src/web/storage-rules.tsx
+msgid "目录规则 · {label}"
+msgstr "目录规则 · {label}"
+
+#: src/web/storage-rules.tsx
+msgid "目录规则已保存，下次扫描生效。"
+msgstr "目录规则已保存，下次扫描生效。"
+
+#: src/web/storage-rules.tsx
+msgid "目录路径"
+msgstr "目录路径"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "目标转速"
@@ -2012,6 +2157,10 @@ msgstr "等待采集"
 msgid "筛选节点类型"
 msgstr "筛选节点类型"
 
+#: src/web/storage-rules.tsx
+msgid "筛选规则路径"
+msgstr "筛选规则路径"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "管理员授权的写入诊断"
 msgstr "管理员授权的写入诊断"
@@ -2031,7 +2180,7 @@ msgstr "类型"
 
 #: src/web/node.tsx
 #: src/web/preferences.tsx
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "系统"
 msgstr "系统"
 
@@ -2066,6 +2215,18 @@ msgstr "纵轴 0–100%"
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "统一管理接单进程，核对本地状态与 GitHub 连接。"
 
+#: src/web/storage-rules.tsx
+msgid "继承分类"
+msgstr "继承分类"
+
+#: src/web/storage-rules.tsx
+msgid "继承深度"
+msgstr "继承深度"
+
+#: src/web/storage-rules.tsx
+msgid "继续编辑"
+msgstr "继续编辑"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "编辑曲线"
 msgstr "编辑曲线"
@@ -2090,6 +2251,14 @@ msgstr "群岛 · 节点工作台（{0}/{1}）"
 #: src/web/history.tsx
 msgid "群岛-{0}-{1}.csv"
 msgstr "群岛-{0}-{1}.csv"
+
+#: src/web/storage-rules.tsx
+msgid "自定义"
+msgstr "自定义"
+
+#: src/web/storage-rules.tsx
+msgid "自定义字段优先于默认和插件规则；未指定的字段继承原规则或上级目录。恢复某条规则只移除该路径的自定义覆盖。"
+msgstr "自定义字段优先于默认和插件规则；未指定的字段继承原规则或上级目录。恢复某条规则只移除该路径的自定义覆盖。"
 
 #: src/web/node.tsx
 msgid "自定义曲线"
@@ -2245,6 +2414,14 @@ msgstr "虚拟机由宿主机负责散热，节点详情按实际能力展示传
 msgid "虚线：已应用"
 msgstr "虚线：已应用"
 
+#: src/web/storage-rules.tsx
+msgid "规则只影响此节点。保存后从下一次扫描生效，当前扫描和已有结果会保留。深度为 0 时不预取下级目录，仍可按需展开。分类用于展示，不会自动删除文件。"
+msgstr "规则只影响此节点。保存后从下一次扫描生效，当前扫描和已有结果会保留。深度为 0 时不预取下级目录，仍可按需展开。分类用于展示，不会自动删除文件。"
+
+#: src/web/storage-rules.tsx
+msgid "规则已与节点同步"
+msgstr "规则已与节点同步"
+
 #: src/web/App.tsx
 msgid "访问令牌"
 msgstr "访问令牌"
@@ -2265,6 +2442,10 @@ msgstr "请求失败（{0}）"
 #: src/web/api.ts
 msgid "请求未完成，请重试"
 msgstr "请求未完成，请重试"
+
+#: src/web/storage-rules.tsx
+msgid "请输入绝对路径或 ~/ 开头的路径，不允许 .. 或控制字符"
+msgstr "请输入绝对路径或 ~/ 开头的路径，不允许 .. 或控制字符"
 
 #: src/web/App.tsx
 msgid "请输入访问令牌"
@@ -2299,9 +2480,13 @@ msgstr "调整保护温度：拖动或使用左右方向键"
 msgid "调整第 {0} 档：拖动或使用方向键"
 msgstr "调整第 {0} 档：拖动或使用方向键"
 
-#: src/web/storage.tsx
+#: src/web/storage-classes.ts
 msgid "资料库"
 msgstr "资料库"
+
+#: src/web/storage-rules.tsx
+msgid "路径与来源"
+msgstr "路径与来源"
 
 #: src/web/App.tsx
 msgid "跳到工作区"
@@ -2439,6 +2624,14 @@ msgstr "重新载入温控服务"
 msgid "重新载入节点曲线"
 msgstr "重新载入节点曲线"
 
+#: src/web/storage-rules.tsx
+msgid "重新载入规则"
+msgstr "重新载入规则"
+
+#: src/web/storage-rules.tsx
+msgid "重试"
+msgstr "重试"
+
 #: src/web/storage.tsx
 msgid "重试扫描"
 msgstr "重试扫描"
@@ -2549,3 +2742,7 @@ msgstr "风扇转速"
 #: src/plugins/fan-control/curve.tsx
 msgid "风扇阶梯曲线：温度与目标转速"
 msgstr "风扇阶梯曲线：温度与目标转速"
+
+#: src/web/storage-rules.tsx
+msgid "默认"
+msgstr "默认"

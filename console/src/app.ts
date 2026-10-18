@@ -15,6 +15,7 @@ import { Store } from "./store.ts";
 import { METRIC_KEYS, stale } from "./domain.ts";
 import { OkSchema } from "./contracts.ts";
 import { PluginManager, type PluginDefinition } from "./plugins/runtime.ts";
+import { DiskRulesUpdateSchema, DiskRulesViewSchema } from "./storage-rules.ts";
 const COOKIE = "archipel-session";
 function equal(a: string, b: string): boolean {
   const x = Buffer.from(a),
@@ -159,7 +160,7 @@ export function createApp(
   });
   app.get("/api/state", view);
   app.get("/api/config", () => ({
-    version: "0.9.0",
+    version: "0.10.0",
     hosts: config.hosts.map(({ name, url }) => ({
       name,
       url,
@@ -243,6 +244,50 @@ export function createApp(
     };
   }>("/api/plugins/:id/actions/:action", async (request) =>
     plugins.action(request.params.id, request.params.action, request.body),
+  );
+  app.get<{ Params: { host: string } }>(
+    "/api/hosts/:host/disk-rules",
+    async (request, reply) => {
+      if (!monitor.state().hosts.some((h) => h.name === request.params.host))
+        return reply.code(404).send({ error: /*i18n*/ "节点不存在" });
+      return DiskRulesViewSchema.parse(
+        await monitor.command(request.params.host, "disk-rules"),
+      );
+    },
+  );
+  app.put<{ Params: { host: string } }>(
+    "/api/hosts/:host/disk-rules",
+    { bodyLimit: 600_000 },
+    async (request, reply) => {
+      const input = DiskRulesUpdateSchema.safeParse(request.body);
+      if (!input.success)
+        return reply
+          .code(400)
+          .send({ error: /*i18n*/ "目录规则无效，请检查路径、深度和分类" });
+      const host = monitor
+        .state()
+        .hosts.find((h) => h.name === request.params.host);
+      if (!host) return reply.code(404).send({ error: /*i18n*/ "节点不存在" });
+      if (stale(host, Date.now()))
+        return reply
+          .code(409)
+          .send({ error: /*i18n*/ "节点离线，无法保存目录规则" });
+      try {
+        return DiskRulesViewSchema.parse(
+          await monitor.command(host.name, "disk-rules", input.data, "PUT"),
+        );
+      } catch (error) {
+        if (error instanceof UpstreamError && error.status === 409)
+          return reply
+            .code(409)
+            .send({ error: /*i18n*/ "目录规则已变更，请重新载入后再保存" });
+        if (error instanceof UpstreamError && error.status === 400)
+          return reply
+            .code(400)
+            .send({ error: /*i18n*/ "目录规则无效，请检查路径是否重复" });
+        throw error;
+      }
+    },
   );
   app.post("/api/disk/rescan", async (request, reply) => {
     const input = z

@@ -41,6 +41,77 @@ async function session(app: ReturnType<typeof createApp>["app"]) {
   });
   return String(r.headers["set-cookie"]).split(";")[0] ?? "";
 }
+describe("directory rule API", () => {
+  it("authenticates, validates and targets only the requested node", async () => {
+    const ruleView = {
+      revision: "v1",
+      home: "/Users/test",
+      roots: ["/"],
+      config: { use_defaults: true, rules: [] },
+      defaults: [],
+      plugins: [],
+    };
+    const calls: { url: string; body: unknown; method: unknown }[] = [];
+    const { app, monitor } = setup((url, _token, body, method) => {
+      if (url.endsWith("/snapshot"))
+        return Promise.resolve(
+          makeSnapshot(config.hosts.findIndex((h) => url.startsWith(h.url))),
+        );
+      calls.push({ url, body, method });
+      return Promise.resolve(ruleView);
+    });
+    await monitor.poll();
+    const url = `/api/hosts/${config.hosts[0]?.name ?? ""}/disk-rules`;
+    expect((await app.inject({ url })).statusCode).toBe(401);
+    expect((await app.inject({ url, headers: auth })).json()).toEqual(ruleView);
+    expect(
+      (
+        await app.inject({
+          method: "PUT",
+          url,
+          headers: { ...auth, origin: "https://evil.test" },
+          payload: { revision: "v1", config: ruleView.config },
+        })
+      ).statusCode,
+    ).toBe(403);
+    expect(
+      (
+        await app.inject({
+          method: "PUT",
+          url,
+          headers: auth,
+          payload: {
+            revision: "v1",
+            config: { use_defaults: true, rules: [{ path: "../etc" }] },
+          },
+        })
+      ).statusCode,
+    ).toBe(400);
+    expect(
+      (
+        await app.inject({
+          method: "PUT",
+          url,
+          headers: auth,
+          payload: { revision: "v1", config: ruleView.config },
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toMatchObject({
+      url: `${config.hosts[0]?.url ?? ""}/disk-rules`,
+      method: "PUT",
+    });
+    expect(
+      (
+        await app.inject({
+          url: "/api/hosts/missing/disk-rules",
+          headers: auth,
+        })
+      ).statusCode,
+    ).toBe(404);
+  });
+});
 describe("authenticated console boundary", () => {
   it("does not disclose state or config before authentication", async () => {
     const { app } = setup();

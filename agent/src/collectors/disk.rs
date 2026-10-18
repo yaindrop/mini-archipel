@@ -1,5 +1,5 @@
 use super::{
-    disk_rules::{self, DiskRulesConfig, Rules},
+    disk_rules::{self, Rules},
     Shared, SharedState,
 };
 use axum::http::StatusCode;
@@ -696,7 +696,6 @@ pub async fn run(
     state: Shared,
     roots: Vec<String>,
     interval_ms: u64,
-    config: DiskRulesConfig,
     plugins: Arc<crate::plugins::Manager>,
 ) {
     if roots.is_empty() {
@@ -722,8 +721,14 @@ pub async fn run(
             .swap(false, Ordering::Relaxed);
         if requested || now() >= next {
             let home = PathBuf::from(std::env::var("HOME").unwrap_or_default());
-            let rules = Rules::new(&config, &home, &plugins.disk_expansions().await)
-                .expect("validated directory rules");
+            let policy = plugins.disk_rules().await;
+            let paths = policy
+                .plugins
+                .iter()
+                .map(|rule| PathBuf::from(&rule.path))
+                .collect::<Vec<_>>();
+            let rules =
+                Rules::new(&policy.config, &home, &paths).expect("validated directory rules");
             execute(&state, &roots, &rules).await;
             if state.read().await.disk_scan.target.is_none() {
                 next = now().saturating_add(interval_ms);
@@ -735,6 +740,7 @@ pub async fn run(
 
 #[cfg(test)]
 mod tests {
+    use super::disk_rules::DiskRulesConfig;
     use super::*;
     fn rules() -> Rules {
         Rules::new(&DiskRulesConfig::default(), Path::new("/Users/test"), &[]).unwrap()

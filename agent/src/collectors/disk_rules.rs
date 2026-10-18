@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 use std::path::{Component, Path, PathBuf};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -24,6 +25,44 @@ pub struct DirectoryRule {
     pub depth: Option<u8>,
     #[serde(default)]
     pub class: Option<StorageClass>,
+}
+#[derive(Debug, Serialize, Clone)]
+pub struct PluginRule {
+    pub plugin: String,
+    pub path: String,
+}
+#[derive(Debug, Serialize)]
+pub struct RulesView {
+    pub revision: String,
+    pub home: String,
+    pub roots: Vec<String>,
+    pub config: DiskRulesConfig,
+    pub defaults: Vec<DirectoryRule>,
+    pub plugins: Vec<PluginRule>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RulesUpdate {
+    pub revision: String,
+    pub config: DiskRulesConfig,
+}
+pub fn defaults() -> DiskRulesConfig {
+    toml::from_str(include_str!("../../disk-rules.toml")).expect("bundled directory rules")
+}
+pub fn validate(config: &DiskRulesConfig, home: &Path) -> Result<(), String> {
+    if config.rules.len() > 128 {
+        return Err("at most 128 custom directory rules are allowed".into());
+    }
+    let mut paths = HashSet::new();
+    for rule in &config.rules {
+        if rule.path.len() > 4096 || !paths.insert(expand(&rule.path, home)?) {
+            return Err("directory rule paths must be unique and at most 4096 bytes".into());
+        }
+        if rule.depth.is_some_and(|depth| depth > 4) {
+            return Err("directory rule depth must be between 0 and 4".into());
+        }
+    }
+    Ok(())
 }
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
@@ -67,7 +106,7 @@ pub fn expand(path: &str, home: &Path) -> Result<PathBuf, String> {
         || path
             .components()
             .any(|c| matches!(c, Component::ParentDir | Component::CurDir))
-        || path.to_string_lossy().contains(['\n', '\r', '\0'])
+        || path.to_string_lossy().chars().any(char::is_control)
     {
         return Err("directory paths must be absolute or home-relative, without traversal or control characters".into());
     }
@@ -75,8 +114,8 @@ pub fn expand(path: &str, home: &Path) -> Result<PathBuf, String> {
 }
 impl Rules {
     pub fn new(config: &DiskRulesConfig, home: &Path, plugins: &[PathBuf]) -> Result<Self, String> {
-        let defaults: DiskRulesConfig =
-            toml::from_str(include_str!("../../disk-rules.toml")).map_err(|e| e.to_string())?;
+        validate(config, home)?;
+        let defaults = defaults();
         let mut entries = BTreeMap::new();
         for rule in defaults.rules.iter().filter(|_| config.use_defaults) {
             entries.insert(expand(&rule.path, home)?, rule.clone());
