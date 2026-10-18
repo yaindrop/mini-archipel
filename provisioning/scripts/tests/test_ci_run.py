@@ -193,6 +193,65 @@ class LifecycleTests(unittest.TestCase):
         self.assertIn("console" if False else "unit", seen["identity"])
         self.assertNotIn("super-secret", json.dumps(report))
 
+    def test_declared_pnpm_wins_over_path_pnpm(self):
+        bindir = Path(self.temp.name) / "bin"
+        bindir.mkdir()
+        (bindir / "pnpm").write_text("#!/bin/sh\necho 11.22.0\n", encoding="utf-8")
+        (bindir / "corepack").write_text(
+            "#!/bin/sh\n"
+            'if [ "$1" = prepare ]; then exit 0; fi\n'
+            'if [ "$1" = pnpm ]; then echo 12.10.1; exit 0; fi\n'
+            "exit 1\n",
+            encoding="utf-8",
+        )
+        for name in ("pnpm", "corepack"):
+            path = bindir / name
+            path.chmod(path.stat().st_mode | stat.S_IEXEC)
+        workspace, state, env = self.workspace(
+            stage(
+                prepare="pnpm --version > pnpm-version.txt",
+                require=[{"kind": "tool", "tool": "pnpm", "version": "12.10"}],
+            )
+        )
+        (workspace / "package.json").write_text(
+            json.dumps({"packageManager": "pnpm@12.10.1"}), encoding="utf-8"
+        )
+        env["PATH"] = str(bindir) + os.pathsep + "/usr/bin:/bin"
+        env["RUNNER_TEMP"] = str(Path(self.temp.name) / "runner-temp")
+        report = ci_run.execute(workspace, env, state)
+        self.assertEqual(report["conclusion"], "passed", report.get("failure"))
+        self.assertIn("12.10.1", (workspace / "pnpm-version.txt").read_text())
+
+    def test_uv_python_is_selected_when_path_python_is_newer(self):
+        bindir = Path(self.temp.name) / "bin"
+        py314 = Path(self.temp.name) / "py314" / "bin"
+        bindir.mkdir()
+        py314.mkdir(parents=True)
+        (py314 / "python3").write_text(
+            "#!/bin/sh\necho Python 3.14.8\n", encoding="utf-8"
+        )
+        (bindir / "python3").write_text(
+            "#!/bin/sh\necho Python 3.15.0\n", encoding="utf-8"
+        )
+        (bindir / "uv").write_text(
+            "#!/bin/sh\n"
+            'if [ "$1" = python ] && [ "$2" = find ]; then\n'
+            f"  echo {py314 / 'python3'}\n"
+            "  exit 0\n"
+            "fi\n"
+            "exit 1\n",
+            encoding="utf-8",
+        )
+        for path in (py314 / "python3", bindir / "python3", bindir / "uv"):
+            path.chmod(path.stat().st_mode | stat.S_IEXEC)
+        workspace, state, env = self.workspace(
+            stage(require=[{"kind": "tool", "tool": "python3", "version": "3.14"}])
+        )
+        env["PATH"] = str(bindir) + os.pathsep + "/usr/bin:/bin"
+        env["RUNNER_TEMP"] = str(Path(self.temp.name) / "runner-temp")
+        report = ci_run.execute(workspace, env, state)
+        self.assertEqual(report["conclusion"], "passed", report.get("failure"))
+
     def test_project_check_failure_is_not_a_pass(self):
         def shell(command, _env, _cwd):
             if command == "echo check":

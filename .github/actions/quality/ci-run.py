@@ -251,6 +251,66 @@ def tool_candidates(kind, version, env):
     return found
 
 
+def shim_bindir(env, kind, version):
+    root = Path(env.get("RUNNER_TEMP") or "/tmp") / "mini-ci-shims"
+    bindir = root / f"{kind}-{version.replace(os.sep, '-')}" / "bin"
+    bindir.mkdir(parents=True, exist_ok=True, mode=0o755)
+    return bindir
+
+
+def declared_pnpm_version(workspace):
+    for path in (
+        workspace / "package.json",
+        workspace / "console" / "package.json",
+        workspace / "apps" / "web" / "package.json",
+    ):
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        manager = data.get("packageManager") or ""
+        if isinstance(manager, str) and manager.startswith("pnpm@"):
+            version = manager.split("@", 1)[1].strip()
+            if version:
+                return version
+    return None
+
+
+def corepack_pnpm_bindir(version, env, cwd):
+    probe(["corepack", "prepare", f"pnpm@{version}", "--activate"], env, cwd)
+    code, output = probe(["corepack", "pnpm", "--version"], env, cwd)
+    if code != 0 or not version_ok(output, version):
+        return False
+    bindir = shim_bindir(env, "pnpm", version)
+    script = bindir / "pnpm"
+    script.write_text('#!/bin/sh\nexec corepack pnpm "$@"\n')
+    os.chmod(script, 0o755)
+    return bindir
+
+
+def uv_python_bindir(version, env, cwd):
+    code, output = probe(["uv", "python", "find", version], env, cwd)
+    if code != 0:
+        return False
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    if not lines:
+        return False
+    binary = Path(lines[-1])
+    if not binary.is_file():
+        return False
+    bindir = binary.parent
+    python3 = bindir / "python3"
+    if python3.is_file() or python3.is_symlink():
+        return bindir
+    shim = shim_bindir(env, "python3", version) / "python3"
+    if shim.exists() or shim.is_symlink():
+        shim.unlink()
+    shim.symlink_to(binary)
+    return shim.parent
+
+
 def find_tool_bin(kind, version, env, cwd):
     for candidate in tool_candidates(kind, version, env):
         if candidate.is_file() and os.access(candidate, os.X_OK):
@@ -258,7 +318,46 @@ def find_tool_bin(kind, version, env, cwd):
     code, output = probe([kind, "--version"], env, cwd)
     if code == 0 and version_ok(output, version):
         return None
+    if kind == "pnpm":
+        located = corepack_pnpm_bindir(version, env, cwd)
+        if located is not False:
+            return located
+    if kind in {"python", "python3"}:
+        located = uv_python_bindir(version, env, cwd)
+        if located is not False:
+            return located
     return False
+
+
+def prepend_path(env, bindir):
+    updated = dict(env)
+    updated["PATH"] = str(bindir) + os.pathsep + updated.get("PATH", "")
+    return updated
+
+
+def activate_declared_pnpm(env, workspace):
+    version = declared_pnpm_version(workspace)
+    if not version:
+        return env, None
+    located = corepack_pnpm_bindir(version, env, workspace)
+    if located is False:
+        return env, f"corepack cannot provide pnpm {version}"
+    return prepend_path(env, located), None
+
+
+def promote_required_tools(env, stage, workspace):
+    updated = dict(env)
+    for item in stage.get("require") or []:
+        if not isinstance(item, dict) or item.get("kind") != "tool":
+            continue
+        name = item.get("tool")
+        version = item.get("version")
+        if not isinstance(name, str) or not version:
+            continue
+        located = find_tool_bin(name, str(version), updated, workspace)
+        if located is not None and located is not False:
+            updated = prepend_path(updated, located)
+    return updated
 
 
 def stage_environment(base, stage, workspace):
@@ -271,12 +370,22 @@ def stage_environment(base, stage, workspace):
             raise Stop("infrastructure", f"invalid stage env key {key}")
         env[str(key)] = str(value)
     missing = []
+    wants_pnpm = "pnpm" in stage.get("toolchain", {}) or any(
+        isinstance(item, dict)
+        and item.get("kind") == "tool"
+        and item.get("tool") == "pnpm"
+        for item in stage.get("require") or []
+    )
+    if wants_pnpm:
+        env, pnpm_err = activate_declared_pnpm(env, workspace)
+        if pnpm_err:
+            missing.append("pnpm " + (declared_pnpm_version(workspace) or "declared"))
     for kind, version in stage.get("toolchain", {}).items():
         located = find_tool_bin(kind, version, env, workspace)
         if located is False:
             missing.append(f"{kind} {version}")
         elif located is not None:
-            env["PATH"] = str(located) + os.pathsep + env.get("PATH", "")
+            env = prepend_path(env, located)
     env.pop("VIRTUAL_ENV", None)
     env["MINI_CI_ENV_ID"] = "/".join(
         part
@@ -774,6 +883,7 @@ def execute(workspace, env, state_root, shell=run_shell, facts=host_facts):
                         "environment", f"prepare {stage['id']} exited {code}: {detail}"
                     )
                 stage_env = load_stage_env_file(stage_env, workspace)
+                stage_env = promote_required_tools(stage_env, stage, workspace)
                 if stage.get("venv"):
                     stage_env, verr = activate_venv(stage_env, workspace, stage["venv"])
                     if verr:

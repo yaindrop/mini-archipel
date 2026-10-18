@@ -10,7 +10,7 @@
   "stages": [
     {
       "id": "provisioning",
-      "prepare": "cd provisioning && uv sync --locked --all-groups",
+      "prepare": "uv python install 3.14 && cd provisioning && uv sync --locked --all-groups --python 3.14",
       "require": [
         {"kind": "tool", "tool": "python3", "version": "3.14"},
         {"kind": "tool", "tool": "uv", "version": "0.13"},
@@ -40,9 +40,10 @@
     },
     {
       "id": "fan-control",
-      "prepare": "true",
+      "prepare": "uv python install 3.14",
       "require": [
         {"kind": "file", "file": "/usr/bin/python3"},
+        {"kind": "tool", "tool": "uv", "version": "0.13"},
         {"kind": "tool", "tool": "python3", "version": "3.14"},
         {"kind": "tool", "tool": "git"},
         {"kind": "tool", "tool": "clang"},
@@ -54,7 +55,7 @@
     {
       "id": "console",
       "toolchain": {"node": "26.12"},
-      "prepare": "python3 -c \"import socket; socket.create_connection(('registry.npmjs.org', 443), 5).close()\" && cd console && corepack enable && corepack prepare pnpm@12.10.1 --activate && pnpm install --frozen-lockfile && pnpm exec playwright install chromium webkit",
+      "prepare": "python3 -c \"import socket; socket.create_connection(('registry.npmjs.org', 443), 5).close()\" && cd console && pnpm install --frozen-lockfile && pnpm exec playwright install chromium webkit",
       "require": [
         {"kind": "tool", "tool": "node", "version": "26.12"},
         {"kind": "tool", "tool": "pnpm", "version": "12.10"},
