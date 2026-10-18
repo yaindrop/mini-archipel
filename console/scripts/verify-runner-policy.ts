@@ -82,6 +82,7 @@ await test(
       if (repo !== "manual")
         listeners.push(
           spawn(join(directory, "bin/Runner.Listener"), [], {
+            detached: true,
             stdio: "ignore",
           }),
         );

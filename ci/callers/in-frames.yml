@@ -15,6 +15,7 @@ jobs:
     uses: yaindrop/mini-archipel/.github/workflows/reusable-quality.yml@974ae9e1076362c052fc5f2b725008687e11519a
     with:
       runs-on: '["self-hosted","macOS","ARM64","ci"]'
+      engine-ref: 974ae9e1076362c052fc5f2b725008687e11519a
     permissions:
       contents: read
       pull-requests: write

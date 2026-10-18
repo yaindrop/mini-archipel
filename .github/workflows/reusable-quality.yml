@@ -6,6 +6,12 @@ on:
         description: JSON array of self-hosted runner labels.
         required: true
         type: string
+      engine-ref:
+        description: Commit of this engine the caller pinned. GitHub Actions
+          does not expose the called workflow's ref, so callers repeat the
+          pinned commit here and the audit enforces both spellings match.
+        required: true
+        type: string
       timeout-minutes:
         description: Job timeout.
         type: number
@@ -47,9 +53,10 @@ jobs:
           MINI_CI_REQUEST: run-ci
           MINI_CI_RUNS_ON: ${{ inputs.runs-on }}
           MINI_CI_PR: ${{ github.event.pull_request.number }}
+          ENGINE_REF: ${{ inputs.engine-ref }}
         run: |
           set -euo pipefail
-          for ref in "${GITHUB_WORKFLOW_REF##*@}" "$GITHUB_SHA"; do
+          for ref in "$ENGINE_REF" "$GITHUB_SHA"; do
             bindir="$RUNNER_TEMP/mini-ci-shared-${ref//\//_}"
             mkdir -p "$bindir"
             if curl -fsSL --retry 2 --retry-delay 2 \
@@ -60,7 +67,7 @@ jobs:
               exec python3 "$bindir/ci-run.py"
             fi
           done
-          echo "cannot fetch the shared lifecycle from $GITHUB_WORKFLOW_REF or $GITHUB_SHA" >&2
+          echo "cannot fetch the shared lifecycle from $ENGINE_REF or $GITHUB_SHA" >&2
           exit 1
       - name: Upload the quality report
         if: always()
