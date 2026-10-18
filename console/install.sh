@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 077
 cd "$(dirname "$0")"
-[[ -f dist/server.cjs && -f dist/store-worker.cjs && -f dist/web/index.html ]] || { echo 'error: run npm ci && npm run check first'; exit 1; }
+[[ -f dist/server.cjs && -f dist/store-worker.cjs && -f dist/web/index.html ]] || { echo 'error: run pnpm install --frozen-lockfile && pnpm check first'; exit 1; }
 NODE_BIN=${NODE_BIN:-$(command -v node)}
 [[ -x "$NODE_BIN" ]] || { echo 'error: node not found (set NODE_BIN=)'; exit 1; }
 "$NODE_BIN" -e 'const [major, minor] = process.versions.node.split(".").map(Number); if ((major !== 24 && major !== 26) || (major === 24 && minor < 12)) process.exit(1)' || { echo 'error: Node 24.12+ or 26 required'; exit 1; }

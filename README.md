@@ -49,23 +49,24 @@ Agent 核心采集 CPU、内存、swap、卷空间、Top 15 进程、热状态�
 
 ## 本地开发与验证
 
-需要 Node 24.12+（24.x）或 26.x，推荐使用 `.node-version` 固定的 Node 26。项目使用 npm 和已提交的 lockfile。
+需要 Node 26.12、pnpm 12.10，推荐使用 `.node-version` 与 `packageManager` 固定的版本。项目使用 pnpm 和已提交的 lockfile。
 
 ```sh
 cd console
-npm ci
-npm run check
-npm run check:agent
-npx playwright install chromium webkit
-npm run test:browser
+pnpm install --frozen-lockfile
+pnpm check
+pnpm check:agent
+pnpm exec playwright install chromium webkit
+pnpm test:browser
 ```
 
 节点配置模块的检查从仓库根目录运行：
 
 ```sh
 python3 -m unittest discover -s provisioning/scripts/tests -v
-uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
-uvx ruff@0.17.0 format --check provisioning/scripts
+cd provisioning && uv sync --locked --all-groups
+uv run --no-sync ruff check scripts ../.github/actions/quality
+uv run --no-sync ruff format --check scripts ../.github/actions/quality
 shellcheck provisioning/scripts/*.sh
 clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
 ```
@@ -78,12 +79,12 @@ clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker
 
 ```sh
 # 终端一：配置 bind 为 127.0.0.1:19100
-ARCHIPEL_WEB_DIR=dist/web npm run dev:server -- .preview/config.json
+ARCHIPEL_WEB_DIR=dist/web pnpm dev:server -- .preview/config.json
 # 终端二：Vite 热更新，API / WS 转发到 19100
-npm run dev
+pnpm dev
 ```
 
-单独命令：`i18n:extract`、`i18n:check`、`audit`、`typecheck`、`lint`、`lint:ui`、`format:check`、`deadcode`、`test:coverage`、`test:browser`、`build`。CI 在 Node 24 / 26 上执行同样的门禁、依赖审计和浏览器测试。实现边界与版本依据见 [console/ENGINEERING.md](console/ENGINEERING.md)。
+单独命令：`i18n:extract`、`i18n:check`、`audit`、`typecheck`、`lint`、`lint:ui`、`format:check`、`deadcode`、`test:coverage`、`test:browser`、`build`。CI 在 Node 26.12 与 pnpm 12.10 上执行同样的门禁、依赖审计和浏览器测试。实现边界与版本依据见 [console/ENGINEERING.md](console/ENGINEERING.md)。
 
 `PR Quality` 与 Flowbit 一样，只在明确给本仓库 PR 添加 `run-ci` 标签后运行，
 作业开始后消费标签；再次添加可复跑。push、创建/更新 PR 与定时事件不运行质量检查。
@@ -225,7 +226,7 @@ allow_control = true
 
 两项默认均为系统。手动选择保存在当前浏览器；切回系统后恢复自动跟随，同源标签页同步。无存储权限时，本标签页仍能切换。主题在首屏绘制前应用，减少闪烁；减少动态效果遵循系统偏好。
 
-文案使用 Lingui 6，消息在 `console/src/locales/{zh,en}/messages.po`，包含插件、提示、错误及无障碍名称。修改文案后运行 `npm run i18n:extract`，补齐两种语言，再运行 `npm run i18n:check`。构建会拒绝遗漏或未同步的翻译。Ant Design 的语言、主题算法和自定义 CSS 同步切换。
+文案使用 Lingui 6，消息在 `console/src/locales/{zh,en}/messages.po`，包含插件、提示、错误及无障碍名称。修改文案后运行 `pnpm i18n:extract`，补齐两种语言，再运行 `pnpm i18n:check`。构建会拒绝遗漏或未同步的翻译。Ant Design 的语言、主题算法和自定义 CSS 同步切换。
 
 ## 0.6 命名迁移
 

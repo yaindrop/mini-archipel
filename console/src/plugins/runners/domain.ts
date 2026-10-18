@@ -8,6 +8,27 @@ import {
   type Runner,
   type GitHubRunner,
 } from "./contracts.ts";
+const CONCLUSION = {
+  passed: /*i18n*/ { id: "通过", message: "通过" },
+  environment: /*i18n*/ { id: "环境失败", message: "环境失败" },
+  check: /*i18n*/ { id: "项目检查失败", message: "项目检查失败" },
+  infrastructure: /*i18n*/ { id: "基础设施故障", message: "基础设施故障" },
+  interrupted: /*i18n*/ { id: "中断", message: "中断" },
+  incomplete: /*i18n*/ { id: "未完成", message: "未完成" },
+} as const;
+export function conclusionLabel(
+  conclusion: string,
+  translate: Translate = defaultTranslate,
+) {
+  const entry = (
+    CONCLUSION as Record<
+      string,
+      (typeof CONCLUSION)[keyof typeof CONCLUSION] | undefined
+    >
+  )[conclusion];
+  if (!entry) return conclusion;
+  return translate(entry);
+}
 export function runnerState(
   host: Host,
   runner: Runner,

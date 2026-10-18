@@ -41,6 +41,10 @@ test("system defaults localize every workspace and use the system appearance", a
   await expect(page.locator(".runner-card-footer code").first()).toHaveText(
     "~/runners/flowbit",
   );
+  await expect(page.getByText("summary · abcdef123456").first()).toBeVisible();
+  await expect(page.getByText("Matches").first()).toBeVisible();
+  await expect(page.getByText("Passed").first()).toBeVisible();
+  await expect(page.getByText("No explicit run yet").first()).toBeVisible();
   await expect(page.locator(".ant-dropdown:visible")).toHaveCount(0);
   await page.screenshot({
     path: ".preview/mini-archipel-english-dark.png",

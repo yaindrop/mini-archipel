@@ -9,7 +9,7 @@
 # Apple Command Line Tools（无需完整 Xcode）
 xcode-select --install
 # Homebrew 装到 /opt/homebrew（Apple Silicon 默认）
-brew install docker docker-compose docker-buildx colima gh git-lfs rustup uv libomp
+brew install docker docker-compose docker-buildx colima gh git-lfs rustup uv libomp shellcheck
 brew analytics off
 git lfs install
 ```

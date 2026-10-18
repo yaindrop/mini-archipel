@@ -1,0 +1,15 @@
+[project]
+name = "mini-archipel-provisioning"
+version = "0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = ["ruff>=0.17,<0.18"]
+
+[tool.ruff]
+target-version = "py312"
+src = ["scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

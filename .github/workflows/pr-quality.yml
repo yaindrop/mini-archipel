@@ -11,85 +11,12 @@ concurrency:
   cancel-in-progress: false
 jobs:
   quality:
-    name: Quality
     if: github.event.label.name == 'run-ci' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, macOS, ARM64, ci]
-    timeout-minutes: 150
+    uses: ./.github/workflows/reusable-quality.yml
+    with:
+      runs-on: '["self-hosted","macOS","ARM64","ci"]'
+      fetch-depth: 0
     permissions:
       contents: read
       pull-requests: write
-    steps:
-      - name: Consume run-ci request
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          gh api --method DELETE "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels/run-ci" || {
-            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels" --jq 'all(.name != "run-ci")' | grep -qx true
-          }
-      - name: Check out the requested PR merge commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - name: Verify provisioning scripts
-        run: |
-          python3 -m unittest discover -s provisioning/scripts/tests -v
-          uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
-          uvx ruff@0.17.0 format --check provisioning/scripts
-          brew install shellcheck
-          shellcheck provisioning/scripts/*.sh
-          clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
-      - name: Verify fan-control without changing hardware
-        run: |
-          fan-control/check-source.sh
-          fan-control/test.sh
-          shellcheck -x -P SCRIPTDIR fan-control/*.sh fan-control/deploy/*.sh agent/sign-local.sh
-          python3 -c 'import ast; from pathlib import Path; ast.parse(Path("fan-control/deploy/verify-hardware.py").read_text())'
-          plutil -lint fan-control/deploy/*.plist
-          fan-control/build.sh
-      - name: Set up Node 24.21.0
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "24.21.0"
-          cache: npm
-          cache-dependency-path: console/package-lock.json
-      - name: Verify console on Node 24.21.0
-        working-directory: console
-        run: |
-          npm ci
-          npm run check
-          npm run audit
-          npx playwright install chromium webkit
-          npm run test:browser
-      - name: Set up Node 26.12.0
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "26.12.0"
-          cache: npm
-          cache-dependency-path: console/package-lock.json
-      - name: Verify console on Node 26.12.0
-        working-directory: console
-        run: |
-          npm ci
-          npm run check
-          npm run audit
-          npx playwright install chromium webkit
-          npm run test:browser
-      - name: Verify the native agent
-        working-directory: console
-        env:
-          RUSTUP_TOOLCHAIN: "1.96.0"
-        run: |
-          rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt
-          npm run check:agent
-      - name: Retain failure diagnostics
-        if: failure()
-        continue-on-error: true
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: quality-${{ github.run_attempt }}
-          retention-days: 7
-          path: |
-            console/playwright-report
-            console/test-results
+    secrets: inherit

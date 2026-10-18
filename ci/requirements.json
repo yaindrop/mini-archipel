@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "capabilities": ["self-hosted", "macOS", "ARM64", "ci"],
+  "services": [],
+  "graphics": ["chromium", "webkit"],
+  "network": ["github", "npm", "pypi", "crates.io"],
+  "credentials": [],
+  "data": [],
+  "permissions": [],
+  "stages": [
+    {
+      "id": "provisioning",
+      "prepare": "(command -v shellcheck >/dev/null || brew install shellcheck) && uv python install 3.14 && cd provisioning && uv sync --locked --all-groups --python 3.14",
+      "require": [
+        {"kind": "tool", "tool": "python3", "version": "3.14"},
+        {"kind": "tool", "tool": "uv", "version": "0.13"},
+        {"kind": "tool", "tool": "git"},
+        {"kind": "tool", "tool": "shellcheck"},
+        {"kind": "tool", "tool": "clang"},
+        {"kind": "file", "file": "provisioning/uv.lock"},
+        {"kind": "file", "file": ".python-version"},
+        {
+          "kind": "command",
+          "command": [
+            "python3",
+            "-c",
+            "from pathlib import Path; raise SystemExit(not Path('.python-version').read_text().strip().startswith('3.14'))"
+          ]
+        },
+        {
+          "kind": "command",
+          "command": [
+            "python3",
+            "-c",
+            "import socket; [socket.create_connection((h, 443), 5).close() for h in ('github.com', 'pypi.org')]"
+          ]
+        }
+      ],
+      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && cd provisioning && uv run --no-sync ruff check scripts ../.github/actions/quality && uv run --no-sync ruff format --check scripts ../.github/actions/quality && cd .. && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
+    },
+    {
+      "id": "fan-control",
+      "prepare": "(command -v shellcheck >/dev/null || brew install shellcheck) && uv python install 3.14",
+      "require": [
+        {"kind": "file", "file": "/usr/bin/python3"},
+        {"kind": "tool", "tool": "uv", "version": "0.13"},
+        {"kind": "tool", "tool": "python3", "version": "3.14"},
+        {"kind": "tool", "tool": "git"},
+        {"kind": "tool", "tool": "clang"},
+        {"kind": "tool", "tool": "shellcheck"},
+        {"kind": "file", "file": "/usr/bin/plutil"}
+      ],
+      "check": "fan-control/check-source.sh && fan-control/test.sh && shellcheck -x -P SCRIPTDIR fan-control/*.sh fan-control/deploy/*.sh agent/sign-local.sh && python3 -c 'import ast; from pathlib import Path; ast.parse(Path(\"fan-control/deploy/verify-hardware.py\").read_text())' && plutil -lint fan-control/deploy/*.plist && fan-control/build.sh"
+    },
+    {
+      "id": "console",
+      "toolchain": {"node": "26.12"},
+      "prepare": "python3 -c \"import socket; socket.create_connection(('registry.npmjs.org', 443), 5).close()\" && cd console && pnpm install --frozen-lockfile && pnpm exec playwright install chromium webkit",
+      "require": [
+        {"kind": "tool", "tool": "node", "version": "26.12"},
+        {"kind": "tool", "tool": "pnpm", "version": "12.10"},
+        {"kind": "file", "file": "console/pnpm-lock.yaml"},
+        {"kind": "file", "file": "console/.node-version"},
+        {
+          "kind": "command",
+          "command": [
+            "python3",
+            "-c",
+            "from pathlib import Path; raise SystemExit(not Path('console/.node-version').read_text().strip().startswith('26.12'))"
+          ]
+        },
+        {"kind": "playwright", "playwright": ["chromium", "webkit"]}
+      ],
+      "check": "cd console && pnpm check && pnpm run audit && pnpm test:browser"
+    },
+    {
+      "id": "agent",
+      "toolchain": {"node": "26.12"},
+      "prepare": "cd agent && rustup toolchain install && cargo fetch --locked",
+      "require": [
+        {"kind": "tool", "tool": "node", "version": "26.12"},
+        {"kind": "tool", "tool": "pnpm", "version": "12.10"},
+        {"kind": "tool", "tool": "rustup"},
+        {"kind": "file", "file": "agent/rust-toolchain.toml"},
+        {"kind": "file", "file": "agent/Cargo.lock"},
+        {"kind": "file", "file": "console/package.json"},
+        {
+          "kind": "command",
+          "command": [
+            "python3",
+            "-c",
+            "from pathlib import Path; raise SystemExit('channel = \"1.99\"' not in Path('agent/rust-toolchain.toml').read_text())"
+          ]
+        },
+        {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && rustc --version"], "matches": "1.99"},
+        {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && cargo --version"], "matches": "1.99"},
+        {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && rustfmt --version"], "matches": "rustfmt"},
+        {"kind": "command", "command": ["/bin/bash", "-c", "cd agent && cargo clippy --version"], "matches": "clippy"}
+      ],
+      "check": "cd console && pnpm check:agent"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
     "lease", Path(__file__).parents[1] / "ci-lease.py"
@@ -100,8 +101,13 @@ sys.stdin.readline()
         self.assertFalse((self.state / "owner.json").exists())
 
     def test_rejects_execution_outside_runner_worker(self):
-        with self.assertRaises(RuntimeError):
-            lease.worker_identity()
+        pid = os.getpid()
+        ppid = os.getppid()
+        fake = f"{ppid} 1 bash\n{pid} {ppid} python3\n"
+        with patch.object(lease.subprocess, "check_output", return_value=fake):
+            with self.assertRaises(RuntimeError) as caught:
+                lease.worker_identity()
+        self.assertIn("Runner.Worker", str(caught.exception))
 
 
 if __name__ == "__main__":

@@ -65,7 +65,9 @@ Tart 豁免的边界与宿主机要求见[安全基线](docs/04-updates-and-secu
 四台均为 macOS 27.0.1。`yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
 `yaindrop/in-frames`、`yaindrop/mini-archipel` 各有四个独立注册的 Runner，
 安装在 `~/runners/<repo>`。统一采用 PR `run-ci` 标签主动请求质量检查；
-push、普通 PR 活动与定时事件均不运行质量检查。每节点跨仓库只执行一个作业。
+push、普通 PR 活动与定时事件均不运行质量检查。检查生命周期、环境验收和
+四仓库分工见[主动 CI 规范](docs/ci-practice.md)。接入、升级和回退见
+[2026-10-18 接入记录](docs/ci-rollout-2026-10-18.md)。每节点跨仓库只执行一个作业。
 清单和共享脚本见 [scripts](scripts/README.md)，本轮范围与证据见
 [CI 机群验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
 最新安装路径、Agent 与共享钩子的部署核对见

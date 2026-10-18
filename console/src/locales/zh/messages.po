@@ -731,6 +731,10 @@ msgstr "下钻深度"
 msgid "不可读取"
 msgstr "不可读取"
 
+#: src/plugins/runners/workbench.tsx
+msgid "不符合"
+msgstr "不符合"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "与节点一致"
 msgstr "与节点一致"
@@ -738,6 +742,11 @@ msgstr "与节点一致"
 #: src/web/node.tsx
 msgid "严重"
 msgstr "严重"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "中断"
+msgstr "中断"
 
 #: src/plugins/runners/workbench.tsx
 msgid "中断作业"
@@ -917,6 +926,10 @@ msgstr "最后一次"
 #: src/web/node.tsx
 msgid "最近 10 分钟"
 msgstr "最近 10 分钟"
+
+#: src/plugins/runners/workbench.tsx
+msgid "最近结论"
+msgstr "最近结论"
 
 #. placeholder {0}: timeLabel(fleet.ts)
 #: src/web/App.tsx
@@ -1154,6 +1167,11 @@ msgstr "在节点安装风扇控制插件后，即可读取曲线和管理温控
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 msgstr "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "基础设施故障"
+msgstr "基础设施故障"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "增加档位"
 msgstr "增加档位"
@@ -1251,6 +1269,10 @@ msgstr "将在节点本地终止该 Worker 及其子进程，不调用 GitHub �
 #: src/plugins/fan-control/workbench.tsx
 msgid "将校准建议导入草稿"
 msgstr "将校准建议导入草稿"
+
+#: src/plugins/runners/workbench.tsx
+msgid "尚无主动检查记录"
+msgstr "尚无主动检查记录"
 
 #: src/plugins/runners/workbench.tsx
 msgid "尚无已注册 Runner，节点上报注册信息后会自动显示。"
@@ -1434,6 +1456,10 @@ msgstr "当前运行平稳"
 #: src/plugins/fan-control/workbench.tsx
 msgid "当前适配器支持显式传感器和 force 模式，升档不延迟；不支持 floor 模式或自动枚举。"
 msgstr "当前适配器支持显式传感器和 force 模式，升档不延迟；不支持 floor 模式或自动枚举。"
+
+#: src/plugins/runners/workbench.tsx
+msgid "当前阶段"
+msgstr "当前阶段"
 
 #. placeholder {0}: formatBytes(disk?.total_bytes)
 #: src/web/node.tsx
@@ -1746,6 +1772,11 @@ msgstr "未上报"
 msgid "未取得远端状态"
 msgstr "未取得远端状态"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "未完成"
+msgstr "未完成"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "未应用的草稿"
 msgstr "未应用的草稿"
@@ -1778,6 +1809,10 @@ msgstr "未读到"
 #: src/plugins/runners/workbench.tsx
 msgid "未运行"
 msgstr "未运行"
+
+#: src/plugins/runners/workbench.tsx
+msgid "未验收"
+msgstr "未验收"
 
 #: src/plugins/runners/status.tsx
 msgid "本地监听中"
@@ -2062,6 +2097,15 @@ msgstr "状态未知"
 msgid "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
 msgstr "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "环境失败"
+msgstr "环境失败"
+
+#: src/plugins/runners/workbench.tsx
+msgid "环境验收"
+msgstr "环境验收"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "用于曲线"
 msgstr "用于曲线"
@@ -2163,6 +2207,10 @@ msgstr "私有工作空间"
 #: src/plugins/runners/workbench.tsx
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "空间统计每分钟更新，进程状态独立实时更新"
+
+#: src/plugins/runners/workbench.tsx
+msgid "符合"
+msgstr "符合"
 
 #. placeholder {0}: String(i + 1)
 #: src/plugins/fan-control/workbench.tsx
@@ -2635,6 +2683,11 @@ msgstr "连接诊断"
 msgid "退出工作台"
 msgstr "退出工作台"
 
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "通过"
+msgstr "通过"
+
 #: src/web/storage.tsx
 msgid "部分不可读取"
 msgstr "部分不可读取"
@@ -2776,6 +2829,11 @@ msgstr "需要关注"
 #: src/web/plugin-settings.tsx
 msgid "页面、概览扩展、远端集成和控制操作"
 msgstr "页面、概览扩展、远端集成和控制操作"
+
+#. js-lingui-explicit-id
+#: src/plugins/runners/domain.ts
+msgid "项目检查失败"
+msgstr "项目检查失败"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "预期当前值"

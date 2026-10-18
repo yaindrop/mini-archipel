@@ -1,47 +1,66 @@
 import { expect, it } from "vitest";
 import { auditFailures } from "../scripts/audit.ts";
-const advisory = { url: "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm" };
-const leaf = {
+const waived = {
   severity: "high",
-  nodes: ["node_modules/braces"],
-  via: [advisory],
+  module_name: "braces",
+  github_advisory_id: "GHSA-vfj7-8cjw-p6xm",
+  findings: [
+    { paths: [".>eslint-plugin-lingui>micromatch>braces"], dev: true },
+  ],
 };
-const tool = {
-  severity: "high",
-  nodes: ["node_modules/tool"],
-  via: ["braces"],
-};
-const lock = {
-  packages: {
-    "node_modules/braces": { dev: true },
-    "node_modules/tool": { dev: true },
-  },
-};
-it("allows only complete development-only chains to the exact waived advisory", () => {
+it("waives the build-tool advisory only while every finding is dev-only", () => {
+  expect(auditFailures({ advisories: { "1240992": waived } })).toEqual([]);
   expect(
-    auditFailures({ vulnerabilities: { braces: leaf, tool } }, lock),
-  ).toEqual([]);
-  expect(
-    auditFailures(
-      { vulnerabilities: { braces: leaf, tool } },
-      {
-        packages: { ...lock.packages, "node_modules/braces": {} },
+    auditFailures({
+      advisories: {
+        "1240992": {
+          ...waived,
+          findings: [
+            { paths: [".>app>braces"], dev: false },
+            { paths: [".>eslint-plugin-lingui>braces"], dev: true },
+          ],
+        },
       },
-    ),
-  ).toEqual(["braces", "tool"]);
+    }),
+  ).toEqual(["braces"]);
 });
-it("rejects new advisories, missing references, empty evidence and cycles", () => {
-  for (const entry of [
-    { ...leaf, via: [{ url: "https://example.com/new-advisory" }] },
-    { ...leaf, via: ["missing"] },
-    { ...leaf, via: [] },
-    { ...leaf, nodes: [] },
-    { ...leaf, nodes: ["node_modules/missing"] },
-    { ...leaf, via: ["braces"] },
-  ]) {
-    expect(auditFailures({ vulnerabilities: { braces: entry } }, lock)).toEqual(
-      ["braces"],
-    );
-  }
-  expect(() => auditFailures({ error: "offline" }, lock)).toThrow();
+it("fails the same advisory when its identity is missing", () => {
+  const unidentified = {
+    severity: "high",
+    module_name: "braces",
+    findings: [{ paths: ["."], dev: true }],
+  };
+  expect(auditFailures({ advisories: { "1": unidentified } })).toEqual([
+    "braces",
+  ]);
+});
+it("reports every other high or critical advisory", () => {
+  expect(
+    auditFailures({
+      advisories: {
+        "1": waived,
+        "2": {
+          severity: "critical",
+          module_name: "left-pad",
+          github_advisory_id: "GHSA-1111-1111-1111",
+          findings: [{ paths: ["."], dev: true }],
+        },
+      },
+    }),
+  ).toEqual(["left-pad"]);
+});
+it("ignores severities below high", () => {
+  expect(
+    auditFailures({
+      advisories: {
+        "1": { ...waived, severity: "moderate", github_advisory_id: "GHSA-2" },
+      },
+    }),
+  ).toEqual([]);
+});
+it("rejects malformed reports and advisories without evidence", () => {
+  expect(() => auditFailures({ error: "offline" })).toThrow();
+  expect(() =>
+    auditFailures({ advisories: { "1": { ...waived, findings: [] } } }),
+  ).toThrow();
 });

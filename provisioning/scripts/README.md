@@ -31,8 +31,9 @@
 
 ```sh
 python3 -m unittest discover -s provisioning/scripts/tests -v
-uvx ruff@0.17.0 check --select E,F,I provisioning/scripts
-uvx ruff@0.17.0 format --check provisioning/scripts
+cd provisioning && uv sync --locked --all-groups
+uv run --no-sync ruff check scripts ../.github/actions/quality
+uv run --no-sync ruff format --check scripts ../.github/actions/quality
 shellcheck provisioning/scripts/*.sh
 clang -Wall -Wextra provisioning/scripts/tests/hook-worker.c -o /tmp/Runner.Worker
 /tmp/Runner.Worker
