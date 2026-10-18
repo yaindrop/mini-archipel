@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TOKEN } from "../fixtures.ts";
 import { DiskRulesViewSchema } from "../../src/storage-rules.ts";
+import { scaledTestTimeout } from "../../scripts/ci-timeout";
 test.beforeEach(async ({ page }) => {
   await page.request.post("/api/session", { data: { token: TOKEN } });
   await page.request.post("/__test/reset");
@@ -9,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 test("directory rules: node edits, sources, persistence, reset and conflicts", async ({
   page,
 }, info) => {
-  test.setTimeout(120_000);
+  test.setTimeout(scaledTestTimeout(120_000));
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/storage?host=yd-mini");
@@ -122,7 +123,7 @@ test("directory rules: node edits, sources, persistence, reset and conflicts", a
 test("directory rules: failed saves keep the draft and reload discards it", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(scaledTestTimeout(60_000));
   await page.goto("/storage?host=yd-mini");
   await page.getByRole("button", { name: "目录规则", exact: true }).click();
   const drawer = page.getByRole("dialog", {
