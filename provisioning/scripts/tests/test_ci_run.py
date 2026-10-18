@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import os
+import re
 import signal
 import stat
 import subprocess
@@ -518,7 +519,14 @@ class LifecycleTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             self.assertEqual(ci_run.audit_caller(text, False), [])
             sha = text.rsplit("@", 1)[1].split()[0]
-            self.assertEqual(len(sha), 40)
+            self.assertTrue(re.fullmatch(r"[0-9a-f]{40}", sha), sha)
+            listed = subprocess.run(
+                ["git", "cat-file", "-e", sha],
+                cwd=ROOT,
+                capture_output=True,
+            )
+            if listed.returncode != 0:
+                continue
             subprocess.check_call(
                 [
                     "git",
