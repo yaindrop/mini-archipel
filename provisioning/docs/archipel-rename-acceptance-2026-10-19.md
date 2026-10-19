@@ -30,27 +30,43 @@
 
 | 检查 | 宿主机 yd-mbp | yd-mini | yd-mini-2 | yd-mbp-tart | yd-mbp-tart-2 |
 | --- | --- | --- | --- | --- | --- |
-| `~/.local/libexec/mini-archipel/` 就位 | 待补 | 待补 | 待补 | 待补 | 待补 |
-| 旧 `mini-ops` 目录清空移除 | 待补 | 待补 | 待补 | 待补 | 待补 |
-| `recovery.crt`（及 yd-mini-2 的 `.key`）迁移 | 待补 | 待补 | 待补 | 待补 | 待补 |
-| 备份历史数据随目录迁移 | 待补 | 待补 | 待补（含 archipel-backups） | 待补 | 待补 |
+| `~/.local/libexec/mini-archipel/` 就位 | 通过 | 通过 | 通过 | 通过 | 通过 |
+| 旧 `mini-ops` 目录清空移除 | 通过 | 通过 | 通过 | 通过 | 通过 |
+| `recovery.crt`（及 yd-mini-2 的 `.key`）迁移 | 通过 | 通过 | 通过（含 .key） | 通过 | 通过 |
+| 备份历史数据随目录迁移 | 通过 | 通过 | 通过（含 archipel-backups 476MB） | 通过 | 通过 |
 
-仓库侧验证：provisioning unittest 44 项、ruff check/format、Console
-typecheck / vitest 109 项 / lingui check / 构建与部署探活、agent `cargo test`。
-端到端验证：手动执行 `backup-archipel.py` 一轮，四节点导出、sha256 核对、
-yd-mini-2 副本与本机落盘全部成功；隧道 9102/9103 端到端仍通；五台机
-`mini-ops` / `miniops` / `fleet-backups` 残留为零。实测证据见末节。
+仓库侧验证：provisioning unittest 44 项、ruff check/format、shellcheck、
+agent `cargo test` 16 项、Console `pnpm check` 全链（lingui check、typecheck、
+eslint、biome、prettier、knip、覆盖率 109 项、构建）全部通过。
 
 ## 影响与未关闭项
 
 - Console 浏览器端 `fleet-token` / `fleet-theme` 改名后失效：需重新登录一次、
   重选主题，属一次性影响。
-- Console 数据库 `~/fleet.db` 迁移为 `~/archipel.db`，迁移前另存一份副本。
+- Console 数据库默认值改为 `~/archipel.db`；线上部署一直显式配置
+  `console.json` 的 `dbPath` 指向 `~/.local/share/mini-archipel/console.db`，
+  `~/fleet.db` 从未存在，无需数据迁移。
 - 节点 `~/.local/libexec/` 下遗留的 `mini-fleet-agent.previous*` 等历史回滚
   副本不属本次范围，保留。
 
-## 实测证据（待补）
+## 实测证据（2026-10-19 16:21–16:32）
 
-- 备份运行记录：待补
-- launchctl 状态：待补
-- 残留 grep：待补
+- 手动执行 `backup-archipel.py`：11.1 秒退出码 0；yd-mini 113085815 B、
+  yd-mini-2 1240018 B、yd-mbp-tart 1225874 B、yd-mbp-tart-2 1224962 B、
+  host-ops 归档全部 ok；`latest.json` 全绿；新归档
+  `20261019-162120-yd-mini.tar.gz.cms` 同时落本机
+  `~/.local/share/mini-archipel/backups/yd-mini/` 与 yd-mini-2
+  `~/.local/state/mini-archipel/archipel-backups/yd-mini/`，03:30 的历史归档
+  完好并存。
+- `launchctl list`：`local.miniarchipel.vms`（PID 在运行）、
+  `local.miniarchipel.backup`（已加载待 03:30）、两条
+  `local.miniarchipel.tunnel.*`（PID 在运行，退出码 0）；`miniops` 标签为零。
+- 隧道端到端：`curl http://192.168.9.158:9102/` 与 `:9103/` 均返回 HTTP 404
+  （2–3ms，与迁移前一致）。
+- Console 0.11.0 重建部署到 yd-mini（旧版留存
+  `.previous-20261019-162043`）：`/api/state` 返回 4 主机全部在线、
+  数据新鲜度 < 30s、runners / fan-control 插件就绪。
+- 两台 tart 虚拟机在 vms 监督器切换期间持续 running（tart list 核对）。
+- 残留扫描：宿主机与四节点的 `~/.local/libexec/mini-ops`、
+  `~/.local/state/mini-ops`、`~/.config/mini-ops`、`~/Library/Logs/MiniOps`、
+  `fleet-backups` 全部不存在。
