@@ -88,7 +88,12 @@ archipel 两层补丁 + SHA256SUMS）经 `check-source.sh` 全量复核。Agent
 - ~~过渡软链~~：PR #7 合并（引擎 cba5d90）后，flowbit #842、
   flowbit-knowledge #33、in-frames #14 三个 re-pin PR 的 Quality 均在新
   引擎、新 mini-archipel/ci 路径上实际执行并通过并合并；四仓库全部钉
-  cba5d90 后，四节点的三条 mini-ci 软链已删除，钩子直连新路径。
+  cba5d90 后，四节点的三条 mini-ci 软链已删除。
+- 钩子脚本补部署（2026-10-19 晚）：B1 只搬移了节点上的旧版钩子，其内部
+  STATE 常量与 exec 路径仍指 mini-ci，软链删除后首轮真实作业会失败。已将
+  仓库 cba5d90 版四个钩子原子替换到四节点（runner-policy.json 随迁），
+  重启全部 14 个 runner 刷新钩子环境变量；本 PR 的 Quality 即为无软链、
+  纯新路径下的全链验证。
 - `MINI_CI_*` 跨仓库输入名：保留（接口语义），下次协调 re-pin 时评估。
 - 两台 mini `/Library/LaunchDaemons/.legacy-*` 回滚 plist（root 属主）：
   待下次 sudo 维护删除。
