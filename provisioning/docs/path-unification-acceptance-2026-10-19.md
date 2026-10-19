@@ -83,11 +83,12 @@ archipel 两层补丁 + SHA256SUMS）经 `check-source.sh` 全量复核。Agent
   provisioning unittest 44 项、console pnpm check 109 项、agent cargo
   test 16 项全部通过。
 
-## 未关闭项
+## 未关闭项（2026-10-19 晚间更新）
 
-- 三处过渡软链（各节点 `~/.local/{libexec,state,share}/mini-ci`）：待
-  四仓库全部 re-pin 到本轮及以后的引擎提交后删除。
+- ~~过渡软链~~：PR #7 合并（引擎 cba5d90）后，flowbit #842、
+  flowbit-knowledge #33、in-frames #14 三个 re-pin PR 的 Quality 均在新
+  引擎、新 mini-archipel/ci 路径上实际执行并通过并合并；四仓库全部钉
+  cba5d90 后，四节点的三条 mini-ci 软链已删除，钩子直连新路径。
 - `MINI_CI_*` 跨仓库输入名：保留（接口语义），下次协调 re-pin 时评估。
-- 两台 mini `/Library/LaunchDaemons/.legacy-*` 回滚 plist 与
-  `.legacy-fan-control-helper.*`（root 属主）：确认稳定后随下次 sudo
-  维护删除。
+- 两台 mini `/Library/LaunchDaemons/.legacy-*` 回滚 plist（root 属主）：
+  待下次 sudo 维护删除。
