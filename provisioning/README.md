@@ -85,7 +85,7 @@ push、普通 PR 活动与定时事件均不运行质量检查。检查生命周
 | `mini-1` / `mini-2`       | 各机短用户名、主机名与 SSH 别名       |
 | `<owner>/<repo>`          | CI 目标仓库                           |
 | `~/runners/<repo>` | runner 安装目录（每仓库一个）         |
-| `~/.local/flowbit-ci-pinned/bin` | 当前 Flowbit 固定工具链入口（优先于 Homebrew） |
+| `~/.local/ci-pinned/bin` | 固定工具链入口（优先于 Homebrew） |
 | `com.flowbit.ci-proxy`    | 当前独立 CI 代理 LaunchAgent 标识    |
 | `192.168.<subnet>`        | 自己的局域网网段                      |
 

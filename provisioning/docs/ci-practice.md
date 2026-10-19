@@ -40,7 +40,7 @@
 | 类别 | 谁负责 | 作业里怎么处理 |
 | --- | --- | --- |
 | 主机与系统 | 运维 | 核对 macOS 与 ARM64。不符合则环境失败 |
-| 工具链 | 运维预装，作业按待测提交选择 | 在 `~/.local/share/mini-ci/toolchains`、`~/.local/flowbit-ci-pinned` 或 `RUNNER_TOOL_CACHE` 中选择；当前 PATH 已是该版本时直接使用。作业不改系统包 |
+| 工具链 | 运维预装，作业按待测提交选择 | 在 `~/.local/share/mini-ci/toolchains`、`~/.local/ci-pinned` 或 `RUNNER_TOOL_CACHE` 中选择；当前 PATH 已是该版本时直接使用。作业不改系统包 |
 | 项目依赖 | 仓库的 `prepare` | `pnpm install --frozen-lockfile`、`uv sync`、`make setup` 等，失败记为环境失败 |
 | 执行上下文 | 共用脚本 | 每阶段独立的 `PATH` 和 `MINI_CI_ENV_ID`，不沿用上一阶段的虚拟环境 |
 | 测试服务 | 仓库阶段 | 例如 Knowledge 在 prepare 里启动 Colima，验收 `docker info` 之后才构建 |
