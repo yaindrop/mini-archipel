@@ -73,7 +73,8 @@ push、普通 PR 活动与定时事件均不运行质量检查。检查生命周
 最新安装路径、Agent 与共享钩子的部署核对见
 [Runner 目录迁移验收](docs/runners-path-acceptance-2026-10-17.md)。
 宿主机与节点运维脚本的 mini-ops / fleet 命名统一见
-[命名统一验收](docs/archipel-rename-acceptance-2026-10-19.md)。
+[命名统一验收](docs/archipel-rename-acceptance-2026-10-19.md)，风扇与 CI 路径收尾见
+[路径统一验收](docs/path-unification-acceptance-2026-10-19.md)。
 [后台扫描与本地中断验收](docs/operations-acceptance-2026-10-18.md)。
 在线状态是验收快照，日常以 GitHub 和群岛 Runner 插件为准。
 逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。

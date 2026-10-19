@@ -57,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           for ref in "$ENGINE_REF" "$GITHUB_SHA"; do
-            bindir="$RUNNER_TEMP/mini-ci-shared-${ref//\//_}"
+            bindir="$RUNNER_TEMP/mini-archipel-ci-shared-${ref//\//_}"
             mkdir -p "$bindir"
             if curl -fsSL --retry 2 --retry-delay 2 \
               "https://raw.githubusercontent.com/yaindrop/mini-archipel/${ref}/.github/actions/quality/ci-run.py" \

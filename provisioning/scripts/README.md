@@ -19,12 +19,12 @@
 先通过 GitHub Runner API 排空此节点的自定义调度标签，再安装；无论成功失败都恢复标签。
 安装前先下载官方 macOS ARM64 包并核对 GitHub 发布摘要。私密配置和日志放仓库外，
 不提交 token、认证文件或安装包。安装器保留原有注册，按官方 `svc.sh` 安装新服务，
-备份环境与 plist 到 `~/.local/share/mini-ci/backups/`，不强杀 Worker。
+备份环境与 plist 到 `~/.local/share/mini-archipel/ci/backups/`，不强杀 Worker。
 中断后的未知安装目录需人工核对归属，不能覆盖或复制注册身份以“修复”。
 
 固定 `.path` 继承当前已验收的基础工具链入口；各项目通过自己的锁文件与 workflow
 选择版本，不改全局工具链默认值。代理使用节点自己的 `127.0.0.1:10808`。
-钩子安装到 `~/.local/libexec/mini-ci/`，变更后先验证，再同步四节点；脚本更新用原子替换。
+钩子安装到 `~/.local/libexec/mini-archipel/ci/`，变更后先验证，再同步四节点；脚本更新用原子替换。
 `.env` 变更必须等节点空闲后重启对应监听服务。
 
 从 mini-archipel 仓库根目录验证：

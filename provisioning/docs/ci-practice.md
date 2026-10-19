@@ -40,7 +40,7 @@
 | 类别 | 谁负责 | 作业里怎么处理 |
 | --- | --- | --- |
 | 主机与系统 | 运维 | 核对 macOS 与 ARM64。不符合则环境失败 |
-| 工具链 | 运维预装，作业按待测提交选择 | 在 `~/.local/share/mini-ci/toolchains`、`~/.local/ci-pinned` 或 `RUNNER_TOOL_CACHE` 中选择；当前 PATH 已是该版本时直接使用。作业不改系统包 |
+| 工具链 | 运维预装，作业按待测提交选择 | 在 `~/.local/share/mini-archipel/ci/toolchains`、`~/.local/ci-pinned` 或 `RUNNER_TOOL_CACHE` 中选择；当前 PATH 已是该版本时直接使用。作业不改系统包 |
 | 项目依赖 | 仓库的 `prepare` | `pnpm install --frozen-lockfile`、`uv sync`、`make setup` 等，失败记为环境失败 |
 | 执行上下文 | 共用脚本 | 每阶段独立的 `PATH` 和 `MINI_CI_ENV_ID`，不沿用上一阶段的虚拟环境 |
 | 测试服务 | 仓库阶段 | 例如 Knowledge 在 prepare 里启动 Colima，验收 `docker info` 之后才构建 |
@@ -68,8 +68,8 @@
 ## 报告与群岛
 
 - 作业目录：`ci-report.json`、`ci-report.md`，随 artifact `quality-report-<attempt>` 上传。
-- 节点：`~/.local/state/mini-ci/reports/<仓库目录>.json`，只保留该仓库在这台机器上的最近一次。
-- 诊断：`~/.local/state/mini-ci/diagnostics/<仓库>-<运行编号>-<尝试>.log`。
+- 节点：`~/.local/state/mini-archipel/ci/reports/<仓库目录>.json`，只保留该仓库在这台机器上的最近一次。
+- 诊断：`~/.local/state/mini-archipel/ci/diagnostics/<仓库>-<运行编号>-<尝试>.log`。
 - JSON 含仓库、PR、待测提交、请求者、运行编号、尝试次数、节点、共享实现版本、调度标签、主机事实、各阶段要求与实测、阶段状态、耗时、失败原因和诊断路径。
 
 Runner 插件从节点报告读取当前阶段、环境验收和最近结论。GitHub 的 online/busy 仍来自仓库只读接口，本地 Listener/Worker 仍来自本机进程。三个来源不互相填空。Agent 重启后重新读磁盘上的报告；结论仍是 `incomplete` 且 Worker 已不在时，显示为中断。

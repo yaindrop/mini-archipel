@@ -126,7 +126,7 @@ await test(
           "#include <unistd.h>\nint main(void) { sleep(120); return 0; }\n",
       },
     );
-    const hooks = join(home, ".local/libexec/mini-ci");
+    const hooks = join(home, ".local/libexec/mini-archipel/ci");
     mkdirSync(hooks, { recursive: true });
     // Continually forking descendants in separate sessions remain descendants;
     // termination must quiesce them rather than rely on one process-group signal.

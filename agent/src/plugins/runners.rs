@@ -248,7 +248,7 @@ fn discover(cancelled: &AtomicBool, include_sizes: bool) -> Result<Vec<RunnerIns
             };
             let run = read_run(
                 &dirs_home()
-                    .join(".local/state/mini-ci/reports")
+                    .join(".local/state/mini-archipel/ci/reports")
                     .join(format!("{repo_name}.json")),
                 worker_pid,
             );
@@ -293,7 +293,7 @@ fn options(value: Value) -> Result<Options, String> {
 }
 
 fn lease_helper() -> PathBuf {
-    dirs_home().join(".local/libexec/mini-ci/ci-lease.py")
+    dirs_home().join(".local/libexec/mini-archipel/ci/ci-lease.py")
 }
 
 async fn lease_command(action: &str, body: Option<Value>) -> Result<Value, Failure> {
@@ -1049,7 +1049,7 @@ mod runner_service_tests {
 
     #[test]
     fn recovers_an_unfinished_run_after_the_worker_is_gone() {
-        let dir = std::env::temp_dir().join(format!("mini-ci-run-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("mini-archipel-ci-run-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("report.json");
         std::fs::write(

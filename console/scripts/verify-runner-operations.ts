@@ -25,7 +25,7 @@ await test(
   { timeout: 30000 },
   async (t) => {
     const home = mkdtempSync(join(tmpdir(), "archipel-runner-operations-")),
-      hooks = join(home, ".local/libexec/mini-ci");
+      hooks = join(home, ".local/libexec/mini-archipel/ci");
     mkdirSync(hooks, { recursive: true });
     writeFileSync(
       join(hooks, "ci-lease.py"),

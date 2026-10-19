@@ -212,7 +212,7 @@ def toolchain_roots(env):
         return [Path(part) for part in raw.split(os.pathsep) if part]
     home = Path(env.get("HOME", str(Path.home())))
     return [
-        home / ".local/share/mini-ci/toolchains",
+        home / ".local/share/mini-archipel/ci/toolchains",
         home / ".local/ci-pinned",
     ]
 
@@ -250,7 +250,7 @@ def host_path_prefixes(env):
     home = Path(env.get("HOME", str(Path.home())))
     prefixes = [
         home / ".local" / "ci-pinned" / "bin",
-        home / ".local" / "share" / "mini-ci" / "bin",
+        home / ".local" / "share" / "mini-archipel" / "ci" / "bin",
         Path("/opt/homebrew/bin"),
         Path("/opt/homebrew/sbin"),
         home / ".local" / "bin",
@@ -298,7 +298,7 @@ def tool_candidates(kind, version, env):
 
 
 def shim_bindir(env, kind, version):
-    root = Path(env.get("RUNNER_TEMP") or "/tmp") / "mini-ci-shims"
+    root = Path(env.get("RUNNER_TEMP") or "/tmp") / "mini-archipel-ci-shims"
     bindir = root / f"{kind}-{version.replace(os.sep, '-')}" / "bin"
     bindir.mkdir(parents=True, exist_ok=True, mode=0o755)
     return bindir
@@ -1111,7 +1111,9 @@ def execute(workspace, env, state_root, shell=run_shell, facts=host_facts):
 
 def main():
     workspace = Path(os.environ.get("MINI_CI_WORKSPACE", os.getcwd()))
-    state = Path(os.environ.get("MINI_CI_STATE", Path.home() / ".local/state/mini-ci"))
+    state = Path(
+        os.environ.get("MINI_CI_STATE", Path.home() / ".local/state/mini-archipel/ci")
+    )
     try:
         execute(workspace, dict(os.environ), state)
     except SystemExit as exc:

@@ -161,7 +161,7 @@ export function createApp(
   });
   app.get("/api/state", view);
   app.get("/api/config", () => ({
-    version: "0.11.0",
+    version: "0.12.0",
     hosts: config.hosts.map(({ name, url }) => ({
       name,
       url,

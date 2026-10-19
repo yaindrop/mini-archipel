@@ -475,7 +475,7 @@ test("storage selected subdirectories drill down again with bounded leaves", asy
       [
         ["Library", "Caches", "Chrome"],
         ["Library", "Application Support", "Code"],
-        [".local", "state", "mini-ci"],
+        [".local", "state", "mini-archipel"],
         [".local", "share", "mini-archipel"],
       ],
     ],
