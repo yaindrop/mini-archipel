@@ -38,9 +38,9 @@ sudo ./install.sh          # 构建核对→停旧实例→安装→四档实写
 ## 运维
 
 ```sh
-/Library/MacMiniFanControl/fanctl -j status          # 只读状态
-sudo launchctl kill TERM system/com.macmini.fan-control   # 改配置后重载
-launchctl print system/com.macmini.fan-control | grep pid # 必须核对【新 PID】
+/Library/MiniArchipel/FanControl/fanctl -j status          # 只读状态
+sudo launchctl kill TERM system/local.miniarchipel.fanctl   # 改配置后重载
+launchctl print system/local.miniarchipel.fanctl | grep pid # 必须核对【新 PID】
 ```
 
 ## 实战教训

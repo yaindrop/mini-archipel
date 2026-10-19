@@ -21,7 +21,7 @@ import time
 import tempfile
 import uuid
 
-BASE = Path('/Library/MacMiniFanControl')
+BASE = Path('/Library/MiniArchipel/FanControl')
 SETTINGS = Path('/Library/MiniArchipel/FanControl/control.json')
 SOCKET = Path('/var/run/mini-archipel/fan-control.sock')
 STATE = Path('/Library/Application Support/MiniArchipel/FanControl/state.json')
@@ -168,8 +168,8 @@ class Hardware:
         self.binary = BASE / 'fanctl'
         self.paused = BASE / 'fanctl.paused'
         self.runtime = BASE / 'fanctl.runtime.json'
-        self.label = 'system/com.macmini.fan-control'
-        self.plist = '/Library/LaunchDaemons/com.macmini.fan-control.plist'
+        self.label = 'system/local.miniarchipel.fanctl'
+        self.plist = '/Library/LaunchDaemons/local.miniarchipel.fanctl.plist'
         for path in (self.binary, self.config, Path(self.plist)):
             trusted(path)
 

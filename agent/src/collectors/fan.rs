@@ -11,7 +11,7 @@ pub async fn run(state: Shared, fanctl: String, interval_ms: u64) {
             tokio::process::Command::new(&fanctl)
                 .args([
                     "-c",
-                    "/Library/MacMiniFanControl/fanctl.conf",
+                    "/Library/MiniArchipel/FanControl/fanctl.conf",
                     "-j",
                     "status",
                 ])

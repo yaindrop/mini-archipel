@@ -198,7 +198,7 @@ thermal_interval_ms = 5000
 fan_interval_ms = 2000
 disk_interval_ms = 21600000
 macmon = "/opt/homebrew/bin/macmon"
-fanctl = "/Library/MacMiniFanControl/fanctl"
+fanctl = "/Library/MiniArchipel/FanControl/fanctl"
 disk_roots = ["~", "/"]
 
 [plugins.runners]

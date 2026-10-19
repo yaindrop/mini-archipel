@@ -8,8 +8,8 @@
 -#define DEFAULT_CONF "/usr/local/etc/fanctl.conf"
 -#define RUN_DIR      "/usr/local/var/run"
 +#define VERSION "1.4.0-macmini-m6.1"
-+#define DEFAULT_CONF "/Library/MacMiniFanControl/fanctl.conf"
-+#define RUN_DIR      "/Library/MacMiniFanControl"
++#define DEFAULT_CONF "/Library/MiniArchipel/FanControl/fanctl.conf"
++#define RUN_DIR      "/Library/MiniArchipel/FanControl"
  #define PAUSE_FILE   RUN_DIR "/fanctl.paused"
  
  /* Seconds between writes while the fan command is ramping. */

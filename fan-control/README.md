@@ -54,25 +54,25 @@ sudo ./install-plugin.sh "$(id -un)" # 备份并安装，不改 sudoers/SIP，�
 
 | 内容 | 路径 |
 | --- | --- |
-| 程序、配置、源码、补丁、许可 | `/Library/MacMiniFanControl/` |
-| LaunchDaemon | `/Library/LaunchDaemons/com.macmini.fan-control.plist` |
-| 服务标识 | `system/com.macmini.fan-control`（KeepAlive，异常退出自动重启） |
-| 日志 | `/Library/Logs/MacMiniFanControl/control.log`（newsyslog 5×1 MiB） |
+| 程序、配置、源码、补丁、许可 | `/Library/MiniArchipel/FanControl/` |
+| LaunchDaemon | `/Library/LaunchDaemons/local.miniarchipel.fanctl.plist` |
+| 服务标识 | `system/local.miniarchipel.fanctl`（KeepAlive，异常退出自动重启） |
+| 日志 | `/Library/Logs/MiniArchipel/fan-control.log`（newsyslog 5×1 MiB） |
 | 硬件自检 | `deploy/verify-hardware.py`（需 root；四档实写 / 回读，结束恢复 Apple 自动控制） |
-| 停止并交回系统 | `sudo /Library/MacMiniFanControl/stop.sh` |
+| 停止并交回系统 | `sudo /Library/MiniArchipel/FanControl/stop.sh` |
 
 ## 运维要点
 
 ```bash
 # 只读状态（含 temp/peak/rpm/forced/level/down_delay）；显式 -c 最稳妥
-/Library/MacMiniFanControl/fanctl -c /Library/MacMiniFanControl/fanctl.conf -j status
+/Library/MiniArchipel/FanControl/fanctl -c /Library/MiniArchipel/FanControl/fanctl.conf -j status
 # Foundation 热状态：0 nominal / 1 fair / 2 serious / 3 critical
 osascript -l JavaScript -e 'ObjC.import("Foundation"); $.NSProcessInfo.processInfo.thermalState;'
 # 改参数：编辑 root 所有的 fanctl.conf 后重载（归还退出，launchd 重启）
-sudo launchctl kill TERM system/com.macmini.fan-control
+sudo launchctl kill TERM system/local.miniarchipel.fanctl
 # 重载后必须核对【新 PID】与启动日志，不能只看 status 显示的参数
-launchctl print system/com.macmini.fan-control | grep pid
-tail -n 5 /Library/Logs/MacMiniFanControl/control.log
+launchctl print system/local.miniarchipel.fanctl | grep pid
+tail -n 5 /Library/Logs/MiniArchipel/fan-control.log
 ```
 
 可靠性行为：连续 3 次读/写失败→交回系统并退出，launchd 自动重启；

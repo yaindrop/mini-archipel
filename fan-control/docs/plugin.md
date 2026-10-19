@@ -60,13 +60,13 @@ allow_control = true
 
 | 内容 | 路径 |
 | --- | --- |
-| 本地 authority | `/Library/MacMiniFanControl/control.py` |
+| 本地 authority | `/Library/MiniArchipel/FanControl/control.py` |
 | authority 服务 | `system/local.miniarchipel.fan-control` |
 | root 设置 | `/Library/MiniArchipel/FanControl/control.json` |
 | IPC | `/var/run/mini-archipel/fan-control.sock` |
 | 持久任务和版本 | `/Library/Application Support/MiniArchipel/FanControl/state.json` |
-| 控制循环状态 | `/Library/MacMiniFanControl/fanctl.runtime.json` |
-| helper 日志 | `/Library/Logs/MacMiniFanControl/plugin.log` |
+| 控制循环状态 | `/Library/MiniArchipel/FanControl/fanctl.runtime.json` |
+| helper 日志 | `/Library/Logs/MiniArchipel/plugin.log` |
 | 安装备份 | `/Library/Application Support/MiniArchipel/FanControl/backups/` |
 
 ## 验证

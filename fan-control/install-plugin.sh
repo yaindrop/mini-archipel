@@ -16,11 +16,11 @@ AGENT_GID=$(id -g "$AGENT_USER")
 [[ -x build/fanctl && -x /usr/bin/python3 ]] || { echo 'Build fanctl as the user first.' >&2; exit 1; }
 /usr/bin/python3 -I -c 'import ctypes,json,socketserver,threading; assert hasattr(ctypes.CDLL(None), "getpeereid")'
 /usr/bin/codesign --verify build/fanctl
-DEST=/Library/MacMiniFanControl
+DEST=/Library/MiniArchipel/FanControl
 CONTROL=local.miniarchipel.fan-control
-CURVE=com.macmini.fan-control
+CURVE=local.miniarchipel.fanctl
 BACKUP="/Library/Application Support/MiniArchipel/FanControl/backups/$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$BACKUP" "$DEST" /Library/Logs/MacMiniFanControl /Library/MiniArchipel/FanControl
+mkdir -p "$BACKUP" "$DEST" /Library/Logs/MiniArchipel /Library/MiniArchipel/FanControl
 chmod 700 "$BACKUP" /Library/MiniArchipel/FanControl
 for file in fanctl control.py fanctl.conf; do
   if [[ -f "$DEST/$file" ]]; then cp -p "$DEST/$file" "$BACKUP/$file"; fi
@@ -51,13 +51,24 @@ rollback() {
 trap rollback ERR
 stop_service "$CONTROL"
 stop_service "$CURVE"
+# Converge pre-archipel installs: retire the legacy daemon label and its files.
+if launchctl print system/com.macmini.fan-control >/dev/null 2>&1; then
+  /Library/MacMiniFanControl/fanctl auto >/dev/null 2>&1 || true
+  launchctl bootout system/com.macmini.fan-control || true
+fi
+launchctl disable system/com.macmini.fan-control || true
+if [[ -f /Library/LaunchDaemons/com.macmini.fan-control.plist ]]; then
+  cp -p /Library/LaunchDaemons/com.macmini.fan-control.plist "$BACKUP/legacy-com.macmini.fan-control.plist"
+  rm -f /Library/LaunchDaemons/com.macmini.fan-control.plist
+fi
+rm -f /etc/newsyslog.d/macmini-fan-control.conf
 if [[ -x "$DEST/fanctl" ]]; then "$DEST/fanctl" auto; fi
 install -o root -g wheel -m 755 build/fanctl "$DEST/fanctl.next"
 mv "$DEST/fanctl.next" "$DEST/fanctl"
 install -o root -g wheel -m 644 control.py "$DEST/control.py"
 install -o root -g wheel -m 755 deploy/stop.sh "$DEST/stop.sh"
 install -o root -g wheel -m 644 deploy/verify-hardware.py "$DEST/verify-hardware.py"
-install -o root -g wheel -m 644 deploy/newsyslog.d/macmini-fan-control.conf /etc/newsyslog.d/macmini-fan-control.conf
+install -o root -g wheel -m 644 deploy/newsyslog.d/miniarchipel-fanctl.conf /etc/newsyslog.d/miniarchipel-fanctl.conf
 if [[ ! -f "$DEST/fanctl.conf" ]]; then install -o root -g wheel -m 644 config/fanctl.conf "$DEST/fanctl.conf"; fi
 chown root:wheel "$DEST" "$DEST/fanctl.conf"
 chmod 755 "$DEST"

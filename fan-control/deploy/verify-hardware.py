@@ -15,7 +15,7 @@ import time
 base = Path(__file__).resolve().parent
 binary = base / 'fanctl'
 config = base / 'fanctl.conf'
-LABEL = 'com.macmini.fan-control'
+LABEL = 'local.miniarchipel.fanctl'
 PLIST = f'/Library/LaunchDaemons/{LABEL}.plist'
 assert os.geteuid() == 0, 'Run with sudo'
 
