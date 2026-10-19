@@ -387,7 +387,7 @@ mod tests {
     fn fixture() -> (Config, PathBuf, Shared) {
         static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let dir = std::env::temp_dir().join(format!(
-            "fleet-plugin-test-{}-{}-{}",
+            "archipel-plugin-test-{}-{}-{}",
             std::process::id(),
             now(),
             NEXT.fetch_add(1, Ordering::Relaxed)

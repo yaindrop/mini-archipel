@@ -146,15 +146,15 @@ const HostSchema = z.object({
   history: z.record(z.string(), z.array(PointSchema)),
 });
 export type Host = z.infer<typeof HostSchema>;
-export const FleetSchema = z.object({
+export const ArchipelSchema = z.object({
   ts: bytes,
   historyError: z.string().nullable().optional(),
   historyDropped: bytes.optional(),
   hosts: z.array(HostSchema),
   plugins: z.record(z.string(), PluginViewSchema).default({}),
 });
-export type Fleet = z.infer<typeof FleetSchema>;
-export const FleetUpdateSchema = FleetSchema.extend({
+export type Archipel = z.infer<typeof ArchipelSchema>;
+export const ArchipelUpdateSchema = ArchipelSchema.extend({
   hosts: z.array(
     HostSchema.extend({ snapshot: SnapshotUpdateSchema.nullable() }),
   ),

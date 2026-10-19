@@ -32,12 +32,12 @@ describe("validated configuration", () => {
     );
   });
   it("persists plugin settings atomically, privately and without dropping options", () => {
-    const dir = mkdtempSync(join(tmpdir(), "fleet-config-")),
+    const dir = mkdtempSync(join(tmpdir(), "archipel-config-")),
       p = join(dir, "console.json");
     try {
-      writeFileSync(p, JSON.stringify({ ...config, dbPath: "~/fleet.db" }));
+      writeFileSync(p, JSON.stringify({ ...config, dbPath: "~/archipel.db" }));
       const loaded = loadConfig(p);
-      expect(loaded.dbPath).toBe(join(homedir(), "fleet.db"));
+      expect(loaded.dbPath).toBe(join(homedir(), "archipel.db"));
       loaded.plugins.runners = { enabled: false, options: { secret: "kept" } };
       saveConfig(p, loaded);
       expect(loadConfig(p).plugins.runners).toEqual(loaded.plugins.runners);

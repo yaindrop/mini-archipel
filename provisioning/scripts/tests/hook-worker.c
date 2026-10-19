@@ -6,7 +6,7 @@
 /* A real process ancestry probe; it executes hooks without starting Actions CI. */
 int main(void) {
     unsetenv("GITHUB_WORKSPACE");
-    int status = system("/bin/bash \"$HOME/.local/libexec/mini-ci/job-started.sh\"");
+    int status = system("/bin/bash \"$HOME/.local/libexec/mini-archipel/ci/job-started.sh\"");
     if (status != 0) return 1;
     const char *ready = getenv("MINI_CI_FIXTURE_READY");
     const char *release = getenv("MINI_CI_FIXTURE_RELEASE");
@@ -21,6 +21,6 @@ int main(void) {
         }
         unlink(ready);
     }
-    status = system("/bin/bash \"$HOME/.local/libexec/mini-ci/job-completed.sh\"");
+    status = system("/bin/bash \"$HOME/.local/libexec/mini-archipel/ci/job-completed.sh\"");
     return status == -1 || !WIFEXITED(status) ? 1 : WEXITSTATUS(status);
 }

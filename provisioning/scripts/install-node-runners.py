@@ -117,7 +117,7 @@ def main():
         COREPACK_ENABLE_AUTO_PIN="0",
         COREPACK_ENABLE_DOWNLOAD_PROMPT="0",
     )
-    hooks = HOME / ".local/libexec/mini-ci"
+    hooks = HOME / ".local/libexec/mini-archipel/ci"
     hooks.mkdir(parents=True, exist_ok=True)
     for name in [
         "ci-lease.py",
@@ -132,7 +132,7 @@ def main():
     environment = {**os.environ, **common, "PATH": path}
     backup = (
         HOME
-        / ".local/share/mini-ci/backups"
+        / ".local/share/mini-archipel/ci/backups"
         / time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     )
     backup.mkdir(parents=True)

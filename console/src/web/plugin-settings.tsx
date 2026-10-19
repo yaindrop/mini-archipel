@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { remoteText } from "../messages.ts";
-import { refreshFleet } from "./useFleet.ts";
+import { refreshArchipel } from "./useArchipel.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
@@ -19,7 +19,7 @@ import { readEnvelope } from "../plugins/contracts.ts";
 import { api, message } from "./api.ts";
 import { PageTitle } from "./ui.tsx";
 import type { WorkspaceProps } from "./plugins.tsx";
-export function PluginSettings({ fleet, now }: WorkspaceProps) {
+export function PluginSettings({ archipel, now }: WorkspaceProps) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
   const client = useQueryClient(),
@@ -36,7 +36,7 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
     }) =>
       host ? api.agentPlugin(host, id, enabled) : api.setPlugin(id, enabled),
     onSuccess: async () => {
-      await refreshFleet(client);
+      await refreshArchipel(client);
       void feedback.success(t`插件配置已保存`);
     },
   });
@@ -60,8 +60,8 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
           title={message(mutation.error, _)}
         />
       ) : null}
-      {Object.values(fleet.plugins).length ? (
-        Object.values(fleet.plugins).map((plugin) => (
+      {Object.values(archipel.plugins).length ? (
+        Object.values(archipel.plugins).map((plugin) => (
           <Card
             className="plugin-card"
             key={plugin.id}
@@ -109,7 +109,7 @@ export function PluginSettings({ fleet, now }: WorkspaceProps) {
             <Descriptions
               column={1}
               size="small"
-              items={fleet.hosts.map((host) => {
+              items={archipel.hosts.map((host) => {
                 const envelope = readEnvelope(host, plugin.id),
                   offline = stale(host, now);
                 return {

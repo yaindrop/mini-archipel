@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { OkSchema } from "../../contracts.ts";
-import { UpstreamError } from "../../fleet.ts";
+import { UpstreamError } from "../../archipel.ts";
 import { readEnvelope } from "../contracts.ts";
 import type { PluginDefinition } from "../runtime.ts";
 import {

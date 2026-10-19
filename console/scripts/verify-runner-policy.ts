@@ -25,7 +25,7 @@ await test(
   { timeout: 30000 },
   async (t) => {
     const home = mkdtempSync(join(tmpdir(), "archipel-runner-policy-"));
-    const hooks = join(home, ".local/libexec/mini-ci");
+    const hooks = join(home, ".local/libexec/mini-archipel/ci");
     mkdirSync(hooks, { recursive: true });
     copyFileSync(
       fileURLToPath(
@@ -39,7 +39,7 @@ await test(
     ] as const)
       writeFileSync(
         join(hooks, script),
-        `#!/bin/bash\nexec /usr/bin/python3 "$HOME/.local/libexec/mini-ci/ci-lease.py" ${command}\n`,
+        `#!/bin/bash\nexec /usr/bin/python3 "$HOME/.local/libexec/mini-archipel/ci/ci-lease.py" ${command}\n`,
       );
     const listeners: ChildProcess[] = [],
       workers: ChildProcess[] = [];
@@ -246,7 +246,7 @@ await test(
     await until(async () => (await data()).coordination?.enabled === false);
     const persisted: unknown = JSON.parse(
       readFileSync(
-        join(home, ".local/state/mini-ci/runner-policy.json"),
+        join(home, ".local/state/mini-archipel/ci/runner-policy.json"),
         "utf8",
       ),
     );

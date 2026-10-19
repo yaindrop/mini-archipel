@@ -22,9 +22,9 @@ sysctl vm.swapusage
 mdutil -a -s
 
 # 风扇控制
-/Library/MacMiniFanControl/fanctl -j status
-launchctl print system/com.macmini.fan-control | grep pid
-tail -n 20 /Library/Logs/MacMiniFanControl/control.log
+/Library/MiniArchipel/FanControl/fanctl -j status
+launchctl print system/local.miniarchipel.fanctl | grep pid
+tail -n 20 /Library/Logs/MiniArchipel/fan-control.log
 
 # 热状态（0 nominal / 1 fair / 2 serious / 3 critical）
 osascript -l JavaScript -e 'ObjC.import("Foundation"); $.NSProcessInfo.processInfo.thermalState;'

@@ -61,7 +61,7 @@ fn default_macmon() -> String {
     "/opt/homebrew/bin/macmon".to_string()
 }
 fn default_fanctl() -> String {
-    "/Library/MacMiniFanControl/fanctl".to_string()
+    "/Library/MiniArchipel/FanControl/fanctl".to_string()
 }
 fn default_disk_interval() -> u64 {
     21_600_000

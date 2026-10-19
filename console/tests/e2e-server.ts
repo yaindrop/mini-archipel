@@ -12,14 +12,14 @@ import { createHash } from "node:crypto";
 import { serverPlugins } from "../src/plugins/catalog.server.ts";
 import { createApp } from "../src/app.ts";
 import { Store } from "../src/store.ts";
-import { UpstreamError, type Transport } from "../src/fleet.ts";
+import { UpstreamError, type Transport } from "../src/archipel.ts";
 import {
   config,
   makeHost,
   makeSnapshot,
   fixtureRunnerData,
 } from "./fixtures.ts";
-const dir = mkdtempSync(join(tmpdir(), "fleet-browser-")),
+const dir = mkdtempSync(join(tmpdir(), "archipel-browser-")),
   dbPath = join(dir, "test.db");
 const store = new Store(dbPath);
 await store.insertSamples(

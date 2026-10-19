@@ -24,7 +24,7 @@ impl Operation {
 pub struct Operations(Arc<Mutex<Option<Vec<Operation>>>>);
 fn path() -> PathBuf {
     PathBuf::from(std::env::var("HOME").unwrap_or_default())
-        .join(".local/state/mini-ci/runner-operations.json")
+        .join(".local/state/mini-archipel/ci/runner-operations.json")
 }
 fn failure() -> Failure {
     (

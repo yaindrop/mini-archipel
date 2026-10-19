@@ -1,6 +1,6 @@
 import type { ConsoleConfig } from "../config.ts";
 import type { Host } from "../contracts.ts";
-import { UpstreamError, type Transport } from "../fleet.ts";
+import { UpstreamError, type Transport } from "../archipel.ts";
 import type { PluginView } from "./contracts.ts";
 export interface PluginContext {
   hosts: () => Host[];

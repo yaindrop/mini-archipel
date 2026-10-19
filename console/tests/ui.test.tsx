@@ -10,7 +10,7 @@ import { BrowserRouter } from "react-router";
 import { App, ErrorBoundary } from "../src/web/App.tsx";
 import { api } from "../src/web/api.ts";
 import { csvCell } from "../src/web/history.tsx";
-import { withLivePlugins } from "../src/web/useFleet.ts";
+import { withLivePlugins } from "../src/web/useArchipel.ts";
 import { current } from "../src/plugins/runners/domain.ts";
 import { makeHost } from "./fixtures.ts";
 Object.defineProperty(window, "matchMedia", {

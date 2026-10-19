@@ -56,7 +56,7 @@ Agent 的基础快照中只有一个扩展容器：
 
 核心将 `snapshot.plugins` 作为不透明的命名空间记录透传，不删除未知插件及其字段。每个插件负责校验自己的信封版本与数据。未知版本、坏数据或采集故障只影响该插件，不能将基础资源判为离线。
 
-Console 的 `fleet.plugins` 返回已注册插件的公开元数据、启用状态、错误和自身状态数据。Runner 的 GitHub 状态及远端列表位于 `fleet.plugins.runners.data`。Agent token、GitHub token 和私有插件选项不返回浏览器。
+Console 的 `archipel.plugins` 返回已注册插件的公开元数据、启用状态、错误和自身状态数据。Runner 的 GitHub 状态及远端列表位于 `archipel.plugins.runners.data`。Agent token、GitHub token 和私有插件选项不返回浏览器。
 
 ## 通用接口
 
@@ -115,7 +115,7 @@ Agent 自动扫描 `~/runners/<独立安装目录>/.runner`，从注册信息的
 
 此列表默认空，不向浏览器返回 token；仓库标识不区分大小写且不能重复。某仓库连接失败不影响其他仓库或本地管理。每个仓库独立分页采集、30 秒刷新，远端数据超过 90 秒失效。读取权限依据 [GitHub 仓库 Runner API](https://docs.github.com/en/rest/actions/self-hosted-runners#list-self-hosted-runners-for-a-repository)。
 
-当前机群在四节点各部署 `yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
+当前群岛在四节点各部署 `yaindrop/flowbit`、`yaindrop/flowbit-knowledge`、
 `yaindrop/in-frames`、`yaindrop/mini-archipel` 四个仓库的独立 Runner，共 16 个实例。
 它们使用本仓库 [provisioning](../provisioning/docs/08-github-runner.md) 模块统一的节点作业租约和完成维护钩子；插件负责发现、按 Repo 展示与
 服务控制，不负责触发 CI。各仓库只通过明确的 `run-ci` 请求执行 PR Quality。

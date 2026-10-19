@@ -201,7 +201,7 @@ export function makeSnapshot(index = 0): Snapshot {
               scan(
                 "state",
                 2 ** 19,
-                [scan("mini-ci", 2 ** 19, [], "appdata")],
+                [scan("mini-archipel", 2 ** 19, [], "appdata")],
                 "appdata",
               ),
             ],

@@ -20,4 +20,4 @@
 
 **Runner 安装实例**：某个节点上独立注册到一个 Repo 的接单服务。一台节点可拥有多个 Repo 的安装实例，同一 Repo 可拥有多个节点的安装实例。
 
-项目名称统一为 mini-archipel，中文产品名“群岛 · 节点工作台”，英文“Mini Archipel · Node workbench”。节点装机、CI 机群规则与共享脚本属于本项目，配套风扇服务为 mini-fan-control。展示语言与节点采集、插件、稳定历史键独立；语言和主题都默认系统，也可手动选择两个明确选项。
+项目名称统一为 mini-archipel，中文产品名“群岛 · 节点工作台”，英文“Mini Archipel · Node workbench”。节点装机、CI 群岛规则与共享脚本属于本项目；风扇控制是本仓库的 fan-control 模块（系统安装名 MiniArchipel/FanControl），CI 钩子与状态位于各机的 mini-archipel/ci 命名空间。展示语言与节点采集、插件、稳定历史键独立；语言和主题都默认系统，也可手动选择两个明确选项。

@@ -1,6 +1,6 @@
 import { test as base, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { FleetSchema } from "../../src/contracts.ts";
+import { ArchipelSchema } from "../../src/contracts.ts";
 import { TOKEN } from "../fixtures.ts";
 import { scaledTestTimeout } from "../../scripts/ci-timeout";
 const test = base.extend<{ errors: string[] }>({
@@ -475,7 +475,7 @@ test("storage selected subdirectories drill down again with bounded leaves", asy
       [
         ["Library", "Caches", "Chrome"],
         ["Library", "Application Support", "Code"],
-        [".local", "state", "mini-ci"],
+        [".local", "state", "mini-archipel"],
         [".local", "share", "mini-archipel"],
       ],
     ],
@@ -693,7 +693,7 @@ test("session expiry, masked login and credential-free browser state", async ({
   ).toBeVisible();
   expect(page.url()).not.toContain(TOKEN);
   expect(
-    await page.evaluate(() => localStorage.getItem("fleet-token")),
+    await page.evaluate(() => localStorage.getItem("archipel-token")),
   ).toBeNull();
   expect(await page.evaluate(() => document.cookie)).not.toContain(
     "archipel-session",
@@ -975,7 +975,7 @@ test("node plugin toggles independently while an active Worker remains untouched
   });
   await control.click();
   await expect(control).not.toBeChecked();
-  const state = FleetSchema.parse(
+  const state = ArchipelSchema.parse(
     await (await page.request.get("/api/state")).json(),
   );
   const host = state.hosts.find((h) => h.name === "yd-mbp-tart-2");

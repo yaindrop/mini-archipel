@@ -1,6 +1,6 @@
-# 节点配置与 CI 机群
+# 节点配置与 CI 群岛
 
-本目录是 [mini-archipel](../README.md) 的节点配置模块，统一维护装机规范、共享 CI 脚本和机群验收记录。
+本目录是 [mini-archipel](../README.md) 的节点配置模块，统一维护装机规范、共享 CI 脚本和群岛验收记录。
 
 把 Apple Silicon Mac mini 或 Tart macOS 虚拟机配成 **CI 节点**的实战手册。
 日常 SSH 管理、远程管理访问桌面，运行自托管 CI。共同对齐运行环境和运维
@@ -69,9 +69,12 @@ push、普通 PR 活动与定时事件均不运行质量检查。检查生命周
 四仓库分工见[主动 CI 规范](docs/ci-practice.md)。接入、升级和回退见
 [2026-10-18 接入记录](docs/ci-rollout-2026-10-18.md)。每节点跨仓库只执行一个作业。
 清单和共享脚本见 [scripts](scripts/README.md)，本轮范围与证据见
-[CI 机群验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
+[CI 群岛验收记录](docs/ci-fleet-acceptance-2026-10-17.md)。
 最新安装路径、Agent 与共享钩子的部署核对见
 [Runner 目录迁移验收](docs/runners-path-acceptance-2026-10-17.md)。
+宿主机与节点运维脚本的 mini-ops / fleet 命名统一见
+[命名统一验收](docs/archipel-rename-acceptance-2026-10-19.md)，风扇与 CI 路径收尾见
+[路径统一验收](docs/path-unification-acceptance-2026-10-19.md)。
 [后台扫描与本地中断验收](docs/operations-acceptance-2026-10-18.md)。
 在线状态是验收快照，日常以 GitHub 和群岛 Runner 插件为准。
 逐项证据、类型豁免及未关闭项见[四机验收记录](docs/fleet-acceptance-2026-10-17.md)。

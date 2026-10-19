@@ -28,7 +28,7 @@
 
 ## 主动 CI 请求
 
-四仓库共享清单为 [`scripts/ci-fleet.json`](../scripts/ci-fleet.json)。每仓库的
+四仓库共享清单为 [`scripts/ci-archipel.json`](../scripts/ci-archipel.json)。每仓库的
 `PR Quality` 只监听 `pull_request: labeled`，只有本仓库 PR 新增 `run-ci`
 标签才执行一个原生 `Quality` 作业；其他标签事件跳过检查。
 
@@ -53,7 +53,7 @@ Agent 不主动加标签或触发 CI，除非人明确要求验证。等待机�
 
 ## 共享作业钩子与维护
 
-四仓库的 `.env` 都使用 `~/.local/libexec/mini-ci/job-started.sh` 和
+四仓库的 `.env` 都使用 `~/.local/libexec/mini-archipel/ci/job-started.sh` 和
 `job-completed.sh` 作为 [GitHub 同步作业钩子](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/run-scripts)。
 脚本源文件统一维护在本仓库 `provisioning/scripts/`，不放进 Runner 应用目录。
 
@@ -73,8 +73,8 @@ Agent 不主动加标签或触发 CI，除非人明确要求验证。等待机�
 | 失败 | 记录 warning，不改变项目检查结果；不删除源码或 node_modules |
 
 工作区使用 `GITHUB_WORKSPACE`，历史写入
-`~/.local/state/mini-ci/maintenance/history.jsonl`，租约位于
-`~/.local/state/mini-ci/owner.json`。实际 Actions 的 Set up runner / Complete runner
+`~/.local/state/mini-archipel/ci/maintenance/history.jsonl`，租约位于
+`~/.local/state/mini-archipel/ci/owner.json`。实际 Actions 的 Set up runner / Complete runner
 日志用于确认生产作业钩子；进程探针只证明平台与脚本接线，不替代真实项目 CI。
 
 ## 节点接单互斥
@@ -90,14 +90,14 @@ Listener，不冻结 Worker。已同时分配的作业在共用开始钩子内�
 并发保护，关闭本开关只关闭对其他 Listener 的主动暂停，不移除原有作业串行规则。
 
 开关及暂停进程身份以权限 600 原子写入
-`~/.local/state/mini-ci/runner-policy.json`，与作业钩子、手动服务操作共用文件锁。
+`~/.local/state/mini-archipel/ci/runner-policy.json`，与作业钩子、手动服务操作共用文件锁。
 信号前保存恢复记录；只恢复本策略暂停且身份仍匹配的进程。手动停止的 Runner 不会
 自动启动，在互斥期间也可手动停止已暂停的 Runner。关闭开关立即恢复策略暂停项；
 插件停用不会更改这项已保存的本地 CI 策略，正常释放仍由完成钩子执行。
 
 Agent 复用该控制端检查遗留状态，Worker 崩溃或本地中断导致完成钩子未执行时，
 下一次采集恢复暂停项；Agent 重启从相同记录恢复。Agent 不可用且完成钩子也未执行时，
-恢复 Agent 或在节点运行 `/usr/bin/python3 ~/.local/libexec/mini-ci/ci-lease.py state`
+恢复 Agent 或在节点运行 `/usr/bin/python3 ~/.local/libexec/mini-archipel/ci/ci-lease.py state`
 执行恢复检查。GitHub online / busy 状态存在延迟，界面的本地互斥标记优先。
 
 此能力要求节点上每个已注册 Runner 都接入本章的共用钩子；安装新仓库时使用

@@ -24,11 +24,11 @@ import {
   Upload,
 } from "antd";
 import { Download, Fan, Plus, Trash2 } from "lucide-react";
-import type { Fleet, Host } from "../../contracts.ts";
+import type { Archipel, Host } from "../../contracts.ts";
 import { displayName, nodeIdentityLabel, stale } from "../../domain.ts";
 import { remoteText } from "../../messages.ts";
 import { api, message } from "../../web/api.ts";
-import { refreshFleet } from "../../web/useFleet.ts";
+import { refreshArchipel } from "../../web/useArchipel.ts";
 import { PageTitle, Section } from "../../web/ui.tsx";
 import { TimeChart } from "../../web/chart.tsx";
 import {
@@ -111,12 +111,19 @@ function operationLabel(action: string, translate: Translate) {
   const label = labels[action];
   return label ? translate(label) : action;
 }
-export function FanControl({ fleet, now }: { fleet: Fleet; now: number }) {
+export function FanControl({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { t } = useLinguiMacro(),
     { _ } = useLingui(),
     [search, setSearch] = useSearchParams();
   const host =
-    fleet.hosts.find((h) => h.name === search.get("host")) ?? fleet.hosts[0];
+    archipel.hosts.find((h) => h.name === search.get("host")) ??
+    archipel.hosts[0];
   return (
     <>
       <PageTitle
@@ -124,7 +131,7 @@ export function FanControl({ fleet, now }: { fleet: Fleet; now: number }) {
         description={t`查看每台节点的温控状态，编辑曲线并运行本地诊断。`}
       />
       <div className="fan-nodes">
-        {fleet.hosts.map((h) => {
+        {archipel.hosts.map((h) => {
           const r = readyState(h)?.telemetry?.reading;
           return (
             <Button
@@ -162,7 +169,7 @@ export function NodePanel({
   now,
 }: {
   host: Host;
-  fleet: Fleet;
+  archipel: Archipel;
   now: number;
 }) {
   const { t } = useLinguiMacro(),
@@ -287,7 +294,7 @@ function Editor({
             command,
           }),
     onSuccess: async () => {
-      await refreshFleet(client);
+      await refreshArchipel(client);
       void feedback.success(t`任务已提交，进度由节点持续记录。`);
     },
     onError: (error: unknown) => {

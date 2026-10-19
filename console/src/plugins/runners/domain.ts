@@ -1,5 +1,5 @@
 import { defaultTranslate, type Translate } from "../../messages.ts";
-import type { Host, Fleet } from "../../contracts.ts";
+import type { Host, Archipel } from "../../contracts.ts";
 import { stale } from "../../domain.ts";
 import { readEnvelope } from "../contracts.ts";
 import {
@@ -69,16 +69,16 @@ export function agentData(host: Host) {
 export function runnersFor(host: Host): Runner[] {
   return agentData(host)?.runners ?? [];
 }
-export function consoleData(fleet: Fleet) {
-  const parsed = ConsoleDataSchema.safeParse(fleet.plugins.runners?.data);
+export function consoleData(archipel: Archipel) {
+  const parsed = ConsoleDataSchema.safeParse(archipel.plugins.runners?.data);
   return parsed.success
     ? parsed.data
     : {
         repositories: [],
       };
 }
-export function remoteFor(fleet: Fleet): GitHubRunner[] {
-  const data = consoleData(fleet);
+export function remoteFor(archipel: Archipel): GitHubRunner[] {
+  const data = consoleData(archipel);
   return data.repositories
     .filter((repo) => Date.now() - repo.lastTs < 90000)
     .flatMap((repo) => repo.remote);

@@ -15,7 +15,7 @@ W = (
     if os.environ.get("GITHUB_WORKSPACE")
     else None
 )
-S = H / ".local/state/mini-ci/maintenance"
+S = H / ".local/state/mini-archipel/ci/maintenance"
 os.environ.update(
     COREPACK_DEFAULT_TO_LATEST="0",
     COREPACK_ENABLE_AUTO_PIN="0",
@@ -39,7 +39,7 @@ def emit(action, **kw):
         p.replace(S / "history.previous.jsonl")
     with p.open("a") as f:
         f.write(json.dumps(record) + "\n")
-    print("mini-ci housekeeping: " + action, flush=True)
+    print("mini-archipel/ci housekeeping: " + action, flush=True)
 
 
 def run(args, timeout=30, cwd=None):
@@ -83,7 +83,7 @@ def main():
     if not (runner / ".runner").is_file():
         raise ValueError("Workspace is not inside a registered runner")
     if run(
-        ["/usr/bin/python3", H / ".local/libexec/mini-ci/ci-lease.py", "owned"]
+        ["/usr/bin/python3", H / ".local/libexec/mini-archipel/ci/ci-lease.py", "owned"]
     ).returncode:
         emit("skipped_without_node_lease")
         return
@@ -220,6 +220,7 @@ if __name__ == "__main__":
         except Exception:
             pass
         print(
-            "::warning::mini-ci maintenance incomplete; see node maintenance history.",
+            "::warning::mini-archipel/ci maintenance incomplete; "
+            "see node maintenance history.",
             flush=True,
         )

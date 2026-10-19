@@ -11,8 +11,8 @@ export const runnersWorkbench: WorkbenchPlugin = {
   label: "Runners",
   to: "/runners",
   icon: Terminal,
-  badge: (fleet) =>
-    fleet.hosts.reduce((sum, host) => sum + runnersFor(host).length, 0),
+  badge: (archipel) =>
+    archipel.hosts.reduce((sum, host) => sum + runnersFor(host).length, 0),
   Page: lazy(async () => ({
     default: (await import("./workbench.tsx")).Runners,
   })),
@@ -25,14 +25,14 @@ export const runnersWorkbench: WorkbenchPlugin = {
   ConnectionsPanel: lazy(async () => ({
     default: (await import("./workbench.tsx")).ConnectionsPanel,
   })),
-  columns: ({ fleet, now }) => [
+  columns: ({ archipel, now }) => [
     {
       title: "Runner",
       key: "plugin-runners",
       responsive: ["md"],
       render: (_value, host) => {
         return (
-          <RunnerSummary host={host} now={now} remote={remoteFor(fleet)} />
+          <RunnerSummary host={host} now={now} remote={remoteFor(archipel)} />
         );
       },
     },

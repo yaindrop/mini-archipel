@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
-  FleetMonitor,
+  ArchipelMonitor,
   sampleValues,
   UpstreamError,
   type Transport,
-} from "../src/fleet.ts";
+} from "../src/archipel.ts";
 import { Store } from "../src/store.ts";
 import { config, makeSnapshot } from "./fixtures.ts";
 const stores: Store[] = [];
-const monitors: FleetMonitor[] = [];
+const monitors: ArchipelMonitor[] = [];
 afterEach(async () => {
   await Promise.all(monitors.splice(0).map((m) => m.stop()));
   await Promise.all(stores.splice(0).map((s) => s.close()));
@@ -18,11 +18,11 @@ afterEach(async () => {
 function setup(transport: Transport) {
   const store = new Store(":memory:");
   stores.push(store);
-  const monitor = new FleetMonitor(config, store, transport);
+  const monitor = new ArchipelMonitor(config, store, transport);
   monitors.push(monitor);
   return monitor;
 }
-describe("fleet collection", () => {
+describe("archipel collection", () => {
   it("restores exact source watermarks rather than deduplicating against chart buckets", async () => {
     const snapshot = makeSnapshot();
     if (!snapshot.sys) throw Error("fixture");
@@ -33,7 +33,9 @@ describe("fleet collection", () => {
       { host: "yd-mini", key: "cpu.usage_pct", ts: snapshot.sys.ts, value: 20 },
     ]);
     const insert = vi.spyOn(store, "insertSamples");
-    const m = new FleetMonitor(config, store, () => Promise.resolve(snapshot));
+    const m = new ArchipelMonitor(config, store, () =>
+      Promise.resolve(snapshot),
+    );
     monitors.push(m);
     m.start();
     await m.pollHost("yd-mini");
@@ -67,7 +69,7 @@ describe("fleet collection", () => {
       .mockRejectedValue(new Error("disk full"));
     let time = Date.now();
     vi.spyOn(Date, "now").mockImplementation(() => time++);
-    const m = new FleetMonitor(config, store, () =>
+    const m = new ArchipelMonitor(config, store, () =>
       Promise.resolve(makeSnapshot()),
     );
     monitors.push(m);
@@ -115,7 +117,7 @@ describe("fleet collection", () => {
     vi.spyOn(store, "insertSamples").mockImplementation(() => {
       throw new Error("disk full");
     });
-    const m = new FleetMonitor(config, store, () =>
+    const m = new ArchipelMonitor(config, store, () =>
       Promise.resolve(makeSnapshot()),
     );
     monitors.push(m);

@@ -38,9 +38,9 @@ class RunnerPolicyTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.home = Path(self.temp.name).resolve()
-        self.state = self.home / ".local/state/mini-ci"
+        self.state = self.home / ".local/state/mini-archipel/ci"
         self.children = []
-        hooks = self.home / ".local/libexec/mini-ci"
+        hooks = self.home / ".local/libexec/mini-archipel/ci"
         hooks.mkdir(parents=True)
         for name in ("job-started.sh", "job-completed.sh"):
             (hooks / name).write_text("#!/bin/bash\nexit 0\n")

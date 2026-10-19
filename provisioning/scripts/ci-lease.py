@@ -11,7 +11,7 @@ import sys
 import time
 from pathlib import Path
 
-STATE = Path.home() / ".local/state/mini-ci"
+STATE = Path.home() / ".local/state/mini-archipel/ci"
 
 
 @contextlib.contextmanager
@@ -139,7 +139,7 @@ def installations(home):
 
 
 def hooks_ready(home, installs):
-    hooks = home / ".local/libexec/mini-ci"
+    hooks = home / ".local/libexec/mini-archipel/ci"
     for directory in installs:
         path = home / "runners" / directory / ".env"
         lines = path.read_text().splitlines() if path.is_file() else []
@@ -411,12 +411,15 @@ def acquire(identity, timeout=3600):
     waiting = False
     while not update(identity, True):
         if not waiting:
-            print("mini-ci: waiting for the current node job to finish", flush=True)
+            print(
+                "mini-archipel/ci: waiting for the current node job to finish",
+                flush=True,
+            )
             waiting = True
         if time.monotonic() >= deadline:
             raise TimeoutError("Node is still busy; no second job was started")
         time.sleep(1)
-    print("mini-ci: acquired node job lease", flush=True)
+    print("mini-archipel/ci: acquired node job lease", flush=True)
 
 
 if __name__ == "__main__":

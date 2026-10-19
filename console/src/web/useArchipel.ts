@@ -4,10 +4,10 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { type Fleet } from "../contracts.ts";
-import { restoreFleet } from "../fleet-wire.ts";
+import { type Archipel } from "../contracts.ts";
+import { restoreArchipel } from "../archipel-wire.ts";
 import { api, ApiError } from "./api.ts";
-export function useFleet(paused: boolean) {
+export function useArchipel(paused: boolean) {
   const client = useQueryClient();
   const [visible, setVisible] = useState(!document.hidden);
   const [connection, setConnection] = useState<
@@ -23,8 +23,8 @@ export function useFleet(paused: boolean) {
     };
   }, []);
   const query = useQuery({
-    queryKey: ["fleet"],
-    queryFn: ({ signal }) => api.fleet(signal),
+    queryKey: ["archipel"],
+    queryFn: ({ signal }) => api.archipel(signal),
     enabled: !paused && visible,
     refetchInterval: connection === "live" || paused || !visible ? false : 3000,
     retry: 1,
@@ -45,11 +45,11 @@ export function useFleet(paused: boolean) {
       };
       socket.onmessage = (event) => {
         try {
-          const fleet = restoreFleet(
+          const archipel = restoreArchipel(
             JSON.parse(String(event.data)) as unknown,
-            client.getQueryData<Fleet>(["fleet"]),
+            client.getQueryData<Archipel>(["archipel"]),
           );
-          client.setQueryData<Fleet>(["fleet"], fleet);
+          client.setQueryData<Archipel>(["archipel"], archipel);
         } catch {
           setConnection("polling");
           socket?.close();
@@ -87,7 +87,10 @@ export function useFleet(paused: boolean) {
 }
 
 /** Pausing freezes resources; connection health and operation state remain current. */
-export function withLivePlugins(frozen: Fleet, live: Fleet | undefined): Fleet {
+export function withLivePlugins(
+  frozen: Archipel,
+  live: Archipel | undefined,
+): Archipel {
   if (!live) return frozen;
   return {
     ...frozen,
@@ -114,11 +117,11 @@ export function withLivePlugins(frozen: Fleet, live: Fleet | undefined): Fleet {
   };
 }
 
-export async function refreshFleet(client: QueryClient): Promise<Fleet> {
-  await client.cancelQueries({ queryKey: ["fleet"] });
+export async function refreshArchipel(client: QueryClient): Promise<Archipel> {
+  await client.cancelQueries({ queryKey: ["archipel"] });
   return client.query({
-    queryKey: ["fleet"],
-    queryFn: ({ signal }) => api.fleet(signal),
+    queryKey: ["archipel"],
+    queryFn: ({ signal }) => api.archipel(signal),
     staleTime: 0,
   });
 }

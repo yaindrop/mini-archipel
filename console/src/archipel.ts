@@ -4,9 +4,9 @@ import type { ConsoleConfig } from "./config.ts";
 import {
   SnapshotUpdateSchema,
   type Snapshot,
-  type Fleet,
+  type Archipel,
 } from "./contracts.ts";
-import { restoreSnapshot } from "./fleet-wire.ts";
+import { restoreSnapshot } from "./archipel-wire.ts";
 import { Store, type Sample } from "./store.ts";
 import { METRIC_KEYS } from "./domain.ts";
 const exec = promisify(execFile);
@@ -109,8 +109,8 @@ export function sampleValues(snapshot: Snapshot): [string, number][] {
       typeof row[1] === "number" && Number.isFinite(row[1]),
   );
 }
-export class FleetMonitor {
-  private readonly hosts: Fleet["hosts"];
+export class ArchipelMonitor {
+  private readonly hosts: Archipel["hosts"];
   private readonly polling = new Map<string, Promise<void>>();
   private abort = new AbortController();
   private timers: ReturnType<typeof setInterval>[] = [];
@@ -145,7 +145,7 @@ export class FleetMonitor {
       history: Object.fromEntries(METRIC_KEYS.map((key) => [key, []])),
     }));
   }
-  state(now = Date.now()): Fleet {
+  state(now = Date.now()): Archipel {
     return {
       ts: now,
       historyError: this.historyError,

@@ -34,7 +34,7 @@ msgstr "A valid plugin setting is required"
 
 #. js-lingui-explicit-id
 #: src/app.ts
-#: src/fleet.ts
+#: src/archipel.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
@@ -101,6 +101,41 @@ msgid "页面资源不存在"
 msgstr "Page resource not found"
 
 #. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "无法连接节点，或请求已超时"
+msgstr "Cannot reach the node, or the request timed out"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "节点返回了无效数据"
+msgstr "The node returned invalid data"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史记录暂时无法读取，实时监测仍在运行"
+msgstr "History is temporarily unavailable. Live monitoring is still running."
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史缓冲已满，部分样本未保存"
+msgstr "The history buffer is full. Some samples were not saved."
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史记录暂时无法保存，实时监测仍在运行"
+msgstr "History could not be saved. Live monitoring is still running."
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "节点数据校验失败"
+msgstr "Node data validation failed"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史归档暂时失败，实时监测仍在运行"
+msgstr "History archiving failed. Live monitoring is still running."
+
+#. js-lingui-explicit-id
 #: src/domain.ts
 msgid "CPU 占用"
 msgstr "CPU usage"
@@ -154,41 +189,6 @@ msgstr "CPU power"
 #: src/domain.ts
 msgid "1 分钟负载"
 msgstr "1-minute load"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "无法连接节点，或请求已超时"
-msgstr "Cannot reach the node, or the request timed out"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "节点返回了无效数据"
-msgstr "The node returned invalid data"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史记录暂时无法读取，实时监测仍在运行"
-msgstr "History is temporarily unavailable. Live monitoring is still running."
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史缓冲已满，部分样本未保存"
-msgstr "The history buffer is full. Some samples were not saved."
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史记录暂时无法保存，实时监测仍在运行"
-msgstr "History could not be saved. Live monitoring is still running."
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "节点数据校验失败"
-msgstr "Node data validation failed"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史归档暂时失败，实时监测仍在运行"
-msgstr "History archiving failed. Live monitoring is still running."
 
 #. js-lingui-explicit-id
 #: src/plugins/runtime.ts
@@ -474,7 +474,7 @@ msgstr "{0} drill-down depth"
 msgid "{0} 个 ↗"
 msgstr "{0} ↗"
 
-#. placeholder {0}: String(fleet.historyDropped)
+#. placeholder {0}: String(archipel.historyDropped)
 #: src/web/App.tsx
 msgid "{0} 个历史样本未保存，实时监测仍在运行。"
 msgstr "{0} history samples were not saved. Live monitoring is still running."
@@ -485,7 +485,7 @@ msgstr "{0} history samples were not saved. Live monitoring is still running."
 msgid "{0} 个核心 · 负载 {1}"
 msgstr "{0} cores · Load {1}"
 
-#. placeholder {0}: fleet.hosts.length
+#. placeholder {0}: archipel.hosts.length
 #: src/web/overview.tsx
 msgid "{0} 个节点"
 msgstr "{0, plural, one {# NODE} other {# NODES}}"
@@ -510,7 +510,7 @@ msgstr "{0} is using this node; other runners are paused"
 msgid "{0} 卷已用比例"
 msgstr "{0} volume usage"
 
-#. placeholder {0}: String(fleet.hosts.filter((h) => h.snapshot?.fan).length)
+#. placeholder {0}: String(archipel.hosts.filter((h) => h.snapshot?.fan).length)
 #: src/web/overview.tsx
 msgid "{0} 台已上报"
 msgstr "{0} reporting"
@@ -541,7 +541,7 @@ msgstr "{0} storage usage"
 msgid "{0} 空间比例"
 msgstr "{0} storage share"
 
-#. placeholder {0}: fleet?.hosts.length ?? "—"
+#. placeholder {0}: archipel?.hosts.length ?? "—"
 #: src/web/App.tsx
 msgid "{0} 节点"
 msgstr "{0} nodes"
@@ -645,6 +645,10 @@ msgstr "7 days"
 msgid "AI 工具"
 msgstr "AI tools"
 
+#: src/web/App.tsx
+msgid "Archipel operations"
+msgstr "Node operations"
+
 #: src/plugins/runners/workbench.tsx
 msgid "CI OPERATIONS"
 msgstr "CI OPERATIONS"
@@ -678,10 +682,6 @@ msgstr "CPU trend"
 #: src/web/plugin-settings.tsx
 msgid "EXTENSIONS"
 msgstr "EXTENSIONS"
-
-#: src/web/App.tsx
-msgid "Fleet operations"
-msgstr "Node operations"
 
 #: src/web/node.tsx
 msgid "GPU 占用"
@@ -868,7 +868,7 @@ msgid "共 {0}"
 msgstr "Total {0}"
 
 #. placeholder {0}: rows.length
-#. placeholder {1}: fleet.hosts.length
+#. placeholder {1}: archipel.hosts.length
 #: src/web/overview.tsx
 msgid "共 {0} / {1} 台"
 msgstr "{0} / {1} nodes"
@@ -931,7 +931,7 @@ msgstr "Last 10 minutes"
 msgid "最近结论"
 msgstr "Latest conclusion"
 
-#. placeholder {0}: timeLabel(fleet.ts)
+#. placeholder {0}: timeLabel(archipel.ts)
 #: src/web/App.tsx
 msgid "最近采集 {0}"
 msgstr "Last collected {0}"
@@ -1201,7 +1201,7 @@ msgstr "Storage"
 msgid "实时更新"
 msgstr "Live"
 
-#. placeholder {0}: fleet ? new Date(fleet.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
+#. placeholder {0}: archipel ? new Date(archipel.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
 #: src/web/App.tsx
 msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
 msgstr "Live updates are paused. Showing measurements from {0}. Resume to see the latest state."
@@ -2343,8 +2343,8 @@ msgstr "Mini Archipel"
 msgid "群岛 · 节点工作台"
 msgstr "Mini Archipel · Node workbench"
 
-#. placeholder {0}: String(fleet.hosts.filter((h) => !stale(h, now)).length)
-#. placeholder {1}: String(fleet.hosts.length)
+#. placeholder {0}: String(archipel.hosts.filter((h) => !stale(h, now)).length)
+#. placeholder {1}: String(archipel.hosts.length)
 #: src/web/App.tsx
 msgid "群岛 · 节点工作台（{0}/{1}）"
 msgstr "Mini Archipel · Node workbench ({0}/{1})"

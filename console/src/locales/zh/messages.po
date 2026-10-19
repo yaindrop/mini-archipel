@@ -34,7 +34,7 @@ msgstr "缺少有效的插件开关"
 
 #. js-lingui-explicit-id
 #: src/app.ts
-#: src/fleet.ts
+#: src/archipel.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
@@ -101,6 +101,41 @@ msgid "页面资源不存在"
 msgstr "页面资源不存在"
 
 #. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "无法连接节点，或请求已超时"
+msgstr "无法连接节点，或请求已超时"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "节点返回了无效数据"
+msgstr "节点返回了无效数据"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史记录暂时无法读取，实时监测仍在运行"
+msgstr "历史记录暂时无法读取，实时监测仍在运行"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史缓冲已满，部分样本未保存"
+msgstr "历史缓冲已满，部分样本未保存"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史记录暂时无法保存，实时监测仍在运行"
+msgstr "历史记录暂时无法保存，实时监测仍在运行"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "节点数据校验失败"
+msgstr "节点数据校验失败"
+
+#. js-lingui-explicit-id
+#: src/archipel.ts
+msgid "历史归档暂时失败，实时监测仍在运行"
+msgstr "历史归档暂时失败，实时监测仍在运行"
+
+#. js-lingui-explicit-id
 #: src/domain.ts
 msgid "CPU 占用"
 msgstr "CPU 占用"
@@ -154,41 +189,6 @@ msgstr "CPU 功耗"
 #: src/domain.ts
 msgid "1 分钟负载"
 msgstr "1 分钟负载"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "无法连接节点，或请求已超时"
-msgstr "无法连接节点，或请求已超时"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "节点返回了无效数据"
-msgstr "节点返回了无效数据"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史记录暂时无法读取，实时监测仍在运行"
-msgstr "历史记录暂时无法读取，实时监测仍在运行"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史缓冲已满，部分样本未保存"
-msgstr "历史缓冲已满，部分样本未保存"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史记录暂时无法保存，实时监测仍在运行"
-msgstr "历史记录暂时无法保存，实时监测仍在运行"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "节点数据校验失败"
-msgstr "节点数据校验失败"
-
-#. js-lingui-explicit-id
-#: src/fleet.ts
-msgid "历史归档暂时失败，实时监测仍在运行"
-msgstr "历史归档暂时失败，实时监测仍在运行"
 
 #. js-lingui-explicit-id
 #: src/plugins/runtime.ts
@@ -474,7 +474,7 @@ msgstr "{0} 下钻深度"
 msgid "{0} 个 ↗"
 msgstr "{0} 个 ↗"
 
-#. placeholder {0}: String(fleet.historyDropped)
+#. placeholder {0}: String(archipel.historyDropped)
 #: src/web/App.tsx
 msgid "{0} 个历史样本未保存，实时监测仍在运行。"
 msgstr "{0} 个历史样本未保存，实时监测仍在运行。"
@@ -485,7 +485,7 @@ msgstr "{0} 个历史样本未保存，实时监测仍在运行。"
 msgid "{0} 个核心 · 负载 {1}"
 msgstr "{0} 个核心 · 负载 {1}"
 
-#. placeholder {0}: fleet.hosts.length
+#. placeholder {0}: archipel.hosts.length
 #: src/web/overview.tsx
 msgid "{0} 个节点"
 msgstr "{0} 个节点"
@@ -510,7 +510,7 @@ msgstr "{0} 占用节点，其他 Runner 暂停接单"
 msgid "{0} 卷已用比例"
 msgstr "{0} 卷已用比例"
 
-#. placeholder {0}: String(fleet.hosts.filter((h) => h.snapshot?.fan).length)
+#. placeholder {0}: String(archipel.hosts.filter((h) => h.snapshot?.fan).length)
 #: src/web/overview.tsx
 msgid "{0} 台已上报"
 msgstr "{0} 台已上报"
@@ -541,7 +541,7 @@ msgstr "{0} 磁盘已用比例"
 msgid "{0} 空间比例"
 msgstr "{0} 空间比例"
 
-#. placeholder {0}: fleet?.hosts.length ?? "—"
+#. placeholder {0}: archipel?.hosts.length ?? "—"
 #: src/web/App.tsx
 msgid "{0} 节点"
 msgstr "{0} 节点"
@@ -645,6 +645,10 @@ msgstr "7 天"
 msgid "AI 工具"
 msgstr "AI 工具"
 
+#: src/web/App.tsx
+msgid "Archipel operations"
+msgstr "节点运维"
+
 #: src/plugins/runners/workbench.tsx
 msgid "CI OPERATIONS"
 msgstr "持续集成"
@@ -678,10 +682,6 @@ msgstr "CPU 走势"
 #: src/web/plugin-settings.tsx
 msgid "EXTENSIONS"
 msgstr "扩展能力"
-
-#: src/web/App.tsx
-msgid "Fleet operations"
-msgstr "节点运维"
 
 #: src/web/node.tsx
 msgid "GPU 占用"
@@ -868,7 +868,7 @@ msgid "共 {0}"
 msgstr "共 {0}"
 
 #. placeholder {0}: rows.length
-#. placeholder {1}: fleet.hosts.length
+#. placeholder {1}: archipel.hosts.length
 #: src/web/overview.tsx
 msgid "共 {0} / {1} 台"
 msgstr "共 {0} / {1} 台"
@@ -931,7 +931,7 @@ msgstr "最近 10 分钟"
 msgid "最近结论"
 msgstr "最近结论"
 
-#. placeholder {0}: timeLabel(fleet.ts)
+#. placeholder {0}: timeLabel(archipel.ts)
 #: src/web/App.tsx
 msgid "最近采集 {0}"
 msgstr "最近采集 {0}"
@@ -1201,7 +1201,7 @@ msgstr "存储空间"
 msgid "实时更新"
 msgstr "实时更新"
 
-#. placeholder {0}: fleet ? new Date(fleet.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
+#. placeholder {0}: archipel ? new Date(archipel.ts).toLocaleTimeString(i18n.locale, { hour12: false, }) : t`最后一次`
 #: src/web/App.tsx
 msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
 msgstr "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
@@ -2343,8 +2343,8 @@ msgstr "群岛"
 msgid "群岛 · 节点工作台"
 msgstr "群岛 · 节点工作台"
 
-#. placeholder {0}: String(fleet.hosts.filter((h) => !stale(h, now)).length)
-#. placeholder {1}: String(fleet.hosts.length)
+#. placeholder {0}: String(archipel.hosts.filter((h) => !stale(h, now)).length)
+#. placeholder {1}: String(archipel.hosts.length)
 #: src/web/App.tsx
 msgid "群岛 · 节点工作台（{0}/{1}）"
 msgstr "群岛 · 节点工作台（{0}/{1}）"

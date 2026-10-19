@@ -26,9 +26,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VERSION "1.5.0-archipel.1"
-#define DEFAULT_CONF "/Library/MacMiniFanControl/fanctl.conf"
-#define RUN_DIR      "/Library/MacMiniFanControl"
+#define VERSION "1.5.0-archipel.2"
+#define DEFAULT_CONF "/Library/MiniArchipel/FanControl/fanctl.conf"
+#define RUN_DIR      "/Library/MiniArchipel/FanControl"
 #define PAUSE_FILE   RUN_DIR "/fanctl.paused"
 #define RUNTIME_FILE RUN_DIR "/fanctl.runtime.json"
 
