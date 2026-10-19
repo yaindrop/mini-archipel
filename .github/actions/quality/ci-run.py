@@ -213,7 +213,7 @@ def toolchain_roots(env):
     home = Path(env.get("HOME", str(Path.home())))
     return [
         home / ".local/share/mini-ci/toolchains",
-        home / ".local/flowbit-ci-pinned",
+        home / ".local/ci-pinned",
     ]
 
 
@@ -249,7 +249,7 @@ def probe(argv, env, cwd):
 def host_path_prefixes(env):
     home = Path(env.get("HOME", str(Path.home())))
     prefixes = [
-        home / ".local" / "flowbit-ci-pinned" / "bin",
+        home / ".local" / "ci-pinned" / "bin",
         home / ".local" / "share" / "mini-ci" / "bin",
         Path("/opt/homebrew/bin"),
         Path("/opt/homebrew/sbin"),
@@ -307,7 +307,7 @@ def shim_bindir(env, kind, version):
 def expose_tool(env, binary, kind):
     """Return a directory that provides `kind` and nothing else.
 
-    Shared bins such as flowbit-ci-pinned contain several tools. Prepending
+    Shared bins such as ci-pinned contain several tools. Prepending
     the whole directory to surface pnpm 12.10 also surfaces the pinned Node,
     which can be older than the Node stage_environment already selected.
     """

@@ -18,7 +18,7 @@ shell 与 runner 使用相同 PATH 顺序；固定 CI 工具优先，再放 Home
 rustup、Cargo 和 Homebrew。Homebrew 的 rustup 不保证在默认 PATH 中。
 Lima 随 Colima 依赖安装；Tart 的容器能力限制见[第 7 章](07-docker.md)。
 
-## 固定层（当前布局 `~/.local/flowbit-ci-pinned/bin`）
+## 固定层（当前布局 `~/.local/ci-pinned/bin`）
 
 由目标项目决定版本——**先读目标提交的版本声明**（`.node-version`、
 `.python-version`、`package.json`、`rust-toolchain.toml`、锁文件与项目自
