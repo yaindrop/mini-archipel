@@ -15,7 +15,7 @@ OLDLABEL=com.macmini.fan-control
 NEWLABEL=local.miniarchipel.fanctl
 STAGE=$(cd "$(dirname "$0")" && pwd)
 TS=$(date +%Y%m%d-%H%M%S)
-for f in fanctl control.py "$NEWLABEL.plist" miniarchipel-fanctl.conf; do
+for f in fanctl control.py "$NEWLABEL.plist" miniarchipel-fanctl.conf local.miniarchipel.fan-control.plist; do
   [[ -f "$STAGE/$f" ]] || { echo "Missing staging artifact: $f" >&2; exit 1; }
 done
 
@@ -54,6 +54,15 @@ install -o root -g wheel -m 644 "$STAGE/miniarchipel-fanctl.conf" "/etc/newsyslo
 install -o root -g wheel -m 755 "$STAGE/fanctl" "$NEW/fanctl.next"
 mv "$NEW/fanctl.next" "$NEW/fanctl"
 install -o root -g wheel -m 644 "$STAGE/control.py" "$NEW/control.py"
+
+# Restart the root helper that serves the plugin socket, if it is installed.
+HELPER_PLIST=/Library/LaunchDaemons/local.miniarchipel.fan-control.plist
+if [[ -f "$HELPER_PLIST" ]]; then
+  launchctl bootout system/local.miniarchipel.fan-control >/dev/null 2>&1 || true
+  install -o root -g wheel -m 644 "$STAGE/local.miniarchipel.fan-control.plist" "$HELPER_PLIST"
+  launchctl bootstrap system "$HELPER_PLIST"
+  sleep 3
+fi
 
 # Start under the new label and verify the fan answers.
 launchctl enable "system/$NEWLABEL"

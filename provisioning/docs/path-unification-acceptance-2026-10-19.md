@@ -49,11 +49,45 @@ archipel 两层补丁 + SHA256SUMS）经 `check-source.sh` 全量复核。Agent
 
 | 检查 | yd-mini | yd-mini-2 | yd-mbp-tart | yd-mbp-tart-2 |
 | --- | --- | --- | --- | --- |
-| 风扇守护运行于 local.miniarchipel.fanctl | 待补 | 待补 | 不适用 | 不适用 |
-| `/Library/MiniArchipel/FanControl/` 就位、旧目录消失 | 待补 | 待补 | 不适用 | 不适用 |
-| 温度/转速回读正常 | 待补 | 待补 | 不适用 | 不适用 |
-| mini-archipel/ci 三目录就位 + 过渡软链 | 待补 | 待补 | 待补 | 待补 |
-| Agent 0.10.0 上报 | 待补 | 待补 | 待补 | 待补 |
-| 残留清剿完成 | 待补 | 待补 | 待补 | 待补 |
+| 风扇守护运行于 local.miniarchipel.fanctl | 通过（17:13） | 通过（17:13） | 不适用 | 不适用 |
+| `/Library/MiniArchipel/FanControl/` 就位、旧目录消失 | 通过 | 通过 | 不适用 | 不适用 |
+| 温度/转速回读正常 | 通过（41.2°C / 2166rpm） | 通过（35.1°C / 停转） | 不适用 | 不适用 |
+| mini-archipel/ci 三目录就位 + 过渡软链 | 通过（3 链） | 通过（3 链） | 通过（3 链） | 通过（3 链） |
+| Agent 0.10.0 上报 | 通过 | 通过 | 通过 | 通过 |
+| 残留清剿完成 | 通过 | 通过 | 通过 | 通过 |
 
-## 实测证据（待补）
+## 实测证据（2026-10-19 17:13–17:5x）
+
+- 风扇迁移（sudo migrate-legacy-paths.sh）：两台守护以
+  `local.miniarchipel.fanctl` 运行、program 指向新路径；旧
+  LaunchDaemon plist 与 newsyslog conf 消失，仅剩 `miniarchipel-fanctl.conf`；
+  fanctl 1.5.0-archipel.2 温度回读断言通过。
+- 根级辅助服务（/Library/LaunchDaemons/local.miniarchipel.fan-control，
+  供插件 socket）：初次脚本误判其在 LaunchAgents，两轮修正后经
+  fix-fan-helper3.sh 重启到新路径；socket `{"op":"read"}` 两台均
+  `ok:true, availability:"ready"`；Console /api/state 两台 mini 的
+  fan-control 插件 `availability:"ready"`，VM 为 unsupported（设计如此）。
+  migrate-legacy-paths.sh 已补上该 helper 环节防止复用遗漏。
+- Agent 0.10.0（持久身份签名，identifier local.miniarchipel.agent）：
+  四节点原子替换 + 重启，`--version` 与 Console 上报一致；Console
+  0.12.0 banner 确认，4 仓库 runners 插件就绪。
+- mini-ci 迁移：四节点三目录并入 mini-archipel/ci，旧位置 3 条过渡
+  软链保留（旧引擎默认路径解析验证通过），16 个 runner `.env` 钩子
+  路径更新。
+- 残留清剿：四节点 `~/.local/libexec/*.previous*`（yd-mini 96 项，含
+  16+5 个 console 目录）、`~/Library/LaunchAgents/*.plist.previous*`、
+  `~/.cache/mini-archipel-*`（含 yd-mini 470MB migration 缓存）全部清零；
+  复核 libexec 仅剩活物（agent 二进制、console、mini-archipel/、ci 软链、
+  provisioning、firewall.sh）。
+- 仓库：check-source.sh（含重生成的 SHA256SUMS 与两层补丁链）、
+  provisioning unittest 44 项、console pnpm check 109 项、agent cargo
+  test 16 项全部通过。
+
+## 未关闭项
+
+- 三处过渡软链（各节点 `~/.local/{libexec,state,share}/mini-ci`）：待
+  四仓库全部 re-pin 到本轮及以后的引擎提交后删除。
+- `MINI_CI_*` 跨仓库输入名：保留（接口语义），下次协调 re-pin 时评估。
+- 两台 mini `/Library/LaunchDaemons/.legacy-*` 回滚 plist 与
+  `.legacy-fan-control-helper.*`（root 属主）：确认稳定后随下次 sudo
+  维护删除。
