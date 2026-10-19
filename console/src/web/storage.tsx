@@ -3,7 +3,7 @@ import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { useState } from "react";
 import { useSearchParams, Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { refreshFleet } from "./useFleet.ts";
+import { refreshArchipel } from "./useArchipel.ts";
 import {
   Alert,
   Button,
@@ -20,7 +20,7 @@ import {
   type TableColumnsType,
 } from "antd";
 import { Folder, HardDrive, RefreshCw } from "lucide-react";
-import type { Fleet, Host, ScanNode } from "../contracts.ts";
+import type { Archipel, Host, ScanNode } from "../contracts.ts";
 import {
   dataDisk,
   displayName,
@@ -113,7 +113,7 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
       action.cancel && job
         ? api.cancelScan(host.name, job.id)
         : api.rescan(host.name, action.path),
-    onSuccess: () => refreshFleet(client),
+    onSuccess: () => refreshArchipel(client),
   });
   const classes = scan ? storageClasses(scan) : new Map<string, number>(),
     total = scan?.bytes ?? 0;
@@ -461,11 +461,18 @@ export function StorageBrowser({ host, now }: { host: Host; now: number }) {
     </Section>
   );
 }
-export function Storage({ fleet, now }: { fleet: Fleet; now: number }) {
+export function Storage({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { t } = useLinguiMacro();
   const [search, setSearch] = useSearchParams(),
     host =
-      fleet.hosts.find((h) => h.name === search.get("host")) ?? fleet.hosts[0];
+      archipel.hosts.find((h) => h.name === search.get("host")) ??
+      archipel.hosts[0];
   return (
     <>
       <PageTitle
@@ -474,7 +481,7 @@ export function Storage({ fleet, now }: { fleet: Fleet; now: number }) {
         description={t`先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。`}
       />
       <div className="storage-volume-grid">
-        {fleet.hosts.map((h) => {
+        {archipel.hosts.map((h) => {
           const disk = dataDisk(h),
             pct = disk
               ? (1 - disk.available_bytes / Math.max(1, disk.total_bytes)) * 100

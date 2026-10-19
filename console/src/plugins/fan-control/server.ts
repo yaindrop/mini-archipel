@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { PluginDefinition } from "../runtime.ts";
-import { UpstreamError } from "../../fleet.ts";
+import { UpstreamError } from "../../archipel.ts";
 import { stale } from "../../domain.ts";
 import {
   CancelSchema,

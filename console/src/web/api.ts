@@ -2,7 +2,7 @@ import { type Translate, remoteText } from "../messages.ts";
 import { t } from "@lingui/core/macro";
 import type { z } from "zod";
 import {
-  FleetSchema,
+  ArchipelSchema,
   HistorySchema,
   OkSchema,
   SessionSchema,
@@ -57,10 +57,10 @@ export const api = {
     request("/api/session", OkSchema, {
       method: "DELETE",
     }),
-  fleet: (signal?: AbortSignal) =>
+  archipel: (signal?: AbortSignal) =>
     request(
       "/api/state",
-      FleetSchema,
+      ArchipelSchema,
       signal
         ? {
             signal,

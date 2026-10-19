@@ -1,10 +1,17 @@
-import { FleetUpdateSchema, type Fleet, type Snapshot } from "./contracts.ts";
+import {
+  ArchipelUpdateSchema,
+  type Archipel,
+  type Snapshot,
+} from "./contracts.ts";
 
 /** Only immutable directory results can be omitted; task progress always travels. */
-export function fleetUpdate(fleet: Fleet, versions: Map<string, string>) {
+export function archipelUpdate(
+  archipel: Archipel,
+  versions: Map<string, string>,
+) {
   return {
-    ...fleet,
-    hosts: fleet.hosts.map((host) => {
+    ...archipel,
+    hosts: archipel.hosts.map((host) => {
       const snapshot = host.snapshot,
         revision = snapshot?.disk_revision;
       if (!snapshot || !revision) return host;
@@ -31,11 +38,11 @@ export function restoreSnapshot(
     throw new Error("directory revision is missing");
   return { ...update, disk_scans: previous.disk_scans };
 }
-export function restoreFleet(
+export function restoreArchipel(
   value: unknown,
-  previous: Fleet | undefined,
-): Fleet {
-  const update = FleetUpdateSchema.parse(value);
+  previous: Archipel | undefined,
+): Archipel {
+  const update = ArchipelUpdateSchema.parse(value);
   return {
     ...update,
     hosts: update.hosts.map((host) => ({

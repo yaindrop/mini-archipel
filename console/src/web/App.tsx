@@ -55,10 +55,10 @@ import {
   Radio,
   Puzzle,
 } from "lucide-react";
-import type { Fleet } from "../contracts.ts";
+import type { Archipel } from "../contracts.ts";
 import { displayName, nodeIdentityLabel, stale, timeLabel } from "../domain.ts";
 import { api, message } from "./api.ts";
-import { useFleet, withLivePlugins } from "./useFleet.ts";
+import { useArchipel, withLivePlugins } from "./useArchipel.ts";
 import { Brand, HostIdentity, NodeStatus, PageTitle, Section } from "./ui.tsx";
 import {
   PluginSlot,
@@ -135,7 +135,7 @@ function Login() {
           <br />
           {t` 从资源状态，到每一次接单。 `}
         </p>
-        <small>{t`Fleet operations`}</small>
+        <small>{t`Archipel operations`}</small>
       </div>
       <div className="login-form-panel">
         <div className="login-preferences">
@@ -227,14 +227,14 @@ const NAV = [
     icon: Puzzle,
   },
 ];
-function Connections({ fleet, now }: { fleet: Fleet; now: number }) {
+function Connections({ archipel, now }: { archipel: Archipel; now: number }) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
   const config = useQuery({
     queryKey: ["config"],
     queryFn: api.config,
   });
-  const plugins = useWorkbenchPlugins(fleet);
+  const plugins = useWorkbenchPlugins(archipel);
   return (
     <>
       <PageTitle
@@ -245,7 +245,7 @@ function Connections({ fleet, now }: { fleet: Fleet; now: number }) {
       <div className="connections-grid">
         <Section title={t`节点连接`}>
           <div className="connection-list">
-            {fleet.hosts.map((host, index) => (
+            {archipel.hosts.map((host, index) => (
               <div key={host.name}>
                 <HostIdentity host={host} index={index} />
                 <code>
@@ -276,7 +276,7 @@ function Connections({ fleet, now }: { fleet: Fleet; now: number }) {
           {plugins.map((plugin) =>
             plugin.ConnectionsPanel ? (
               <PluginSlot key={plugin.id} label={plugin.label}>
-                <plugin.ConnectionsPanel fleet={fleet} now={now} />
+                <plugin.ConnectionsPanel archipel={archipel} now={now} />
               </PluginSlot>
             ) : null,
           )}
@@ -322,16 +322,17 @@ function Workbench() {
   const { _ } = useLingui();
   const { i18n, t } = useLinguiMacro();
   const [paused, setPaused] = useState(false),
-    [frozen, setFrozen] = useState<Fleet | undefined>(undefined),
+    [frozen, setFrozen] = useState<Archipel | undefined>(undefined),
     [now, setNow] = useState(() => Date.now()),
     [mobile, setMobile] = useState(false);
   const screens = Grid.useBreakpoint(),
     compact = !screens.lg,
-    feed = useFleet(paused),
-    fleet = paused && frozen ? withLivePlugins(frozen, feed.data) : feed.data,
+    feed = useArchipel(paused),
+    archipel =
+      paused && frozen ? withLivePlugins(frozen, feed.data) : feed.data,
     location = useLocation(),
     nodeRoute = useMatch("/nodes/:name"),
-    activeNode = fleet?.hosts.find(
+    activeNode = archipel?.hosts.find(
       (host) => host.name === nodeRoute?.params.name,
     ),
     client = useQueryClient();
@@ -344,15 +345,15 @@ function Workbench() {
     };
   }, []);
   useEffect(() => {
-    document.title = fleet
-      ? t`群岛 · 节点工作台（${String(fleet.hosts.filter((h) => !stale(h, now)).length)}/${String(fleet.hosts.length)}）`
+    document.title = archipel
+      ? t`群岛 · 节点工作台（${String(archipel.hosts.filter((h) => !stale(h, now)).length)}/${String(archipel.hosts.length)}）`
       : t`群岛 · 节点工作台`;
-  }, [fleet, now, i18n.locale, t]);
+  }, [archipel, now, i18n.locale, t]);
   const logout = useMutation({
     mutationFn: api.logout,
     onSuccess: () => {
       client.removeQueries({
-        queryKey: ["fleet"],
+        queryKey: ["archipel"],
       });
       client.removeQueries({
         queryKey: ["history"],
@@ -363,7 +364,7 @@ function Workbench() {
       });
     },
   });
-  const plugins = useWorkbenchPlugins(fleet),
+  const plugins = useWorkbenchPlugins(archipel),
     catalog = usePluginCatalog();
   const navigationItems = [
     ...NAV.map((item) => ({
@@ -385,7 +386,7 @@ function Workbench() {
           ? location.pathname === "/"
           : location.pathname.startsWith(n.to),
       )?.label ?? t`连接诊断`);
-  const effectiveNow = paused && fleet ? fleet.ts : now;
+  const effectiveNow = paused && archipel ? archipel.ts : now;
   const menuItems = navigationItems.map((item) => ({
     key: item.to,
     icon: <item.icon size={18} />,
@@ -399,8 +400,10 @@ function Workbench() {
         {item.label}
         {plugins.find((plugin) => plugin.to === item.to)?.badge ? (
           <Tag variant="filled">
-            {fleet
-              ? plugins.find((plugin) => plugin.to === item.to)?.badge?.(fleet)
+            {archipel
+              ? plugins
+                  .find((plugin) => plugin.to === item.to)
+                  ?.badge?.(archipel)
               : 0}
           </Tag>
         ) : null}
@@ -429,7 +432,7 @@ function Workbench() {
           <strong>{t`我的集群`}</strong>
           <small>{t`私有工作空间`}</small>
         </span>
-        <Tag variant="filled">{t`${fleet?.hosts.length ?? "—"} 节点`}</Tag>
+        <Tag variant="filled">{t`${archipel?.hosts.length ?? "—"} 节点`}</Tag>
       </div>
       <nav aria-label={t`主导航`}>
         <Menu
@@ -441,7 +444,7 @@ function Workbench() {
       </nav>
       <div className="nav-caption">
         {t` 节点`}
-        <span>{fleet?.hosts.length ?? 0}</span>
+        <span>{archipel?.hosts.length ?? 0}</span>
       </div>
       <nav className="node-navigation" aria-label={t`节点导航`}>
         <Menu
@@ -449,7 +452,7 @@ function Workbench() {
           mode="inline"
           selectedKeys={[selected]}
           items={
-            fleet?.hosts.map((h) => ({
+            archipel?.hosts.map((h) => ({
               key: `/nodes/${encodeURIComponent(h.name)}`,
               icon: (
                 <Badge status={stale(h, effectiveNow) ? "error" : "success"} />
@@ -502,7 +505,9 @@ function Workbench() {
                     : t`正在恢复连接`}
             </strong>
             <small>
-              {fleet ? t`最近采集 ${timeLabel(fleet.ts)}` : t`正在等待节点上报`}
+              {archipel
+                ? t`最近采集 ${timeLabel(archipel.ts)}`
+                : t`正在等待节点上报`}
             </small>
           </span>
         </div>
@@ -638,8 +643,8 @@ function Workbench() {
               type="warning"
               showIcon
               title={t`实时更新已暂停，当前显示 ${
-                fleet
-                  ? new Date(fleet.ts).toLocaleTimeString(i18n.locale, {
+                archipel
+                  ? new Date(archipel.ts).toLocaleTimeString(i18n.locale, {
                       hour12: false,
                     })
                   : t`最后一次`
@@ -647,14 +652,14 @@ function Workbench() {
               role="status"
             />
           ) : null}
-          {fleet?.historyError && (
+          {archipel?.historyError && (
             <Alert
               type="warning"
               showIcon
-              title={remoteText(fleet.historyError, _)}
+              title={remoteText(archipel.historyError, _)}
               description={
-                fleet.historyDropped
-                  ? t`${String(fleet.historyDropped)} 个历史样本未保存，实时监测仍在运行。`
+                archipel.historyDropped
+                  ? t`${String(archipel.historyDropped)} 个历史样本未保存，实时监测仍在运行。`
                   : undefined
               }
             />
@@ -667,8 +672,8 @@ function Workbench() {
               role="alert"
             />
           ) : null}
-          {fleet
-            ? Object.values(fleet.plugins)
+          {archipel
+            ? Object.values(archipel.plugins)
                 .filter((plugin) => plugin.enabled && plugin.error)
                 .map((plugin) => (
                   <Alert
@@ -688,7 +693,7 @@ function Workbench() {
               role="alert"
             />
           ) : null}
-          {fleet ? (
+          {archipel ? (
             <Suspense
               fallback={
                 <div className="connection-loading" role="status">
@@ -700,24 +705,28 @@ function Workbench() {
               <Routes>
                 <Route
                   path="/"
-                  element={<Overview fleet={fleet} now={effectiveNow} />}
+                  element={<Overview archipel={archipel} now={effectiveNow} />}
                 />
                 <Route
                   path="/nodes/:name"
-                  element={<NodeDetail fleet={fleet} now={effectiveNow} />}
+                  element={
+                    <NodeDetail archipel={archipel} now={effectiveNow} />
+                  }
                 />
                 <Route
                   path="/plugins"
-                  element={<PluginSettings fleet={fleet} now={effectiveNow} />}
+                  element={
+                    <PluginSettings archipel={archipel} now={effectiveNow} />
+                  }
                 />
                 {catalog.map((plugin) => (
                   <Route
                     key={plugin.id}
                     path={plugin.to}
                     element={
-                      fleet.plugins[plugin.id]?.enabled ? (
+                      archipel.plugins[plugin.id]?.enabled ? (
                         <PluginSlot label={plugin.label}>
-                          <plugin.Page fleet={fleet} now={effectiveNow} />
+                          <plugin.Page archipel={archipel} now={effectiveNow} />
                         </PluginSlot>
                       ) : (
                         <Result
@@ -732,17 +741,23 @@ function Workbench() {
                 ))}
                 <Route
                   path="/storage"
-                  element={<Storage fleet={fleet} now={effectiveNow} />}
+                  element={<Storage archipel={archipel} now={effectiveNow} />}
                 />
                 <Route
                   path="/history"
                   element={
-                    <History fleet={fleet} paused={paused} now={effectiveNow} />
+                    <History
+                      archipel={archipel}
+                      paused={paused}
+                      now={effectiveNow}
+                    />
                   }
                 />
                 <Route
                   path="/connections"
-                  element={<Connections fleet={fleet} now={effectiveNow} />}
+                  element={
+                    <Connections archipel={archipel} now={effectiveNow} />
+                  }
                 />
                 <Route
                   path="*"
@@ -923,7 +938,7 @@ export function App() {
         autoInsertSpace: false,
       }}
     >
-      <AntApp className="fleet-root">
+      <AntApp className="archipel-root">
         <ErrorBoundary>
           <SessionGate />
         </ErrorBoundary>

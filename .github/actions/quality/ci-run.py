@@ -476,7 +476,7 @@ def sysctl_model():
 
 
 def timeout_factor(env, model):
-    """Virtualized fleet nodes keep the same suites with doubled budgets.
+    """Virtualized archipel nodes keep the same suites with doubled budgets.
 
     tart guests report a VirtualMac hardware model while physical nodes
     report their real model, so consumers can scale per-test timeouts.

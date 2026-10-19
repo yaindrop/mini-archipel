@@ -12,7 +12,7 @@ import {
   Typography,
   Descriptions,
 } from "antd";
-import type { Fleet } from "../contracts.ts";
+import type { Archipel } from "../contracts.ts";
 import { displayName, metricValue, METRICS, NODE_COLORS } from "../domain.ts";
 import { api, message } from "./api.ts";
 import { PageTitle, Section } from "./ui.tsx";
@@ -53,11 +53,11 @@ export function csvCell(value: string): string {
   return `"${value.replace(/^[=+@-]/, "'$&").replaceAll('"', '""')}"`;
 }
 export function History({
-  fleet,
+  archipel,
   paused,
   now,
 }: {
-  fleet: Fleet;
+  archipel: Archipel;
   paused: boolean;
   now: number;
 }) {
@@ -79,8 +79,8 @@ export function History({
   const selected = search.get("host") ?? "all",
     hosts =
       selected === "all"
-        ? fleet.hosts
-        : fleet.hosts.filter((h) => h.name === selected),
+        ? archipel.hosts
+        : archipel.hosts.filter((h) => h.name === selected),
     windowMs = window?.ms ?? 3600_000;
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(search);
@@ -101,7 +101,7 @@ export function History({
   });
   const series = hosts.map((host, i) => ({
     name: displayName(host),
-    color: NODE_COLORS[fleet.hosts.indexOf(host) % 4] ?? "#078990",
+    color: NODE_COLORS[archipel.hosts.indexOf(host) % 4] ?? "#078990",
     points: queries[i]?.data?.points ?? [],
   }));
   const error = queries.find((q) => q.error)?.error,
@@ -172,7 +172,7 @@ export function History({
                   value: "all",
                   label: t`全部节点`,
                 },
-                ...fleet.hosts.map((h) => ({
+                ...archipel.hosts.map((h) => ({
                   value: h.name,
                   label: displayName(h),
                 })),

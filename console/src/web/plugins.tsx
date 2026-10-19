@@ -10,9 +10,9 @@ import {
 import { Link } from "react-router";
 import { Alert, type TableColumnsType } from "antd";
 import type { LucideIcon } from "lucide-react";
-import type { Fleet, Host } from "../contracts.ts";
+import type { Archipel, Host } from "../contracts.ts";
 export interface WorkspaceProps {
-  fleet: Fleet;
+  archipel: Archipel;
   now: number;
 }
 export interface WorkbenchPlugin {
@@ -21,7 +21,7 @@ export interface WorkbenchPlugin {
   to: string;
   icon: LucideIcon;
   Page: ComponentType<WorkspaceProps>;
-  badge?: (fleet: Fleet) => number;
+  badge?: (archipel: Archipel) => number;
   columns?: (props: WorkspaceProps) => TableColumnsType<Host>;
   OverviewPanel?: ComponentType<WorkspaceProps>;
   nodeOrder?: number;
@@ -46,9 +46,9 @@ export function PluginProvider({
 export function usePluginCatalog() {
   return useContext(Catalog);
 }
-export function useWorkbenchPlugins(fleet: Fleet | undefined) {
+export function useWorkbenchPlugins(archipel: Archipel | undefined) {
   return usePluginCatalog().filter(
-    (plugin) => fleet?.plugins[plugin.id]?.enabled,
+    (plugin) => archipel?.plugins[plugin.id]?.enabled,
   );
 }
 export class PluginSlot extends Component<

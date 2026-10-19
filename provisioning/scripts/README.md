@@ -1,6 +1,6 @@
-# CI 机群共享脚本
+# CI 群岛共享脚本
 
-`ci-fleet.json` 是仓库和节点清单。每节点每仓库独立注册，安装在
+`ci-archipel.json` 是仓库和节点清单。每节点每仓库独立注册，安装在
 `~/runners/<repo>`，不能复制 `.runner` 或认证私钥。
 
 - `ci-lease.py`：同步开始钩子的跨仓库节点互斥；PID 和进程启动时间共同标识持有者。
@@ -42,3 +42,28 @@ clang -Wall -Wextra provisioning/scripts/tests/hook-worker.c -o /tmp/Runner.Work
 C 探针在真实 `Runner.Worker` 进程祖先下调用两个钩子，但清空工作区变量、
 不执行维护或项目 CI。先确认节点空闲再运行探针，不在 Actions 作业内运行探针。验收必须分别报告注册在线、
 钩子探针和真实项目 CI 三种证据；不能用探针替代项目检查通过。
+
+## 群岛运维脚本
+
+节点侧与宿主机侧的运维脚本同样由本目录维护，统一安装在
+`~/.local/libexec/mini-archipel/`，配置在 `~/.config/mini-archipel/`，
+数据在 `~/.local/share/mini-archipel/` 与 `~/.local/state/mini-archipel/`。
+
+- `export-backup.py`：节点侧。导出本节点配置、二进制、Runner 凭据与
+  Console 数据库（sqlite 在线备份），`openssl cms` 加密落到
+  `~/.local/state/mini-archipel/backups/`，保留最近 14 份。加密证书为
+  `~/.config/mini-archipel/recovery.crt`。
+- `backup-archipel.py`：宿主机编排，`local.miniarchipel.backup` 每日 03:30
+  触发。SSH 到四节点执行 `export-backup.py`，scp 拉回并核对 sha256 后落
+  `~/.local/share/mini-archipel/backups/<node>/`，并推副本到 yd-mini-2 的
+  `~/.local/state/mini-archipel/archipel-backups/`（各保留 14 份）。宿主自身
+  脚本、配置、tart VM 定义与 LaunchAgent 打包加密为 `*-host-ops.tar.gz.cms`。
+- `backup-signing.py`：加密持久签名身份，恢复材料同样进备份链。
+- `host-services.py`：宿主机服务。`vms` 模式保活两台 tart 虚拟机并用
+  caffeinate 维持宿主唤醒；`relay` 模式维持 SSH 本地转发，把宿主机局域网
+  9102/9103 转发到客体内 `127.0.0.1:9101` 的 Agent。
+
+`deploy/` 保存宿主机四个 LaunchAgent：`local.miniarchipel.vms`、
+`local.miniarchipel.backup` 与两条 `local.miniarchipel.tunnel.*`。节点侧
+export-backup 由宿主机经 SSH 触发，节点上无本地调度。备份恢复私钥
+`recovery.key` 只在恢复时使用，不进入任何脚本路径。

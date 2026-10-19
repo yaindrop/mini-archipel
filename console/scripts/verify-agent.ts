@@ -34,7 +34,7 @@ await test(
         resolve();
       }),
     );
-    const dir = mkdtempSync(join(tmpdir(), "fleet-agent-http-")),
+    const dir = mkdtempSync(join(tmpdir(), "archipel-agent-http-")),
       path = join(dir, "agent.toml"),
       token = "test-agent-token-only";
     writeFileSync(

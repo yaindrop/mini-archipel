@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { once } from "node:events";
 import { describe, it, expect } from "vitest";
-import { curlTransport } from "../src/fleet.ts";
+import { curlTransport } from "../src/archipel.ts";
 describe("macOS curl transport", () => {
   it("sends credentials through config stdin, preserves JSON and rejects HTTP failures", async () => {
     let auth = "",

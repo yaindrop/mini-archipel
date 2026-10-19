@@ -6,12 +6,12 @@
 | ------------ | --------------------------------------------------------- | --------------------------------- |
 | agent        | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
 | console      | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
-| provisioning | Python / Bash · 装机规范、CI 机群与共享钩子               | 本仓库维护，部署到四台节点        |
+| provisioning | Python / Bash · 装机规范、CI 群岛与共享钩子               | 本仓库维护，部署到四台节点        |
 | VM 连接      | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
-装机规范、CI 机群脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](fan-control/README.md)。
+装机规范、CI 群岛脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](fan-control/README.md)。
 
 采集过期、历史缓冲、扫描任务、Runner 操作回执与签名恢复约定见 [可靠性说明](docs/reliability.md)。
 
@@ -99,7 +99,7 @@ gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci
 
 四节点各有 `~/runners/mini-archipel`，与 Flowbit、Flowbit Knowledge、In Frames
 的独立 Runner 共享每节点一个作业的保护。四仓库共 16 个实例均由 Runner 插件按 Repo
-发现与管理。共享脚本与部署规则见 [节点配置与 CI 机群](provisioning/docs/08-github-runner.md)。
+发现与管理。共享脚本与部署规则见 [节点配置与 CI 群岛](provisioning/docs/08-github-runner.md)。
 
 ## 部署
 

@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react";
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { remoteText } from "../../messages.ts";
-import { refreshFleet } from "../../web/useFleet.ts";
+import { refreshArchipel } from "../../web/useArchipel.ts";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ import {
   Square,
   Terminal,
 } from "lucide-react";
-import type { Fleet, Host } from "../../contracts.ts";
+import type { Archipel, Host } from "../../contracts.ts";
 import type { Runner, GitHubRunner, RepositoryState } from "./contracts.ts";
 import {
   agentData,
@@ -101,7 +101,7 @@ function NodeCoordination({ host, now }: { host: Host; now: number }) {
         enable,
       }),
     onSuccess: async () => {
-      await refreshFleet(client);
+      await refreshArchipel(client);
       void feedback.success(t`操作请求已提交，请查看节点操作状态`);
     },
   });
@@ -204,7 +204,7 @@ export function RunnerList({
             enable,
           }),
     onSuccess: async () => {
-      await refreshFleet(client);
+      await refreshArchipel(client);
       void feedback.success(t`操作请求已提交，请查看节点操作状态`);
       setConfirm(null);
     },
@@ -587,10 +587,16 @@ export function RunnerList({
     </>
   );
 }
-export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
+export function Runners({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { t } = useLinguiMacro();
-  const remoteRunners = remoteFor(fleet);
-  const rows = fleet.hosts.flatMap((host) =>
+  const remoteRunners = remoteFor(archipel);
+  const rows = archipel.hosts.flatMap((host) =>
       runnersFor(host).map((runner) => ({
         host,
         runner,
@@ -639,7 +645,7 @@ export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
         subtitle={t`同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。`}
       >
         <div className="runner-coordination-grid">
-          {fleet.hosts.map((host) => (
+          {archipel.hosts.map((host) => (
             <NodeCoordination key={host.name} host={host} now={now} />
           ))}
         </div>
@@ -649,9 +655,9 @@ export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
         subtitle={t`执行操作前，工作台和节点都会重新检查作业状态。`}
       >
         <RunnerList
-          hosts={fleet.hosts}
+          hosts={archipel.hosts}
           now={now}
-          repositories={consoleData(fleet).repositories}
+          repositories={consoleData(archipel).repositories}
           remoteRunners={remoteRunners}
         />
       </Section>
@@ -659,11 +665,11 @@ export function Runners({ fleet, now }: { fleet: Fleet; now: number }) {
   );
 }
 export function NodePanel({
-  fleet,
+  archipel,
   host,
   now,
 }: {
-  fleet: Fleet;
+  archipel: Archipel;
   host: Host;
   now: number;
 }) {
@@ -690,23 +696,29 @@ export function NodePanel({
             hosts={[host]}
             layout="node"
             now={now}
-            repositories={consoleData(fleet).repositories}
-            remoteRunners={remoteFor(fleet)}
+            repositories={consoleData(archipel).repositories}
+            remoteRunners={remoteFor(archipel)}
           />
         </>
       )}
     </Section>
   );
 }
-export function OverviewPanel({ fleet, now }: { fleet: Fleet; now: number }) {
+export function OverviewPanel({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { t } = useLinguiMacro();
-  const rows = fleet.hosts.flatMap((host) =>
+  const rows = archipel.hosts.flatMap((host) =>
       runnersFor(host).map((runner) => ({
         host,
         runner,
       })),
     ),
-    remote = remoteFor(fleet);
+    remote = remoteFor(archipel);
   const busy = rows.filter(
     ({ host, runner }) => runnerState(host, runner, remote, now) === "busy",
   ).length;
@@ -724,10 +736,15 @@ export function OverviewPanel({ fleet, now }: { fleet: Fleet; now: number }) {
     </Section>
   );
 }
-export function ConnectionsPanel({ fleet }: { fleet: Fleet; now: number }) {
+export function ConnectionsPanel({
+  archipel,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
-  const { repositories } = consoleData(fleet);
+  const { repositories } = consoleData(archipel);
   return (
     <Section title="GitHub Actions">
       <div className="github-connection">

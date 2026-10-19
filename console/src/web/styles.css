@@ -20,10 +20,10 @@
 body {
   margin: 0;
 }
-.fleet-root {
+.archipel-root {
   min-height: 100dvh;
 }
-.fleet-root,
+.archipel-root,
 .css-var-mini-archipel {
   --text: var(--ant-color-text, #23344a);
   --muted: var(--ant-color-text-secondary, #5c6c80);
@@ -75,7 +75,7 @@ code {
 .skip-link:focus {
   transform: translateY(0);
 }
-.fleet-root :focus-visible {
+.archipel-root :focus-visible {
   outline: 3px solid #2999a8;
   outline-offset: 3px;
 }

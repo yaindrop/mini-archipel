@@ -29,7 +29,7 @@ import {
   MemoryStick,
   TriangleAlert,
 } from "lucide-react";
-import type { Fleet, Host } from "../contracts.ts";
+import type { Archipel, Host } from "../contracts.ts";
 import {
   alertsFor,
   dataDisk,
@@ -46,7 +46,13 @@ import {
 import { HostIdentity, Metric, NodeStatus, PageTitle, Section } from "./ui.tsx";
 import { PluginSlot, useWorkbenchPlugins } from "./plugins.tsx";
 import { Spark, TimeChart } from "./chart.tsx";
-export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
+export function Overview({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
   const [search, setSearch] = useSearchParams(),
@@ -88,8 +94,8 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
       window.removeEventListener("keydown", key);
     };
   }, []);
-  const plugins = useWorkbenchPlugins(fleet);
-  const reachable = fleet.hosts.filter((h) => !stale(h, now)),
+  const plugins = useWorkbenchPlugins(archipel);
+  const reachable = archipel.hosts.filter((h) => !stale(h, now)),
     fresh = reachable.filter((h) => sampleFresh(h.snapshot?.sys, now));
   const memoryTotal = fresh.reduce(
       (sum, h) => sum + (h.snapshot?.sys?.mem.total_bytes ?? 0),
@@ -114,8 +120,8 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
       return disk ? [disk] : [];
     }),
     disk = disks.reduce((n, d) => n + d.available_bytes, 0),
-    alerts = alertsFor(fleet.hosts, now, _);
-  const filtered = fleet.hosts.filter(
+    alerts = alertsFor(archipel.hosts, now, _);
+  const filtered = archipel.hosts.filter(
     (h) =>
       displayName(h).toLowerCase().includes(query.toLowerCase()) &&
       (filter === "all" ||
@@ -150,7 +156,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
             to={`/nodes/${encodeURIComponent(h.name)}`}
             aria-label={t`查看节点 ${displayName(h)}`}
           >
-            <HostIdentity host={h} index={fleet.hosts.indexOf(h)} />
+            <HostIdentity host={h} index={archipel.hosts.indexOf(h)} />
           </Link>
           {!screens.md ? (
             <div className="node-compact-details">
@@ -227,7 +233,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
           </span>
           <Spark
             points={h.history["cpu.usage_pct"] ?? []}
-            color={NODE_COLORS[fleet.hosts.indexOf(h) % 4] ?? "#08727e"}
+            color={NODE_COLORS[archipel.hosts.indexOf(h) % 4] ?? "#08727e"}
           />
         </div>
       ),
@@ -286,7 +292,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
     ...plugins.flatMap(
       (plugin) =>
         plugin.columns?.({
-          fleet,
+          archipel,
           now,
         }) ?? [],
     ),
@@ -305,8 +311,8 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
       ),
     },
   ];
-  const virtual = fleet.hosts.filter(isVirtual).length,
-    physical = fleet.hosts.length - virtual;
+  const virtual = archipel.hosts.filter(isVirtual).length,
+    physical = archipel.hosts.length - virtual;
   return (
     <>
       <PageTitle
@@ -335,7 +341,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
           value={
             <>
               {reachable.length}
-              <span>/ {fleet.hosts.length}</span>
+              <span>/ {archipel.hosts.length}</span>
             </>
           }
           detail={t`${String(physical)} 台物理机 · ${String(virtual)} 台虚拟机`}
@@ -374,7 +380,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
         className="nodes-panel"
         action={
           <Typography.Text type="secondary" className="num">
-            {t`${fleet.hosts.length} 个节点`}
+            {t`${archipel.hosts.length} 个节点`}
           </Typography.Text>
         }
       >
@@ -467,7 +473,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
             <div className="panel-footnote">
               <Activity size={13} />
               <span>{t`每秒采集 · 数据超过 10 秒未更新时标记过期`}</span>
-              <span>{t`共 ${rows.length} / ${fleet.hosts.length} 台`}</span>
+              <span>{t`共 ${rows.length} / ${archipel.hosts.length} 台`}</span>
             </div>
           )}
           locale={{
@@ -499,7 +505,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
               label={metric === "cpu" ? t`CPU 占用走势` : t`内存占用走势`}
               unit="%"
               max={100}
-              series={fleet.hosts.map((h, i) => ({
+              series={archipel.hosts.map((h, i) => ({
                 name: displayName(h),
                 color: NODE_COLORS[i % 4] ?? "#08727e",
                 points:
@@ -562,7 +568,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
       {plugins.map((plugin) =>
         plugin.OverviewPanel ? (
           <PluginSlot key={plugin.id} label={plugin.label}>
-            <plugin.OverviewPanel fleet={fleet} now={now} />
+            <plugin.OverviewPanel archipel={archipel} now={now} />
           </PluginSlot>
         ) : null,
       )}
@@ -581,7 +587,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
               children:
                 [
                   ...new Set(
-                    fleet.hosts
+                    archipel.hosts
                       .map((h) => h.snapshot?.host?.arch)
                       .filter(Boolean),
                   ),
@@ -595,7 +601,7 @@ export function Overview({ fleet, now }: { fleet: Fleet; now: number }) {
             {
               key: "sensors",
               label: t`物理传感器`,
-              children: t`${String(fleet.hosts.filter((h) => h.snapshot?.fan).length)} 台已上报`,
+              children: t`${String(archipel.hosts.filter((h) => h.snapshot?.fan).length)} 台已上报`,
             },
           ]}
         />

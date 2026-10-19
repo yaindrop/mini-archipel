@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createApp } from "../../src/app.ts";
 import { loadConfig, saveConfig } from "../../src/config.ts";
-import { FleetSchema, type Fleet } from "../../src/contracts.ts";
+import { ArchipelSchema, type Archipel } from "../../src/contracts.ts";
 import {
   PluginManager,
   type PluginContext,
@@ -83,7 +83,7 @@ describe("plugin HTTP lifecycle", () => {
         })
       ).statusCode,
     ).toBe(200);
-    const state = FleetSchema.parse(
+    const state = ArchipelSchema.parse(
       (await app.inject({ url: "/api/state", headers: auth })).json(),
     );
     expect(state.plugins.runners?.enabled).toBe(false);
@@ -184,7 +184,7 @@ describe("plugin HTTP lifecycle", () => {
     ).toBe(404);
   });
   it("persists lifecycle changes across a new server instance", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "fleet-plugin-persist-")),
+    const dir = mkdtempSync(join(tmpdir(), "archipel-plugin-persist-")),
       file = join(dir, "console.json");
     try {
       saveConfig(file, config);
@@ -202,7 +202,7 @@ describe("plugin HTTP lifecycle", () => {
       const second = setup({}, loadConfig(file));
       const state = (
         await second.app.inject({ url: "/api/state", headers: auth })
-      ).json<Fleet>();
+      ).json<Archipel>();
       expect(state.plugins.runners?.enabled).toBe(false);
       expect(loadConfig(file).plugins.runners?.options).toEqual({});
     } finally {
@@ -217,7 +217,7 @@ describe("plugin HTTP lifecycle", () => {
       { ...config, plugins: {} },
     );
     await monitor.poll();
-    const state = FleetSchema.parse(
+    const state = ArchipelSchema.parse(
       (await app.inject({ url: "/api/state", headers: auth })).json(),
     );
     expect(state.plugins).toEqual({});
@@ -380,14 +380,14 @@ it("keeps runner implementation out of core modules", () => {
     "config.ts",
     "contracts.ts",
     "domain.ts",
-    "fleet.ts",
+    "archipel.ts",
     "app.ts",
     "web/App.tsx",
     "web/overview.tsx",
     "web/node.tsx",
     "web/ui.tsx",
     "web/api.ts",
-    "web/useFleet.ts",
+    "web/useArchipel.ts",
     "web/plugins.tsx",
     "web/plugin-settings.tsx",
     "web/styles.css",

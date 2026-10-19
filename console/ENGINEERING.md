@@ -16,22 +16,22 @@ Runner 的采集、数据模型、GitHub 集成、控制和工作台扩展已迁
 
 ## 模块边界
 
-| 文件                  | 责任                                                                      |
-| --------------------- | ------------------------------------------------------------------------- |
-| `src/contracts.ts`    | Zod 校验 agent、HTTP、WebSocket 与历史数据，导出共享 TS 类型              |
-| `src/domain.ts`       | 单位、状态、过期判定、告警、存储树与指标口径                              |
-| `src/fleet.ts`        | 基础采集、同节点轮询去重、最近走势                                        |
-| `src/store.ts`        | 有界 Worker 请求、故障隔离与排空退出                                      |
-| `src/store-worker.ts` | 后台数据库操作入口                                                        |
-| `src/history-db.ts`   | SQLite 事务、带权聚合、保留与有界查询                                     |
-| `src/fleet-wire.ts`   | 目录修订与完整基线恢复                                                    |
-| `src/app.ts`          | 可注入 transport 的 Fastify 应用、会话、输入校验、操作保护、静态资源与 WS |
-| `src/server.ts`       | 配置、监听、退出与运行目录                                                |
-| `src/web/App.tsx`     | 登录、导航、布局、错误边界及页面路由                                      |
-| `src/web/useFleet.ts` | React Query 缓存、WS、重连、轮询、可见性与暂停                            |
-| `src/plugins/*`       | 插件运行时、契约和注册表；具体插件独立拥有业务、校验与 UI                 |
-| `src/web/plugins.tsx` | 工作台通用扩展接口和局部错误隔离                                          |
-| `src/web/*`           | 概览、节点、存储、历史及共用 UI / SVG 图表                                |
+| 文件                     | 责任                                                                      |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `src/contracts.ts`       | Zod 校验 agent、HTTP、WebSocket 与历史数据，导出共享 TS 类型              |
+| `src/domain.ts`          | 单位、状态、过期判定、告警、存储树与指标口径                              |
+| `src/archipel.ts`        | 基础采集、同节点轮询去重、最近走势                                        |
+| `src/store.ts`           | 有界 Worker 请求、故障隔离与排空退出                                      |
+| `src/store-worker.ts`    | 后台数据库操作入口                                                        |
+| `src/history-db.ts`      | SQLite 事务、带权聚合、保留与有界查询                                     |
+| `src/archipel-wire.ts`   | 目录修订与完整基线恢复                                                    |
+| `src/app.ts`             | 可注入 transport 的 Fastify 应用、会话、输入校验、操作保护、静态资源与 WS |
+| `src/server.ts`          | 配置、监听、退出与运行目录                                                |
+| `src/web/App.tsx`        | 登录、导航、布局、错误边界及页面路由                                      |
+| `src/web/useArchipel.ts` | React Query 缓存、WS、重连、轮询、可见性与暂停                            |
+| `src/plugins/*`          | 插件运行时、契约和注册表；具体插件独立拥有业务、校验与 UI                 |
+| `src/web/plugins.tsx`    | 工作台通用扩展接口和局部错误隔离                                          |
+| `src/web/*`              | 概览、节点、存储、历史及共用 UI / SVG 图表                                |
 
 服务端和浏览器共用运行时校验，网络返回值先作为 unknown。缺少数据用空态，旧快照保留但明确标记过期。服务端不把 agent 异常、凭据或 curl 原始错误直接反射给浏览器。
 
@@ -107,15 +107,15 @@ Vite 保留 React Compiler；Lingui Babel preset 在 Compiler 前执行。Vitest
 
 本地验收与 GitHub Actions 是两组结果；推送后云端检查单独报告，不将已配置或已触发的 CI 当作通过。
 
-## 共享 CI 机群
+## 共享 CI 群岛
 
 `.github/workflows/pr-quality.yml` 只消费本仓库 PR 的 `run-ci` 标签；普通 push、
 PR 活动和定时事件不执行质量检查。每次请求针对不可变 merge commit，更新 PR 后必须重新请求。
 一个 `Quality` 作业串行验证两个 Node 版本与 Agent，避免同节点矩阵争抢资源。
 四节点各有一个本仓库 Runner，与另外三仓库通过同步 job hooks 共享节点租约，
-工具链按仓库选择，维护在作业完成后进行。机群脚本归本仓库的 `provisioning/` 模块，
+工具链按仓库选择，维护在作业完成后进行。群岛脚本归本仓库的 `provisioning/` 模块，
 核心监控不拥有 CI 调度逻辑；新增 Runner 仍由插件自动发现。
 
-节点配置与 CI 机群统一维护在仓库的 [`provisioning/`](../provisioning/README.md)。
+节点配置与 CI 群岛统一维护在仓库的 [`provisioning/`](../provisioning/README.md)。
 主动 Quality 作业还验证 Python 单元测试、固定版本 Ruff、ShellCheck 和 C 探针的编译语法。
 节点安装器与真实 Worker 探针只在明确的运维验收中运行，CI 不调用它们。

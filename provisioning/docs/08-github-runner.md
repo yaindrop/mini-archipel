@@ -28,7 +28,7 @@
 
 ## 主动 CI 请求
 
-四仓库共享清单为 [`scripts/ci-fleet.json`](../scripts/ci-fleet.json)。每仓库的
+四仓库共享清单为 [`scripts/ci-archipel.json`](../scripts/ci-archipel.json)。每仓库的
 `PR Quality` 只监听 `pull_request: labeled`，只有本仓库 PR 新增 `run-ci`
 标签才执行一个原生 `Quality` 作业；其他标签事件跳过检查。
 

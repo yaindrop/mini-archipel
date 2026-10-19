@@ -27,8 +27,8 @@ const client = new QueryClient({
 });
 // Remove the previous console's persistent credential; sessions are now HttpOnly cookies.
 try {
-  localStorage.removeItem("fleet-token");
-  localStorage.removeItem("fleet-theme");
+  localStorage.removeItem("archipel-token");
+  localStorage.removeItem("archipel-theme");
 } catch {
   /* Storage is optional. */
 }

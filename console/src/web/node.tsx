@@ -25,7 +25,7 @@ import {
   Thermometer,
   Zap,
 } from "lucide-react";
-import type { Fleet, Host, Snapshot } from "../contracts.ts";
+import type { Archipel, Host, Snapshot } from "../contracts.ts";
 import {
   dataDisk,
   displayName,
@@ -120,14 +120,20 @@ function Processes({ host }: { host: Host }) {
     </Section>
   );
 }
-export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
+export function NodeDetail({
+  archipel,
+  now,
+}: {
+  archipel: Archipel;
+  now: number;
+}) {
   const { _ } = useLingui();
   const { t } = useLinguiMacro();
   const { name } = useParams(),
-    host = fleet.hosts.find((h) => h.name === name),
+    host = archipel.hosts.find((h) => h.name === name),
     [search, setSearch] = useSearchParams(),
     view = search.get("view") ?? "overview";
-  const plugins = useWorkbenchPlugins(fleet).toSorted(
+  const plugins = useWorkbenchPlugins(archipel).toSorted(
     (a, b) => (a.nodeOrder ?? 0) - (b.nodeOrder ?? 0),
   );
   if (!host)
@@ -141,7 +147,7 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
         <Link to="/">{t`返回集群概览`}</Link>
       </>
     );
-  const index = fleet.hosts.indexOf(host),
+  const index = archipel.hosts.indexOf(host),
     disk = dataDisk(host),
     mem = host.snapshot?.sys?.mem,
     fan = host.snapshot?.fan,
@@ -386,7 +392,7 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
       {plugins.map((plugin) =>
         plugin.NodePanel ? (
           <PluginSlot key={plugin.id} label={plugin.label}>
-            <plugin.NodePanel fleet={fleet} host={host} now={now} />
+            <plugin.NodePanel archipel={archipel} host={host} now={now} />
           </PluginSlot>
         ) : null,
       )}
@@ -466,7 +472,11 @@ export function NodeDetail({ fleet, now }: { fleet: Fleet; now: number }) {
                     label: plugin.label,
                     children: (
                       <PluginSlot label={plugin.label}>
-                        <plugin.NodePanel fleet={fleet} host={host} now={now} />
+                        <plugin.NodePanel
+                          archipel={archipel}
+                          host={host}
+                          now={now}
+                        />
                       </PluginSlot>
                     ),
                   },

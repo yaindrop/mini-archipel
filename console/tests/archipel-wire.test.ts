@@ -1,38 +1,38 @@
 import { describe, it, expect } from "vitest";
 import {
-  fleetUpdate,
-  restoreFleet,
+  archipelUpdate,
+  restoreArchipel,
   restoreSnapshot,
-} from "../src/fleet-wire.ts";
+} from "../src/archipel-wire.ts";
 import { makeHost, makeSnapshot } from "./fixtures.ts";
-import type { Fleet } from "../src/contracts.ts";
+import type { Archipel } from "../src/contracts.ts";
 describe("directory revision protocol", () => {
   it("sends a full baseline, omits unchanged trees and restores them by reference", () => {
     const host = makeHost();
     const snapshot = makeSnapshot();
     host.snapshot = snapshot;
     snapshot.disk_revision = "boot:1";
-    const fleet: Fleet = { ts: Date.now(), hosts: [host], plugins: {} };
+    const archipel: Archipel = { ts: Date.now(), hosts: [host], plugins: {} };
     const versions = new Map<string, string>();
-    const initial = restoreFleet(
-      JSON.parse(JSON.stringify(fleetUpdate(fleet, versions))) as unknown,
+    const initial = restoreArchipel(
+      JSON.parse(JSON.stringify(archipelUpdate(archipel, versions))) as unknown,
       undefined,
     );
     const wire = JSON.parse(
-      JSON.stringify(fleetUpdate(fleet, versions)),
+      JSON.stringify(archipelUpdate(archipel, versions)),
     ) as unknown;
-    const current = restoreFleet(wire, initial);
+    const current = restoreArchipel(wire, initial);
     expect(current.hosts[0]?.snapshot?.disk_scans).toBe(
       initial.hosts[0]?.snapshot?.disk_scans,
     );
     expect(JSON.stringify(wire).length).toBeLessThan(
-      JSON.stringify(fleet).length,
+      JSON.stringify(archipel).length,
     );
     snapshot.disk_revision = "boot:2";
     snapshot.disk_scans = [];
     expect(
-      restoreFleet(fleetUpdate(fleet, versions), current).hosts[0]?.snapshot
-        ?.disk_scans,
+      restoreArchipel(archipelUpdate(archipel, versions), current).hosts[0]
+        ?.snapshot?.disk_scans,
     ).toEqual([]);
   });
   it("requires a full tree after a lost baseline or agent restart", () => {

@@ -76,7 +76,7 @@ if __name__ == "__main__":
     user_home = Path.home()
     output = backup(
         user_home,
-        user_home / ".config/mini-ops/recovery.crt",
-        user_home / ".local/share/mini-ops/backups/signing",
+        user_home / ".config/mini-archipel/recovery.crt",
+        user_home / ".local/share/mini-archipel/backups/signing",
     )
     print(json.dumps({"path": str(output), "encrypted": True}))

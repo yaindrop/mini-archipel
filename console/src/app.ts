@@ -6,13 +6,13 @@ import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import type { ConsoleConfig } from "./config.ts";
 import {
-  FleetMonitor,
+  ArchipelMonitor,
   UpstreamError,
   curlTransport,
   type Transport,
-} from "./fleet.ts";
+} from "./archipel.ts";
 import { Store } from "./store.ts";
-import { fleetUpdate } from "./fleet-wire.ts";
+import { archipelUpdate } from "./archipel-wire.ts";
 import { METRIC_KEYS, stale } from "./domain.ts";
 import { OkSchema } from "./contracts.ts";
 import { PluginManager, type PluginDefinition } from "./plugins/runtime.ts";
@@ -64,7 +64,7 @@ export function createApp(
   },
 ) {
   const store = new Store(config.dbPath),
-    monitor = new FleetMonitor(config, store, options.transport);
+    monitor = new ArchipelMonitor(config, store, options.transport);
   const plugins = new PluginManager(
     config,
     {
@@ -433,7 +433,7 @@ export function createApp(
     sessions.set(socket, request.headers);
     const versions = new Map<string, string>();
     directoryVersions.set(socket, versions);
-    socket.send(JSON.stringify(fleetUpdate(view(), versions)));
+    socket.send(JSON.stringify(archipelUpdate(view(), versions)));
     socket.on("error", () => {
       socket.close();
     });
@@ -453,7 +453,7 @@ export function createApp(
       )
         socket.send(
           JSON.stringify(
-            fleetUpdate(
+            archipelUpdate(
               state,
               directoryVersions.get(socket) ?? new Map<string, string>(),
             ),
