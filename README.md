@@ -33,7 +33,7 @@
 ## 架构
 
 ```text
-浏览器 ── HTTP / WebSocket ── console :9100
+浏览器 ── HTTPS / WSS ── console :9100
                                 │ SQLite 历史
                                 │ curl + Bearer token，每秒轮询
                     ┌───────────┼─────────────────────┐
@@ -132,7 +132,9 @@ NODE_BIN=/opt/homebrew/bin/node ./install.sh
 - 日志：`~/Library/Logs/MiniArchipel/console.log`
 - 服务：`local.miniarchipel.console`
 
-访问 `http://yd-mini.local:9100/`，在登录页输入配置中的 `uiToken`。令牌不放在 URL，也不写入浏览器 localStorage。旧版令牌链接需要改为普通地址；首次使用新版需登录一次。
+局域网部署使用 `https://yd-mini.local:9100/`，证书由管理 MacBook 的本地 CA 签发，并在访问设备中信任该 CA。签发、配置、续期与回滚见 [工作台 HTTPS](docs/https.md)。本机开发可以继续使用 localhost HTTP；普通局域网 HTTP 不提供浏览器安全上下文，Runner 等操作依赖的 `crypto.randomUUID()` 无法使用。
+
+在登录页输入配置中的 `uiToken`。令牌不放在 URL，也不写入浏览器 localStorage；HTTPS 会话使用 Secure Cookie。旧版令牌链接需要改为普通地址；首次使用新版需登录一次。
 
 VM 隧道在宿主机上分别由 `local.miniarchipel.tunnel.yd-mbp-tart` 和 `local.miniarchipel.tunnel.yd-mbp-tart-2` 管理，使用 SSH 密钥认证和连接保活。宿主机转发端口须能被 console 所在主机访问。
 

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { z } from "zod";
 import { NodeKindSchema } from "./contracts.ts";
 const HostConfigSchema = z.object({
@@ -20,6 +20,16 @@ export const ConsoleConfigSchema = z.strictObject({
     .string()
     .regex(/^[\w.-]+:\d+$/)
     .default("127.0.0.1:9100"),
+  tls: z
+    .strictObject({
+      certFile: z
+        .string()
+        .refine(isAbsolute, "use an absolute certificate path"),
+      keyFile: z
+        .string()
+        .refine(isAbsolute, "use an absolute private-key path"),
+    })
+    .optional(),
   uiToken: z.string().default(""),
   dbPath: z.string().min(1).default("console.db"),
   hosts: z

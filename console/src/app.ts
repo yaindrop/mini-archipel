@@ -63,6 +63,18 @@ export function createApp(
     persistConfig?: (config: ConsoleConfig) => void;
   },
 ) {
+  const https = config.tls
+    ? {
+        cert: readFileSync(config.tls.certFile),
+        key: readFileSync(config.tls.keyFile),
+        minVersion: "TLSv1.2" as const,
+      }
+    : undefined;
+  const app = fastify({
+    ...(https ? { https } : {}),
+    logger: false,
+    bodyLimit: 16_384,
+  });
   const store = new Store(config.dbPath),
     monitor = new ArchipelMonitor(config, store, options.transport);
   const plugins = new PluginManager(
@@ -80,10 +92,6 @@ export function createApp(
   const view = () => ({
     ...monitor.state(),
     plugins: plugins.views(),
-  });
-  const app = fastify({
-    logger: false,
-    bodyLimit: 16_384,
   });
   const sameOrigin = (headers: {
     origin?: string | undefined;

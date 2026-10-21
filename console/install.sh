@@ -36,8 +36,12 @@ HEALTH_URL=$("$NODE_BIN" -e '
   const config = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"));
   const [host, port] = config.bind.split(":");
   if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) process.exit(1);
-  console.log(`http://${host === "0.0.0.0" ? "127.0.0.1" : host}:${port}/api/session`);
+  console.log(`${config.tls ? "https" : "http"}://${host === "0.0.0.0" ? "127.0.0.1" : host}:${port}/api/session`);
 ' "$CONF_DIR/console.json")
+HEALTH_ARGS=(--noproxy '*' --silent --fail --max-time 2)
+# A local-CA deployment stores the full chain (leaf + CA) in certFile.
+HEALTH_CA=$("$NODE_BIN" -e 'const c = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(c.tls?.certFile ?? "");' "$CONF_DIR/console.json")
+if [[ -n "$HEALTH_CA" ]]; then HEALTH_ARGS+=(--cacert "$HEALTH_CA"); fi
 [[ ! -e "$STAGE_DIR" ]] || { echo "error: existing staging directory $STAGE_DIR; inspect it first"; exit 1; }
 mkdir -p "$STAGE_DIR/web"
 install -m 644 dist/server.cjs "$STAGE_DIR/server.cjs"
@@ -105,7 +109,7 @@ done
 [[ "$STARTED" == true ]]
 HEALTHY=false
 for _ in {1..40}; do
-  if /usr/bin/curl --noproxy '*' --silent --fail --max-time 2 "$HEALTH_URL" >/dev/null; then HEALTHY=true; break; fi
+  if /usr/bin/curl "${HEALTH_ARGS[@]}" "$HEALTH_URL" >/dev/null; then HEALTHY=true; break; fi
   sleep 0.5
 done
 [[ "$HEALTHY" == true ]]
