@@ -24,14 +24,28 @@ fn now_unix() -> u64 {
 }
 
 fn model_identifier() -> String {
-    std::process::Command::new("sysctl")
-        .arg("-n")
-        .arg("hw.model")
-        .output()
+    let mut model = [0u8; 256];
+    let mut size = model.len();
+    // SAFETY: live output buffer and size; null newp makes this a read-only query.
+    let result = unsafe {
+        libc::sysctlbyname(
+            c"hw.model".as_ptr(),
+            model.as_mut_ptr().cast(),
+            &mut size,
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+    if result != 0 {
+        return "unknown".into();
+    }
+    // Avoid subprocess pipes: a concurrently spawned long-lived child can retain them.
+    std::ffi::CStr::from_bytes_until_nul(&model)
         .ok()
-        .and_then(|out| String::from_utf8(out.stdout).ok())
-        .map(|s| s.trim().to_string())
-        .unwrap_or_else(|| "unknown".to_string())
+        .and_then(|name| name.to_str().ok())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("unknown")
+        .to_owned()
 }
 
 pub async fn run(state: Shared) {

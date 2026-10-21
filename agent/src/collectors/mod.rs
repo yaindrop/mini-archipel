@@ -114,8 +114,8 @@ pub async fn spawn_all(
 
     let fan_state = Arc::clone(&state);
     let fan_interval = config.fan_interval_ms;
-    let fanctl = config.fanctl.clone();
-    tokio::spawn(async move { fan::run(fan_state, fanctl, fan_interval).await });
+    let fan_socket = config.fan_socket.clone();
+    tokio::spawn(async move { fan::run(fan_state, fan_socket, fan_interval).await });
 
     let disk_state = Arc::clone(&state);
     let roots = config.disk_roots.clone();

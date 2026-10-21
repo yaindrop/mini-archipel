@@ -23,7 +23,7 @@ proc_interval_ms = 2000
 thermal_interval_ms = 5000
 fan_interval_ms = 2000
 macmon = "/opt/homebrew/bin/macmon"
-fanctl = "/Library/MiniArchipel/FanControl/fanctl"
+fan_socket = "/var/run/mini-archipel/fan-control.sock"
 disk_interval_ms = 21600000
 disk_roots = ["~", "/"]
 EOF

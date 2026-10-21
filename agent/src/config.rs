@@ -23,8 +23,8 @@ pub struct CollectorConfig {
     /// macmon binary path; frequency/power metrics are omitted when absent.
     #[serde(default = "default_macmon")]
     pub macmon: String,
-    #[serde(default = "default_fanctl")]
-    pub fanctl: String,
+    #[serde(default = "default_fan_socket")]
+    pub fan_socket: String,
     #[serde(default = "default_disk_interval")]
     pub disk_interval_ms: u64,
     #[serde(default = "default_disk_roots")]
@@ -40,7 +40,7 @@ impl Default for CollectorConfig {
             thermal_interval_ms: default_thermal_interval(),
             fan_interval_ms: default_fan_interval(),
             macmon: default_macmon(),
-            fanctl: default_fanctl(),
+            fan_socket: default_fan_socket(),
             disk_interval_ms: default_disk_interval(),
             disk_roots: default_disk_roots(),
             disk: Default::default(),
@@ -60,8 +60,8 @@ fn default_fan_interval() -> u64 {
 fn default_macmon() -> String {
     "/opt/homebrew/bin/macmon".to_string()
 }
-fn default_fanctl() -> String {
-    "/Library/MiniArchipel/FanControl/fanctl".to_string()
+fn default_fan_socket() -> String {
+    crate::fan_control::SOCKET.to_string()
 }
 fn default_disk_interval() -> u64 {
     21_600_000
@@ -72,7 +72,31 @@ fn default_disk_roots() -> Vec<String> {
 
 pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
     let raw = std::fs::read_to_string(path)?;
-    let mut config: Config = toml::from_str(&raw)?;
+    let mut value: toml::Value = toml::from_str(&raw)?;
+    if let Some(collectors) = value
+        .get_mut("collectors")
+        .and_then(toml::Value::as_table_mut)
+    {
+        if let Some(legacy) = collectors.remove("fanctl") {
+            let path = legacy.as_str().ok_or("fanctl must be a string")?;
+            collectors.entry("fan_socket").or_insert_with(|| {
+                toml::Value::String(if path.is_empty() {
+                    String::new()
+                } else {
+                    default_fan_socket()
+                })
+            });
+        }
+    }
+    let mut config: Config = value.try_into()?;
+    if !config.collectors.fan_socket.is_empty()
+        && (!config.collectors.fan_socket.starts_with('/')
+            || config.collectors.fan_socket.len() > 100)
+    {
+        return Err(
+            "fan_socket must be empty or an absolute local socket path (max 100 bytes)".into(),
+        );
+    }
     for (name, value, min, max) in [
         (
             "proc_interval_ms",

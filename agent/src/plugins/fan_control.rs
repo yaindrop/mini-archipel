@@ -2,12 +2,7 @@ use crate::plugins::{Context, Failure, Plugin, Task};
 use axum::http::StatusCode;
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::os::unix::fs::MetadataExt;
 use std::sync::atomic::Ordering;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-const SOCKET: &str = "/var/run/mini-archipel/fan-control.sock";
-const MAX_REPLY: u64 = 4 * 1024 * 1024;
 #[derive(Deserialize)]
 #[serde(default, deny_unknown_fields)]
 struct Options {
@@ -20,7 +15,7 @@ impl Default for Options {
         Self {
             interval_ms: 2000,
             allow_control: false,
-            socket_path: SOCKET.into(),
+            socket_path: crate::fan_control::SOCKET.into(),
         }
     }
 }
@@ -36,46 +31,20 @@ fn options(value: Value) -> Result<Options, String> {
     Ok(options)
 }
 async fn rpc(options: &Options, request: Value) -> Result<Value, Failure> {
-    let call = async {
-        let owner = std::fs::metadata(&options.socket_path)
-            .map_err(|_| ())?
-            .uid();
-        let mut stream = tokio::net::UnixStream::connect(&options.socket_path)
-            .await
-            .map_err(|_| ())?;
-        if stream.peer_cred().map_err(|_| ())?.uid() != owner {
-            return Err(());
-        }
-        let mut request = serde_json::to_vec(&request).map_err(|_| ())?;
-        if request.len() > 65535 {
-            return Err(());
-        }
-        request.push(b'\n');
-        stream.write_all(&request).await.map_err(|_| ())?;
-        let mut response = Vec::new();
-        stream
-            .take(MAX_REPLY + 1)
-            .read_to_end(&mut response)
-            .await
-            .map_err(|_| ())?;
-        if response.len() as u64 > MAX_REPLY {
-            return Err(());
-        }
-        serde_json::from_slice::<Value>(&response).map_err(|_| ())
-    };
-    tokio::time::timeout(std::time::Duration::from_secs(4), call)
+    crate::fan_control::rpc(&options.socket_path, request)
         .await
-        .map_err(|_| {
-            (
-                StatusCode::GATEWAY_TIMEOUT,
-                "fan-control helper timed out".into(),
-            )
-        })?
-        .map_err(|_| {
-            (
-                StatusCode::SERVICE_UNAVAILABLE,
-                "fan-control helper unavailable".into(),
-            )
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::TimedOut {
+                (
+                    StatusCode::GATEWAY_TIMEOUT,
+                    "fan-control helper timed out".into(),
+                )
+            } else {
+                (
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "fan-control helper unavailable".into(),
+                )
+            }
         })
 }
 async fn read(context: &Context, options: &Options) -> Value {

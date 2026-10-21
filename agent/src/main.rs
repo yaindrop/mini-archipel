@@ -1,5 +1,6 @@
 mod collectors;
 mod config;
+mod fan_control;
 mod plugins;
 
 use axum::{

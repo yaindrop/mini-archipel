@@ -45,7 +45,7 @@
 
 原始数据保留 24 小时，10 秒聚合保留 30 天，1 分钟聚合保留一年。查询合并各层并限制返回点数；工作台重启后从 SQLite 恢复最近走势。
 
-Agent 核心采集 CPU、内存、swap、卷空间、Top 15 进程、热状态、风扇及目录树；Runner 与风扇控制由独立的可选插件提供。风扇插件通过校验本地账户的 Unix socket 访问受限 root 控制端，Agent 保持普通用户权限。macmon / fanctl 缺席时省略对应段。物理传感器由实体机上报，VM 的散热由宿主机负责。
+Agent 核心采集 CPU、内存、swap、卷空间、Top 15 进程、热状态、风扇及目录树；Runner 与风扇控制由独立的可选插件提供。基础风扇监测与风扇插件共用校验本地账户的 Unix socket，访问受限 root 控制端，Agent 保持普通用户权限。关闭控制插件不停止基础监测。macmon / 风扇控制端缺席时省略对应段。物理传感器由实体机上报，VM 的散热由宿主机负责。
 
 ## 本地开发与验证
 
@@ -200,7 +200,7 @@ thermal_interval_ms = 5000
 fan_interval_ms = 2000
 disk_interval_ms = 21600000
 macmon = "/opt/homebrew/bin/macmon"
-fanctl = "/Library/MiniArchipel/FanControl/fanctl"
+fan_socket = "/var/run/mini-archipel/fan-control.sock"
 disk_roots = ["~", "/"]
 
 [plugins.runners]
@@ -209,6 +209,10 @@ enabled = true
 interval_ms = 5000
 allow_control = true
 ```
+
+`fan_socket = ""` 关闭基础风扇采集，虚拟机应使用空值。旧 `fanctl` 配置自动迁移：
+空值保留关闭语义，非空路径改用默认本地 socket；显式配置 `fan_socket` 时以新字段为准。
+风扇读数沿用控制端的真实采样时间，过期或读取失败时保留旧值并标错，不用请求时间刷新旧数据。
 
 ## 访问与运维边界
 
