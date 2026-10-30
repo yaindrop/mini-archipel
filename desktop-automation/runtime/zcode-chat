@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""Target a ZCode App chat by verified session ID and read its matching reply."""
+import argparse
+import json
+from pathlib import Path
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import time
+
+HOME_DIR = Path.home()
+SOURCE = Path(__file__).resolve().parent
+sys.path.insert(0, str(SOURCE))
+import chat_requests
+
+
+def connect():
+    db = sqlite3.connect((HOME_DIR / ".zcode/cli/db/db.sqlite").as_uri() + "?mode=ro", uri=True)
+    db.row_factory = sqlite3.Row
+    return db
+
+
+def history_ready(read):
+    try:
+        return read()
+    except sqlite3.OperationalError as error:
+        if not any(s in str(error) for s in ["unable to open database file", "database is locked"]):
+            raise
+    # A normal Quit removes WAL sidecars. Wake the owner in the background.
+    opened = subprocess.run(["/usr/bin/open", "-g", "-b", "dev.zcode.app"], capture_output=True, text=True)
+    if opened.returncode:
+        raise ValueError(opened.stderr.strip() or "Could not load ZCode history")
+    deadline = time.monotonic() + 8
+    while True:
+        try:
+            return read()
+        except sqlite3.OperationalError as error:
+            if not any(s in str(error) for s in ["unable to open database file", "database is locked"]) or time.monotonic() >= deadline:
+                raise
+            time.sleep(.1)
+
+
+def text_parts(db, message_id):
+    parts = [json.loads(row[0]) for row in db.execute("SELECT data FROM part WHERE message_id=? ORDER BY sequence", (message_id,))]
+    return "".join(p.get("text", "") for p in parts if p.get("type") == "text")
+
+
+def reply_for(db, user_id):
+    turn = db.execute("SELECT * FROM turn_usage WHERE user_message_id=? ORDER BY started_at DESC LIMIT 1", (user_id,)).fetchone()
+    if not turn or turn["status"] == "running":
+        return None
+    messages = db.execute("SELECT id,data FROM message WHERE session_id=? AND json_extract(data,'$.role')='assistant' AND json_extract(data,'$.parentID')=? ORDER BY sequence", (turn["session_id"], user_id)).fetchall()
+    texts = [text_parts(db, row["id"]) for row in messages]
+    return {"ok": turn["status"] == "completed", "status": turn["status"], "session_id": turn["session_id"], "turn_id": turn["turn_id"],
+            "reply": "\n".join(t for t in texts if t), "model_ms": turn["duration_ms"], "tool_calls": turn["tool_call_count"]}
+
+
+def latest_reply(session_id):
+    with connect() as db:
+        # Internal context can also have role=user; actual turns identify their input.
+        row = db.execute("SELECT user_message_id FROM turn_usage WHERE session_id=? ORDER BY started_at DESC LIMIT 1", (session_id,)).fetchone()
+        if not row:
+            raise ValueError("Session has no recorded turn")
+        return reply_for(db, row["user_message_id"]) or {"ok": False, "status": "running", "session_id": session_id}
+
+
+def task_title(session_id):
+    path = HOME_DIR / ".zcode/v2/tasks-index.sqlite"
+    with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as db:
+        rows = db.execute("SELECT title FROM tasks WHERE task_id=? AND deleted=0 AND archived=0 AND (host_id='local' OR host_id IS NULL)", (session_id,)).fetchall()
+        if len(rows) != 1:
+            raise ValueError("Expected exactly one non-archived local ZCode task")
+        return rows[0][0]
+
+
+def wait_reply(after, message, expected_session, timeout):
+    end = time.monotonic() + timeout
+    found = None
+    while time.monotonic() < end:
+        with connect() as db:
+            if found is None:
+                rows = db.execute("SELECT id,session_id FROM message WHERE rowid>? AND json_extract(data,'$.role')='user'", (after,)).fetchall()
+                matches = [r for r in rows if text_parts(db, r["id"]).strip() == message.strip()]
+                if len(matches) > 1:
+                    raise ValueError("Multiple matching messages; inspect history before retrying")
+                if matches:
+                    found = matches[0]
+                    if expected_session and found["session_id"] != expected_session:
+                        raise ValueError("Message appeared in another session; stop and inspect")
+            if found:
+                result = reply_for(db, found["id"])
+                if result:
+                    return {**result, "sent": True, "accepted": True}
+        time.sleep(0.1)
+    return {"ok": False, "sent": True if found else None, "accepted": bool(found), "status": "waiting" if found else "send_unconfirmed", "session_id": found["session_id"] if found else expected_session,
+            "error": "Timed out after Send was clicked. Read the session before retrying; never resend automatically."}
+
+
+def observe(checkpoint, message, timeout):
+    return history_ready(lambda: wait_reply(checkpoint["after"], message, checkpoint["session_id"], timeout))
+
+
+def run_ui(checkpoint, message, probe=False):
+    request = {"new_chat": checkpoint["session_id"] is None, "message": message,
+               "session_id": checkpoint["session_id"], "title": checkpoint["title"], "probe": probe}
+    with tempfile.TemporaryDirectory(prefix="zcode-chat-") as directory:
+        path = Path(directory) / "request.json"
+        path.write_text(json.dumps(request, ensure_ascii=False))
+        proc = chat_requests.ui_process([str(HOME_DIR / "agent-script-runner"), "exec", str(SOURCE / "zcode-ui"), str(path)])
+        envelope = json.loads(proc.stdout)
+        if not envelope.get("stdout"):
+            raise ValueError(envelope.get("error") or envelope.get("stderr") or "No UI result")
+        return json.loads(envelope["stdout"])
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=["new", "send", "read", "recover", "probe"])
+    parser.add_argument("session_id", nargs="?")
+    parser.add_argument("--timeout", type=float, default=120)
+    parser.add_argument("--request-id", help="Stable caller ID; retries reconcile and never resend")
+    args = parser.parse_args()
+    if args.mode != "new" and not args.session_id:
+        parser.error("send/read require session_id")
+    if args.timeout <= 0:
+        parser.error("timeout must be positive")
+    if args.mode == "recover":
+        return chat_requests.recover("zcode", args.session_id, observe, args.timeout)
+    if args.mode == "read":
+        return history_ready(lambda: latest_reply(args.session_id))
+    message = sys.stdin.read().rstrip("\n") if args.mode != "probe" else ""
+    if args.mode != "probe" and not message.strip():
+        raise ValueError("Message required on stdin")
+    def prepare():
+        opened = subprocess.run(["/usr/bin/open", "-b", "dev.zcode.app"], capture_output=True, text=True)
+        if opened.returncode:
+            raise ValueError(opened.stderr.strip() or "Could not open ZCode")
+        deadline = time.monotonic() + 8
+        while True:
+            try:
+                title = task_title(args.session_id) if args.mode != "new" else None
+                previous = latest_reply(args.session_id) if args.mode != "new" else None
+                if previous and not previous["ok"] and args.mode != "probe":
+                    raise ValueError("Previous ZCode turn is not completed")
+                with connect() as db:
+                    after = db.execute("SELECT coalesce(max(rowid),0) FROM message").fetchone()[0]
+                return {"after": after, "session_id": args.session_id if args.mode != "new" else None, "title": title}
+            except sqlite3.OperationalError as error:
+                if not any(s in str(error) for s in ["unable to open database file", "database is locked"]) or time.monotonic() >= deadline:
+                    raise
+                time.sleep(.1)
+    if args.mode == "probe":
+        with chat_requests.desktop():
+            return run_ui(prepare(), "", probe=True)
+    return chat_requests.submit("zcode", args.request_id, args.session_id if args.mode != "new" else None,
+                                message, prepare, run_ui, observe, args.timeout)
+
+
+if __name__ == "__main__":
+    try:
+        output = main()
+    except (OSError, ValueError, sqlite3.Error, chat_requests.BusyError) as error:
+        output = {"ok": False, "error": str(error)}
+    print(json.dumps(output, ensure_ascii=False))
+    sys.exit(0 if output.get("ok") else 1)

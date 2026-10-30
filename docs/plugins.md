@@ -1,5 +1,8 @@
 # 插件系统
 
+桌面自动化插件 `desktop-automation` 提供节点授权引导、脚本和聊天后台任务、桌面暂停接单与诊断。
+安装、API、控制开关和回执规则见 [桌面自动化说明](../desktop-automation/README.md)。
+
 代理插件 `mini-proxy` 的节点后端由仓库内的 [mini-proxy 模块](../mini-proxy/README.md)
 提供，包含固定版本 Xray 资源校验、安装升级、测速切换及失败恢复。开启插件与安装后端
 是独立步骤；未安装后端时显示 `not_installed`，不会接管其他代理服务。

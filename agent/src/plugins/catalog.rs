@@ -1,3 +1,5 @@
+#[path = "desktop_automation.rs"]
+mod desktop_automation;
 #[path = "fan_control.rs"]
 mod fan_control;
 #[path = "mini_proxy.rs"]
@@ -15,5 +17,6 @@ pub fn installed() -> Vec<Arc<dyn Plugin>> {
         Arc::new(Runners::default()),
         Arc::new(fan_control::FanControl),
         Arc::new(MiniProxy::default()),
+        Arc::new(desktop_automation::DesktopAutomation),
     ]
 }

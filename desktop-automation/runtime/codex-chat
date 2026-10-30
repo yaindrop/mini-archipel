@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""Operate an existing local Codex App chat; send reads its message from stdin."""
+import argparse
+import json
+from pathlib import Path
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+
+HOME_DIR = Path.home()
+SOURCE = Path(__file__).resolve().parent
+sys.path.insert(0, str(SOURCE))
+import chat_requests
+
+
+def connect(name):
+    db = sqlite3.connect((HOME_DIR / ".codex" / name).as_uri() + "?mode=ro", uri=True)
+    db.row_factory = sqlite3.Row
+    return db
+
+
+def thread_info(thread_id):
+    thread_id = str(uuid.UUID(thread_id))
+    with connect("state_5.sqlite") as db:
+        row = db.execute("SELECT id, name, title, rollout_path, originator, archived FROM threads WHERE id=?", (thread_id,)).fetchone()
+        if not row or row["originator"] != "Codex Desktop" or row["archived"]:
+            raise ValueError("Expected a non-archived Codex Desktop chat")
+        result = dict(row)
+        result["display_title"] = row["name"] or row["title"]
+        count = db.execute("SELECT count(*) FROM threads WHERE archived=0 AND originator='Codex Desktop' AND coalesce(nullif(name,''),title)=?", (result["display_title"],)).fetchone()[0]
+        result["unique_title"] = count == 1
+        return result
+
+
+def reverse_records(path):
+    """Read complete JSONL records backwards without loading the full chat."""
+    with open(path, "rb") as stream:
+        position = stream.seek(0, 2)
+        skip_tail = False
+        if position:
+            stream.seek(position - 1)
+            skip_tail = stream.read(1) != b"\n"
+        pending = b""
+        while position:
+            size = min(position, 65536)
+            position -= size
+            stream.seek(position)
+            lines = (stream.read(size) + pending).split(b"\n")
+            pending = lines[0]
+            for line in reversed(lines[1:]):
+                if not line:
+                    continue
+                if skip_tail:
+                    skip_tail = False
+                    continue
+                yield json.loads(line)
+        if pending and not skip_tail:
+            yield json.loads(pending)
+
+
+def latest_turn(info):
+    statuses = {"task_started": "running", "task_complete": "completed", "turn_aborted": "interrupted"}
+    for record in reverse_records(info["rollout_path"]):
+        payload = record.get("payload", {})
+        if record.get("type") == "event_msg" and payload.get("type") in statuses:
+            return {"status": statuses[payload["type"]], "turn_id": payload.get("turn_id"), "payload": payload}
+    return None
+
+
+def ready_thread(thread_id):
+    # A closed/idle App may have no WAL sidecars. Wake it before read-only access.
+    thread_id = str(uuid.UUID(thread_id))
+    opened = subprocess.run(["/usr/bin/open", "-b", "com.openai.codex", "codex://threads/" + thread_id], capture_output=True, text=True)
+    if opened.returncode:
+        raise RuntimeError(opened.stderr.strip() or "Could not open Codex chat")
+    deadline = time.monotonic() + 8
+    while True:
+        try:
+            info = thread_info(thread_id)
+            return info
+        except sqlite3.OperationalError as error:
+            if "unable to open database file" not in str(error) or time.monotonic() >= deadline:
+                raise
+            time.sleep(0.1)
+
+
+def records(stream):
+    """Do not consume a partially written JSONL line."""
+    while True:
+        position = stream.tell()
+        line = stream.readline()
+        if not line.endswith(b"\n"):
+            stream.seek(position)
+            return
+        yield json.loads(line)
+
+
+def completion(payload):
+    return {"turn_id": payload.get("turn_id"), "reply": payload.get("last_agent_message"),
+            "model_ms": payload.get("duration_ms"), "first_token_ms": payload.get("time_to_first_token_ms")}
+
+
+def latest_reply(info):
+    turn = latest_turn(info)
+    if not turn:
+        return {"ok": True, "thread_id": info["id"], "status": "empty"}
+    result = {"ok": True, "thread_id": info["id"], "status": turn["status"], "turn_id": turn["turn_id"]}
+    if turn["status"] == "completed":
+        result.update(completion(turn["payload"]))
+    return result
+
+
+def run_ui(info, mode, message=None):
+    if not info["unique_title"]:
+        raise ValueError("Chat title is not unique; refusing ambiguous GUI targeting")
+    request = {"mode": mode, "thread_id": info["id"], "title": info["display_title"], "message": message}
+    with tempfile.TemporaryDirectory(prefix="codex-chat-") as directory:
+        path = Path(directory) / "request.json"
+        path.write_text(json.dumps(request, ensure_ascii=False))
+        process = chat_requests.ui_process([str(HOME_DIR / "agent-script-runner"), "exec", str(SOURCE / "codex-ui"), str(path)])
+        envelope = json.loads(process.stdout)
+        if not envelope.get("stdout"):
+            raise RuntimeError(envelope.get("error") or envelope.get("stderr") or "Runner returned no UI result")
+        return json.loads(envelope["stdout"])
+
+
+def wait_reply(stream, message, timeout):
+    deadline = time.monotonic() + timeout
+    current_turn = matched_turn = None
+    while time.monotonic() < deadline:
+        for record in records(stream):
+            payload = record.get("payload", {})
+            if record.get("type") == "event_msg" and payload.get("type") == "task_started":
+                current_turn = payload.get("turn_id")
+            if record.get("type") == "response_item" and payload.get("role") == "user":
+                text = "".join(item.get("text", "") for item in payload.get("content", []) if item.get("type") == "input_text")
+                if text.strip() == message.strip():
+                    matched_turn = current_turn
+            if record.get("type") == "event_msg" and matched_turn and payload.get("turn_id") == matched_turn:
+                if payload.get("type") == "task_complete":
+                    return {"ok": True, "sent": True, "accepted": True, "status": "completed", **completion(payload)}
+                if payload.get("type") == "turn_aborted":
+                    return {"ok": False, "status": "aborted", "turn_id": matched_turn}
+        time.sleep(0.1)
+    return {"ok": False, "sent": True if matched_turn else None, "accepted": bool(matched_turn), "status": "waiting" if matched_turn else "send_unconfirmed", "turn_id": matched_turn,
+            "error": "Timed out after Return was issued. Read this chat before retrying; never resend automatically."}
+
+
+def observe(checkpoint, message, timeout):
+    with open(checkpoint["info"]["rollout_path"], "rb") as stream:
+        if stream.seek(0, 2) < checkpoint["offset"]:
+            raise ValueError("History was truncated; manual reconciliation required")
+        stream.seek(checkpoint["offset"])
+        return {**wait_reply(stream, message, timeout), "thread_id": checkpoint["info"]["id"]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=["probe", "send", "read", "recover"])
+    parser.add_argument("thread_id")
+    parser.add_argument("--timeout", type=float, default=120, help="Reply wait in seconds; never automatically resends")
+    parser.add_argument("--request-id", help="Stable caller ID; reuse only with the exact same target and message")
+    args = parser.parse_args()
+    if args.timeout <= 0:
+        parser.error("timeout must be positive")
+    started = time.monotonic()
+    if args.mode == "recover":
+        return chat_requests.recover("codex", args.thread_id, observe, args.timeout)
+    if args.mode == "send":
+        message = sys.stdin.read().rstrip("\n")
+        if not message.strip():
+            raise ValueError("Send requires a message on stdin")
+        def prepare():
+            info = ready_thread(args.thread_id)
+            turn = latest_turn(info)
+            if turn and turn["status"] not in {"completed", "interrupted", "failed"}:
+                raise ValueError("Chat has an unfinished turn; read it before sending")
+            return {"info": info, "offset": Path(info["rollout_path"]).stat().st_size}
+        return chat_requests.submit("codex", args.request_id, str(uuid.UUID(args.thread_id)), message, prepare,
+                                    lambda checkpoint, value: run_ui(checkpoint["info"], "send", value), observe, args.timeout)
+    if args.mode == "read":
+        try:
+            return latest_reply(thread_info(args.thread_id))
+        except sqlite3.OperationalError as error:
+            if "unable to open database file" not in str(error):
+                raise
+    # Serialize all GUI callers, including the time spent waiting for a reply.
+    with chat_requests.desktop():
+        info = ready_thread(args.thread_id)
+        if args.mode == "read":
+            return latest_reply(info)
+        result = run_ui(info, "probe")
+        result.update(thread_id=info["id"], total_ms=round((time.monotonic() - started) * 1000))
+        return result
+
+
+if __name__ == "__main__":
+    try:
+        output = main()
+    except (OSError, ValueError, RuntimeError, sqlite3.Error, chat_requests.BusyError) as error:
+        output = {"ok": False, "error": str(error)}
+    print(json.dumps(output, ensure_ascii=False))
+    sys.exit(0 if output.get("ok") else 1)

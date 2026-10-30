@@ -7,7 +7,7 @@ import "./styles.css";
 
 export const runnersWorkbench: WorkbenchPlugin = {
   id: "runners",
-  nodeOrder: 100,
+  nodeOrder: 0,
   label: "Runners",
   to: "/runners",
   icon: Terminal,

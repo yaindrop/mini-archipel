@@ -4,6 +4,7 @@ import {
 } from "../src/storage-rules.ts";
 import type { ScanNode } from "../src/contracts.ts";
 import { fanFixture } from "./plugins/fan-fixture.ts";
+import { desktopBrowserFixture } from "./plugins/desktop-browser-fixture.ts";
 import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,6 +22,7 @@ import {
 } from "./fixtures.ts";
 const dir = mkdtempSync(join(tmpdir(), "archipel-browser-")),
   dbPath = join(dir, "test.db");
+const desktop = desktopBrowserFixture();
 const store = new Store(dbPath);
 await store.insertSamples(
   config.hosts.flatMap((h, index) =>
@@ -102,6 +104,12 @@ const transport: Transport = (url, _token, body) => {
     return Promise.resolve(current);
   }
   const snapshot = makeSnapshot(index);
+  desktop.apply(name, snapshot);
+  if (url.includes("/plugins/desktop-automation/actions/")) {
+    return Promise.resolve(
+      desktop.action(name, url.slice(url.lastIndexOf("/") + 1), body),
+    );
+  }
   applyDirectories(name, snapshot);
   snapshot.disk_scan = scans.get(name) ?? snapshot.disk_scan;
   snapshot.disk_scans.reverse(); // Transport order must not determine the root selector order.
@@ -408,6 +416,8 @@ app.post<{ Body: { host: string } }>(
   },
 );
 app.post("/__test/reset", async () => {
+  desktop.reset();
+  await plugins.setEnabled("desktop-automation", false);
   multiRepo = false;
   fanEnabled = false;
   fans.clear();
@@ -423,6 +433,12 @@ app.post("/__test/reset", async () => {
   interrupted.clear();
   disabledPlugins.clear();
   await plugins.setEnabled("runners", true);
+  await monitor.poll();
+  return { ok: true };
+});
+app.post("/__test/desktop-automation", async () => {
+  desktop.enable();
+  await plugins.setEnabled("desktop-automation", true);
   await monitor.poll();
   return { ok: true };
 });
