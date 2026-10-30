@@ -5,7 +5,7 @@
 
 ## 本地检查
 
-- 后端：27 项 unittest，Python 3.14 与 macOS `/usr/bin/python3` 3.9.6。
+- 后端：29 项 unittest，Python 3.14 与 macOS `/usr/bin/python3` 3.9.6。
 - 安装脚本：provisioning 44 项 unittest。
 - Agent：`cargo fmt --check`、`cargo clippy --offline --all-targets --locked -- -D warnings`、
   `cargo test --offline --locked`，26 项测试。
@@ -16,6 +16,10 @@
 事务测试使用临时用户目录和模拟服务，覆盖首次安装/回滚、升级失败恢复、停止失败、
 其他服务占用端口、错误服务归属、CI 忙时拒绝、操作锁、损坏回滚元数据和无关文件保留。
 没有对真实 launchd 执行安装与恢复；这部分需要目标节点部署时验收。
+
+后续部署预检复现了停止代理后的 TIME_WAIT 被误判为端口占用，旧服务自动恢复。
+端口检查已使用 SO_REUSEADDR，并新增真实 socket 回归测试：关闭后的连接不阻止升级，
+仍在监听的其他服务继续被拒绝。四节点发布结果另行记录。
 
 ## 真实 Xray 与网络检查
 

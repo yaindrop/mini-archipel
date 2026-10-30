@@ -71,10 +71,12 @@ def start_service(paths):
     raise backend.Failure("Installed proxy did not own port 10808")
 
 
-def require_free_port():
+def require_free_port(port=10808):
     with socket.socket() as listener:
+        # A stopped proxy can leave accepted connections in TIME_WAIT.
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            listener.bind(("127.0.0.1", 10808))
+            listener.bind(("127.0.0.1", port))
         except OSError:
             raise backend.Failure(
                 "Port 10808 is occupied by another service; no automatic migration is performed"

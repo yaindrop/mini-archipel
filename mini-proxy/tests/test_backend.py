@@ -4,6 +4,7 @@ import http.client
 import io
 import json
 import plistlib
+import socket
 import subprocess
 import sys
 import tempfile
@@ -281,6 +282,28 @@ class Assets(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Archive checksum"):
                     fetch.prepare(root / "bad-archive", archive)
                 self.assertFalse((root / "bad-archive").exists())
+
+
+class PortAvailability(unittest.TestCase):
+    def test_closed_listener_with_time_wait_does_not_block_upgrade(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            port = listener.getsockname()[1]
+            with socket.create_connection(("127.0.0.1", port), timeout=1) as client:
+                accepted, _ = listener.accept()
+                accepted.close()
+                self.assertEqual(client.recv(1), b"")
+        install.require_free_port(port)
+
+    def test_live_listener_is_still_rejected(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            with self.assertRaisesRegex(backend.Failure, "occupied"):
+                install.require_free_port(listener.getsockname()[1])
 
 
 class Installation(Fixture):
