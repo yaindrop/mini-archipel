@@ -201,7 +201,11 @@ impl Manager {
         };
         let mut runtime = manager.runtime.lock().await;
         for id in manager.definitions.keys() {
-            let setting = runtime.config.plugins.get(id).cloned().unwrap_or_default();
+            // A missing config entry means the plugin is not installed. An
+            // explicit enabled = false remains a disabled, installed plugin.
+            let Some(setting) = runtime.config.plugins.get(id).cloned() else {
+                continue;
+            };
             manager.install(&mut runtime, id, setting).await;
         }
         drop(runtime);
@@ -301,7 +305,9 @@ impl Manager {
             .get(id)
             .ok_or((StatusCode::NOT_FOUND, "plugin not installed".into()))?;
         let runtime = self.runtime.lock().await;
-        let setting = runtime.config.plugins.get(id).cloned().unwrap_or_default();
+        let Some(setting) = runtime.config.plugins.get(id).cloned() else {
+            return Err((StatusCode::NOT_FOUND, "plugin not installed".into()));
+        };
         drop(runtime);
         if !setting.enabled {
             return Err((StatusCode::CONFLICT, "plugin is disabled".into()));
@@ -396,6 +402,27 @@ mod tests {
         let config = toml::from_str("bind = '127.0.0.1:0'\ntoken = 'test-only'\n[plugins.alpha]\nenabled = true\n[plugins.beta]\nenabled = true\n").unwrap();
         (config, dir, Arc::new(RwLock::new(SharedState::new())))
     }
+    #[tokio::test]
+    async fn unconfigured_plugin_is_absent_rather_than_disabled() {
+        let (config, dir, state) = fixture();
+        let manager = Manager::new(
+            config,
+            dir.join("agent.toml"),
+            state.clone(),
+            vec![
+                Arc::new(Probe("alpha")),
+                Arc::new(Probe("beta")),
+                Arc::new(Probe("gamma")),
+            ],
+        )
+        .await
+        .unwrap();
+        let plugins = state.read().await.plugins.clone();
+        assert!(plugins.contains_key("alpha"));
+        assert!(!plugins.contains_key("gamma"));
+        drop(manager);
+    }
+
     async fn ready(state: &Shared, id: &str) {
         tokio::time::timeout(std::time::Duration::from_secs(2), async {
             loop {
