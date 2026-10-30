@@ -35,6 +35,7 @@ msgstr "A valid plugin setting is required"
 #. js-lingui-explicit-id
 #: src/app.ts
 #: src/archipel.ts
+#: src/plugins/desktop-automation/server.ts
 #: src/plugins/fan-control/server.ts
 #: src/plugins/mini-proxy/server.ts
 #: src/plugins/runners/server.ts
@@ -429,6 +430,41 @@ msgstr "Fan control is not ready. Check the node installation and plugin status.
 msgid "此节点仅允许查看风扇，尚未授权控制。"
 msgstr "This node permits viewing only. Fan control has not been enabled."
 
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "桌面自动化"
+msgstr "Desktop automation"
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "节点桌面授权、脚本与聊天操作、后台任务和诊断。"
+msgstr "Node desktop permissions, scripts, chat operations, background jobs and diagnostics."
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "桌面操作参数无效"
+msgstr "Invalid desktop operation parameters"
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "节点或桌面插件未就绪"
+msgstr "Node or desktop plugin is not ready"
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "请先在节点安装桌面工具包"
+msgstr "Install the desktop toolkit on this node first"
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "节点尚未启用桌面控制"
+msgstr "Desktop control is not enabled on this node"
+
+#. js-lingui-explicit-id
+#: src/plugins/desktop-automation/server.ts
+msgid "节点尚未启用脚本执行"
+msgstr "Script execution is not enabled on this node"
+
 #: src/web/App.tsx
 msgid " 从资源状态，到每一次接单。 "
 msgstr "From resource usage to every CI job."
@@ -595,6 +631,14 @@ msgstr "{0} history"
 msgid "{busy} 个作业运行中"
 msgstr "{busy, plural, one {# active job} other {# active jobs}}"
 
+#: src/plugins/runners/workbench.tsx
+msgid "{busy} 个正在执行"
+msgstr "{busy} running"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "{failed} 个出口未通过"
+msgstr "{failed} exits did not pass"
+
 #: src/web/plugins.tsx
 msgid "{label} 插件暂时无法显示"
 msgstr "The {label} plugin could not be displayed"
@@ -745,9 +789,14 @@ msgstr "WELCOME BACK"
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "The previous scan was interrupted by a node restart. Previous results are retained."
 
-#: src/plugins/mini-proxy/workbench.tsx
-msgid "上次检查"
-msgstr "Last check"
+#. placeholder {0}: new Date(toolkit.permissions.checked_at * 1000).toLocaleString()
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "上次检查：{0}"
+msgstr "Last checked: {0}"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "下载诊断包"
+msgstr "Download diagnostics"
 
 #: src/web/storage-rules.tsx
 msgid "下钻深度"
@@ -798,6 +847,10 @@ msgstr "Return to system control"
 msgid "仅允许节点管理员列出的风扇键；写入前会核对当前值，任务结束后恢复温控。"
 msgstr "Only fan keys permitted by the node administrator can be written. Current values are checked first, and temperature control is restored afterwards."
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "仍需授权"
+msgstr "Permission still required"
+
 #: src/web/overview.tsx
 msgid "从全局状态到每台节点，掌握资源与运行情况。"
 msgstr "A clear view of your cluster, from resources to individual nodes."
@@ -815,6 +868,10 @@ msgstr "Proxy exits"
 msgid "令牌由集群管理员提供，仅用于建立当前会话。"
 msgstr "Your cluster administrator provides this token. It is only used to establish this session."
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "任务"
+msgstr "Job"
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "任务、版本与日志"
 msgstr "Tasks, revisions and logs"
@@ -822,6 +879,18 @@ msgstr "Tasks, revisions and logs"
 #: src/plugins/fan-control/workbench.tsx
 msgid "任务已提交，进度由节点持续记录。"
 msgstr "Task submitted. The node will keep recording its progress."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "任务正在使用桌面"
+msgstr "A job is using the desktop"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "任务结果"
+msgstr "Job result"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "任务记录"
+msgstr "Job history"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "会产生全核心 CPU 负载，但不写风扇。可随时取消。"
@@ -876,6 +945,10 @@ msgstr "Stop service"
 msgid "停止服务并交还系统"
 msgstr "Stop service and return to system control"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "停止等待"
+msgstr "Stop waiting"
+
 #: src/plugins/mini-proxy/workbench.tsx
 msgid "允许控制"
 msgstr "Control allowed"
@@ -887,6 +960,14 @@ msgstr "Check volume capacity, then explore directory usage. Volume capacity and
 #: src/plugins/fan-control/workbench.tsx
 msgid "全部传感器与风扇"
 msgstr "All sensors and fans"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "全部测速"
+msgstr "Test all"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "全部测速完成"
+msgstr "All checks finished"
 
 #: src/web/overview.tsx
 msgid "全部类型"
@@ -1047,6 +1128,10 @@ msgstr "Acceleration limit (RPM/s, 0 = unlimited)"
 msgid "占当前目录"
 msgstr "Share of directory"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "占用状态"
+msgstr "Desktop activity"
+
 #: src/web/node.tsx
 msgid "危急"
 msgstr "Critical"
@@ -1068,6 +1153,18 @@ msgstr "History node"
 msgid "历史趋势"
 msgstr "History"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "原请求 ID"
+msgstr "Original request ID"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "参数（JSON 字符串数组）"
+msgstr "Arguments (JSON string array)"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "发送消息"
+msgstr "Send message"
+
 #: src/plugins/fan-control/workbench.tsx
 #: src/plugins/mini-proxy/workbench.tsx
 #: src/plugins/runners/workbench.tsx
@@ -1083,6 +1180,7 @@ msgstr "Cancelling"
 msgid "取消中…"
 msgstr "Cancelling…"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
 msgid "取消任务"
 msgstr "Cancel task"
@@ -1094,6 +1192,10 @@ msgstr "Cancel and return to system"
 #: src/web/storage.tsx
 msgid "取消扫描"
 msgstr "Cancel scan"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
+msgstr "Stopping a wait cannot recall sent messages. After a timeout or interruption, recover using the original request ID."
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "受控风扇"
@@ -1107,13 +1209,13 @@ msgstr "Read-only simulation"
 msgid "可回退的曲线版本"
 msgstr "Restorable policy revisions"
 
-#: src/plugins/runners/workbench.tsx
-msgid "可在下方确认后恢复接单"
-msgstr "Start a runner below to accept jobs again"
-
 #: src/plugins/runners/status.tsx
 msgid "可接单"
 msgstr "Ready"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "可接收任务"
+msgstr "Accepting jobs"
 
 #: src/web/storage.tsx
 msgid "可用"
@@ -1199,10 +1301,6 @@ msgstr "Start temperature service"
 msgid "启用插件"
 msgstr "Enable plugin"
 
-#: src/plugins/mini-proxy/workbench.tsx
-msgid "启用节点"
-msgstr "Enabled nodes"
-
 #: src/plugins/fan-control/workbench.tsx
 msgid "启用节点曲线"
 msgstr "Enable node curve"
@@ -1231,9 +1329,17 @@ msgstr "Dot: current daemon state"
 msgid "在线节点"
 msgstr "Online nodes"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "在节点上的 mini-archipel 仓库运行安装命令，然后刷新状态。"
+msgstr "Run the installer in the mini-archipel repository on this node, then refresh its status."
+
 #: src/plugins/fan-control/workbench.tsx
 msgid "在节点安装风扇控制插件后，即可读取曲线和管理温控。基础监测仍可使用。"
 msgstr "Install the fan control helper on the node to view its curve and manage temperature control. Basic monitoring remains available."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
+msgstr "Run scripts and control chat apps on the node. Review permissions and background jobs."
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
@@ -1256,8 +1362,8 @@ msgstr "Size"
 msgid "失效判定"
 msgstr "Stale after"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
-#: src/plugins/mini-proxy/workbench.tsx
 msgid "失败"
 msgstr "Failed"
 
@@ -1269,6 +1375,10 @@ msgstr "Storage analysis"
 #: src/web/storage.tsx
 msgid "存储空间"
 msgstr "Storage"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "定位对话"
+msgstr "Locate chat"
 
 #: src/web/App.tsx
 msgid "实时更新"
@@ -1306,6 +1416,10 @@ msgstr "Solid: draft"
 #: src/plugins/fan-control/workbench.tsx
 msgid "实际转速"
 msgstr "Actual speed"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "对话 ID"
+msgstr "Chat ID"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "导入文件不是有效的风扇策略。"
@@ -1363,9 +1477,18 @@ msgstr "No directory scan yet. Select Rescan to collect directory usage."
 msgid "尚未扫描下级目录"
 msgstr "Subdirectories have not been scanned"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "尚未检查"
+msgstr "Not checked"
+
+#: src/plugins/runners/workbench.tsx
 #: src/web/storage.tsx
 msgid "尚未配置节点"
 msgstr "No nodes configured"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "屏幕"
+msgstr "Screen"
 
 #: src/web/node.tsx
 msgid "展示节点上报的核心顺序，不推测核心类型。"
@@ -1395,38 +1518,40 @@ msgstr "The workbench could not be displayed"
 msgid "工作台版本"
 msgstr "Workbench version"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "工具包已安装"
+msgstr "Toolkit installed"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "工具包未就绪"
+msgstr "Toolkit not ready"
+
 #: src/web/storage-classes.ts
 msgid "工具链"
 msgstr "Toolchains"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已中断"
+msgstr "Interrupted"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "已中断并恢复"
 msgstr "Interrupted and restored"
 
-#: src/plugins/runners/workbench.tsx
-msgid "已停止"
-msgstr "Stopped"
-
 #: src/plugins/runners/status.tsx
 msgid "已停止接单"
 msgstr "Stopped"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
 msgid "已取消"
 msgstr "Cancelled"
-
-#: src/plugins/runners/workbench.tsx
-msgid "已启动本地监听进程"
-msgstr "Local listener processes are running"
-
-#: src/plugins/mini-proxy/workbench.tsx
-msgid "已启用 mini-proxy 插件的节点"
-msgstr "Nodes with the mini-proxy plugin enabled"
 
 #: src/web/overview.tsx
 msgid "已启用插件"
 msgstr "Enabled plugins"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
 msgid "已完成"
 msgstr "Completed"
@@ -1434,6 +1559,10 @@ msgstr "Completed"
 #: src/plugins/runners/workbench.tsx
 msgid "已开启，空闲时所有 Runner 正常接单"
 msgstr "Enabled; runners accept jobs while the node is idle"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已授权"
+msgstr "Granted"
 
 #: src/plugins/runners/workbench.tsx
 msgid "已接入"
@@ -1444,13 +1573,21 @@ msgstr "Connected"
 msgid "已暂停"
 msgstr "Paused"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已暂停，可以人工接管"
+msgstr "Paused; ready for manual use"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已暂停接单"
+msgstr "Not accepting jobs"
+
 #. placeholder {0}: rows.length
 #: src/plugins/runners/workbench.tsx
 msgid "已注册 {0} 个 Runner"
 msgstr "{0, plural, one {# registered runner} other {# registered runners}}"
 
 #: src/plugins/runners/workbench.tsx
-msgid "已注册runner"
+msgid "已注册 Runner"
 msgstr "Registered runners"
 
 #. placeholder {0}: formatBytes(memoryUsed)
@@ -1465,6 +1602,10 @@ msgstr "{0} / {1} used"
 msgid "已用{0} {1}"
 msgstr "{0}{1} used"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已登录"
+msgstr "Signed in"
+
 #: src/web/plugin-settings.tsx
 msgid "已禁用"
 msgstr "Disabled"
@@ -1472,6 +1613,10 @@ msgstr "Disabled"
 #: src/web/storage.tsx
 msgid "已统计目录"
 msgstr "Scanned directories"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "已锁定"
+msgstr "Locked"
 
 #: src/web/history.tsx
 msgid "平均"
@@ -1485,6 +1630,7 @@ msgstr "Average temperature"
 msgid "平滑后用于曲线决策"
 msgstr "Smoothed input to curve decisions"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/web/storage-classes.ts
 msgid "应用"
 msgstr "Applications"
@@ -1493,6 +1639,10 @@ msgstr "Applications"
 msgid "应用到节点"
 msgstr "Apply to node"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "应用安装"
+msgstr "Installed apps"
+
 #: src/web/storage-classes.ts
 msgid "应用数据"
 msgstr "Application data"
@@ -1500,6 +1650,10 @@ msgstr "Application data"
 #: src/plugins/fan-control/workbench.tsx
 msgid "应用风扇曲线"
 msgstr "Apply fan curve"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "延迟"
+msgstr "Latency"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "开始实测校准"
@@ -1516,6 +1670,14 @@ msgstr "Start timed override"
 #: src/web/plugin-settings.tsx
 msgid "异常"
 msgstr "Error"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "引导自动化授权"
+msgstr "Set up Automation permission"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "引导辅助功能授权"
+msgstr "Set up Accessibility permission"
 
 #. js-lingui-explicit-id
 #: src/domain.ts
@@ -1560,9 +1722,17 @@ msgstr "Restore"
 msgid "恢复 {0}"
 msgstr "Restore {0}"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "恢复原请求"
+msgstr "Recover original request"
+
 #: src/web/App.tsx
 msgid "恢复实时更新"
 msgstr "Resume live updates"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "恢复接单"
+msgstr "Resume accepting jobs"
 
 #: src/web/storage-rules.tsx
 msgid "恢复此节点的默认目录规则？"
@@ -1599,6 +1769,14 @@ msgstr "Run write diagnostic"
 #: src/plugins/runners/workbench.tsx
 msgid "执行操作前，工作台和节点都会重新检查作业状态。"
 msgstr "Both the workbench and the node recheck job status before applying a change."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "执行方式"
+msgstr "Execution mode"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "执行节点：{host}。相同请求 ID 会复用原结果；要执行新任务，请先新建请求。"
+msgstr "Execution node: {host}. The same request ID reuses the original result. Create a new request to run another job."
 
 #: src/web/storage.tsx
 msgid "扫描中…"
@@ -1640,18 +1818,19 @@ msgstr "Metric"
 msgid "指标分析"
 msgstr "Metric analysis"
 
-#: src/plugins/runners/workbench.tsx
-msgid "按仓库、节点分别注册"
-msgstr "Registered independently per repository and node"
-
 #: src/web/storage.tsx
 msgid "按目录与用途定位空间占用，扫描完成后自动更新。"
 msgstr "Explore usage by directory and category. Results update after each scan."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "授权窗口出现在节点机器上。请在那里完成密码、Touch ID 或允许操作；工具会复验，不保存密码。暂停接单后，等待当前任务结束或取消后再接管桌面。"
+msgstr "Authorization appears on the node. Complete the password, Touch ID or Allow prompt there; the toolkit verifies access and never stores passwords. After pausing, wait for the current job to finish or cancel it before taking over the desktop."
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "授权键"
 msgstr "Permitted key"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
 msgid "排队中"
 msgstr "Queued"
@@ -1688,6 +1867,10 @@ msgstr "Fan helper not ready"
 #: src/web/storage.tsx
 msgid "提交中…"
 msgstr "Submitting…"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "提交任务"
+msgstr "Submit job"
 
 #: src/web/storage-rules.tsx
 msgid "插件"
@@ -1751,6 +1934,10 @@ msgstr "Operation not confirmed. Check the current node state."
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "The node runs this locally. Closing this page will not stop the task. You can cancel it in the task history."
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "操作类型"
+msgstr "Operation type"
+
 #: src/plugins/runners/workbench.tsx
 msgid "操作请求已提交，请查看节点操作状态"
 msgstr "Request submitted. Check the node operation status."
@@ -1782,12 +1969,21 @@ msgid "数据已过期"
 msgstr "Data stale"
 
 #: src/web/storage.tsx
+#: src/web/ui.tsx
 msgid "数据过期"
 msgstr "Stale"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "数据过期或节点不可用，控制操作暂不可用。"
 msgstr "Data is stale or the node is unavailable. Control is temporarily disabled."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "新建对话"
+msgstr "New chat"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "新建请求"
+msgstr "New request"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
@@ -1821,9 +2017,17 @@ msgstr "Unavailable"
 msgid "暂停实时更新"
 msgstr "Pause live updates"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "暂停接单"
+msgstr "Pause accepting jobs"
+
 #: src/web/chart.tsx
 msgid "暂无可用的采样数据"
 msgstr "No samples available"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "暂无节点"
+msgstr "No nodes"
 
 #: src/plugins/runners/workbench.tsx
 msgid "暂无诊断日志"
@@ -1879,6 +2083,14 @@ msgstr "Unapplied draft"
 msgid "未开启"
 msgstr "Disabled"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "未授权"
+msgstr "Not granted"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "未检测到"
+msgstr "Not detected"
+
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "No disconnected nodes, low-storage alerts, or thermal warnings."
@@ -1886,6 +2098,10 @@ msgstr "No disconnected nodes, low-storage alerts, or thermal warnings."
 #: src/plugins/mini-proxy/workbench.tsx
 msgid "未测试"
 msgstr "Not tested"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "未登录"
+msgstr "Signed out"
 
 #: src/web/storage-errors.ts
 msgid "未获得有效目录统计，请查看节点诊断日志。"
@@ -1907,6 +2123,10 @@ msgstr "Unavailable"
 #: src/plugins/runners/workbench.tsx
 msgid "未运行"
 msgstr "Not running"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "未锁定"
+msgstr "Unlocked"
 
 #: src/plugins/runners/workbench.tsx
 msgid "未验收"
@@ -1977,9 +2197,26 @@ msgstr "CORE {0}"
 msgid "核心 {0} 占用"
 msgstr "Core {0} usage"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "桌面会话"
+msgstr "Desktop session"
+
+#: src/plugins/desktop-automation/web.tsx
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "桌面自动化"
+msgstr "Desktop automation"
+
 #: src/web/plugins.tsx
 msgid "检查插件设置；基础监控仍可使用。"
 msgstr "Check plugin settings. Core monitoring is still available."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "检查环境与权限"
+msgstr "Check environment and permissions"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "检查节点连接和插件开关"
+msgstr "Check node connection and plugin settings"
 
 #: src/web/App.tsx
 msgid "检查节点采集通道与插件接入状态。"
@@ -2008,10 +2245,6 @@ msgstr "Scanning this directory in the background; previous results remain avail
 #: src/web/App.tsx
 msgid "正在恢复连接"
 msgstr "Reconnecting…"
-
-#: src/plugins/runners/workbench.tsx
-msgid "正在执行作业"
-msgstr "Running jobs"
 
 #: src/web/App.tsx
 msgid "正在等待节点上报"
@@ -2111,8 +2344,8 @@ msgid "浅色"
 msgstr "Light"
 
 #: src/plugins/mini-proxy/workbench.tsx
-msgid "测速在节点本地试跑并实测 GitHub；切换自带失败回滚与 CI 忙时保护。"
-msgstr "Checks run locally on the node and probe GitHub; switching rolls back on failure and is guarded while CI is busy."
+msgid "测速与 v2rayN 相同：经代理请求 generate_204 两次，间隔 100 毫秒，取较快的一次；没完成就是 -1。切换失败会回滚。"
+msgstr "Same test as v2rayN: two generate_204 requests through the proxy, 100 ms apart, keep the faster one; an incomplete request is -1. A failed switch rolls back."
 
 #: src/plugins/mini-proxy/workbench.tsx
 msgid "测速检查"
@@ -2121,6 +2354,10 @@ msgstr "Run check"
 #: src/plugins/fan-control/workbench.tsx
 msgid "浏览器无法保存草稿，请先导出文件。"
 msgstr "The browser could not save this draft. Export it first."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "消息"
+msgstr "Message"
 
 #: src/web/preferences.tsx
 msgid "深色"
@@ -2195,6 +2432,7 @@ msgstr "Physical machine"
 msgid "物理机"
 msgstr "Physical machine"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/web/overview.tsx
 msgid "状态"
 msgstr "Status"
@@ -2235,10 +2473,6 @@ msgstr "Home directory"
 #: src/web/storage.tsx
 msgid "用途"
 msgstr "Category"
-
-#: src/plugins/runners/workbench.tsx
-msgid "监听 / 可接单"
-msgstr "Listening / ready"
 
 #: src/web/storage.tsx
 msgid "目录"
@@ -2322,6 +2556,10 @@ msgstr "Offline"
 msgid "私有工作空间"
 msgstr "Private workspace"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "程序或脚本"
+msgstr "Program or script"
+
 #: src/plugins/runners/workbench.tsx
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "Storage usage updates every minute; process status updates independently in real time."
@@ -2344,6 +2582,10 @@ msgstr "Step {0} speed"
 msgid "等待 CPU 信息"
 msgstr "Waiting for CPU data"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "等待系统确认"
+msgstr "Waiting for system approval"
+
 #: src/plugins/runners/status.tsx
 msgid "等待节点空闲"
 msgstr "Waiting for the node"
@@ -2355,7 +2597,7 @@ msgstr "Waiting for the node to report again"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "等待连接"
-msgstr "Waiting for connection"
+msgstr "Waiting for a connection"
 
 #: src/web/chart.tsx
 msgid "等待采样"
@@ -2385,6 +2627,10 @@ msgstr "Manage runners ↗"
 #: src/web/App.tsx
 msgid "管理插件"
 msgstr "Manage plugins"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "管理桌面任务"
+msgstr "Manage desktop jobs"
 
 #: src/web/node.tsx
 msgid "类型"
@@ -2432,10 +2678,6 @@ msgstr "System default"
 msgid "纵轴 0–100%"
 msgstr "Y-axis: 0–100%"
 
-#: src/plugins/mini-proxy/workbench.tsx
-msgid "经代理探测 GitHub 可达"
-msgstr "GitHub reachable through the proxy"
-
 #: src/plugins/runners/workbench.tsx
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "Manage runners by repository and verify local status against GitHub."
@@ -2477,6 +2719,26 @@ msgstr "Mini Archipel · Node workbench ({0}/{1})"
 msgid "群岛-{0}-{1}.csv"
 msgstr "mini-archipel-{0}-{1}.csv"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "耗时"
+msgstr "Duration"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "聊天应用"
+msgstr "Chat app"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "聊天操作"
+msgstr "Chat operation"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "脚本执行"
+msgstr "Script execution"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "自动化"
+msgstr "Automation"
+
 #: src/web/storage-rules.tsx
 msgid "自定义"
 msgstr "Custom"
@@ -2510,6 +2772,10 @@ msgstr "The node's Runner plugin is disabled, not ready, or has an incompatible 
 msgid "节点 Runners"
 msgstr "Node runners"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "节点上的绝对路径"
+msgstr "Absolute path on the node"
+
 #: src/web/App.tsx
 #: src/web/node.tsx
 msgid "节点不存在"
@@ -2519,10 +2785,6 @@ msgstr "Node not found"
 #: src/domain.ts
 msgid "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
 msgstr "The node is online. Waiting for collection to resume; stale readings are excluded from cluster totals."
-
-#: src/plugins/mini-proxy/workbench.tsx
-msgid "节点侧开启 allow_control 后可切换"
-msgstr "Switching requires allow_control on the node"
 
 #: src/web/node.tsx
 msgid "节点信息"
@@ -2548,9 +2810,21 @@ msgstr "Node online, metrics stale"
 msgid "节点导航"
 msgstr "Node navigation"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "节点尚未启用桌面控制"
+msgstr "Desktop control is not enabled on this node"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "节点屏幕已锁定，请先解锁"
+msgstr "Unlock the node screen first"
+
 #: src/web/ui.tsx
 msgid "节点工作台"
 msgstr "Node workbench"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "节点或桌面插件未就绪"
+msgstr "Node or desktop plugin is not ready"
 
 #: src/web/node.tsx
 msgid "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心。"
@@ -2591,6 +2865,10 @@ msgstr "Plugin not installed on this node"
 #: src/web/overview.tsx
 msgid "节点架构"
 msgstr "Architecture"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "节点桌面"
+msgstr "Node desktop"
 
 #: src/plugins/mini-proxy/workbench.tsx
 msgid "节点检查未通过，请查看详情"
@@ -2689,9 +2967,17 @@ msgstr "Proxy control is not enabled on this node"
 msgid "语言：{languageLabel}"
 msgstr "Language: {languageLabel}"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "请先在节点安装桌面工具包"
+msgstr "Install the desktop toolkit on this node first"
+
 #: src/plugins/runners/workbench.tsx
 msgid "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
 msgstr "Refresh the node state and check local processes and runner coordination before retrying."
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "请检查目标、消息、脚本路径和参数格式。"
+msgstr "Check the target, message, script path and argument format."
 
 #. placeholder {0}: String(response.status)
 #: src/web/api.ts
@@ -2721,6 +3007,10 @@ msgstr "Read SMC keys"
 #: src/plugins/fan-control/workbench.tsx
 msgid "读取 SMC 键详情"
 msgstr "Read SMC key details"
+
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "读取最近回复"
+msgstr "Read latest reply"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "读取键列表"
@@ -2759,6 +3049,10 @@ msgstr "Identity"
 msgid "轮询 / 重连"
 msgstr "Polling / reconnecting"
 
+#: src/plugins/desktop-automation/workbench.tsx
+msgid "辅助功能"
+msgstr "Accessibility"
+
 #: src/web/App.tsx
 msgid "输入工作台访问令牌，查看节点并执行运维操作。"
 msgstr "Enter your access token to view nodes and manage your cluster."
@@ -2772,13 +3066,10 @@ msgstr "Enter access token"
 msgid "运行 {0}"
 msgstr "Uptime {0}"
 
+#: src/plugins/desktop-automation/workbench.tsx
 #: src/plugins/fan-control/workbench.tsx
 msgid "运行中"
 msgstr "Running"
-
-#: src/plugins/runners/workbench.tsx
-msgid "运行中的作业受到启停保护"
-msgstr "Runners with active jobs cannot be stopped"
 
 #: src/web/node.tsx
 msgid "运行时间"
@@ -2826,12 +3117,16 @@ msgstr "Connections"
 msgid "退出工作台"
 msgstr "Sign out"
 
+#. placeholder {0}: displayName(item)
+#: src/plugins/desktop-automation/workbench.tsx
+#: src/plugins/fan-control/workbench.tsx
+#: src/plugins/mini-proxy/workbench.tsx
+#: src/plugins/runners/workbench.tsx
+msgid "选择 {0}"
+msgstr "Select {0}"
+
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
-msgid "通过"
-msgstr "Passed"
-
-#: src/plugins/mini-proxy/workbench.tsx
 msgid "通过"
 msgstr "Passed"
 
