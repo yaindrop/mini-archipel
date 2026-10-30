@@ -1,0 +1,36 @@
+.mini-proxy-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+}
+
+.mini-proxy-host {
+  border: 1px solid var(--ant-color-border-secondary, rgba(5, 5, 5, 0.1));
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mini-proxy-host-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mini-proxy-host-name {
+  font-weight: 600;
+}
+
+.mini-proxy-probe {
+  color: var(--ant-color-text-tertiary, rgba(5, 5, 5, 0.45));
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-proxy-probe-error {
+  color: var(--ant-color-warning, #d46b08);
+  font-size: 12px;
+  word-break: break-all;
+}

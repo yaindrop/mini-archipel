@@ -36,6 +36,7 @@ msgstr "A valid plugin setting is required"
 #: src/app.ts
 #: src/archipel.ts
 #: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
 msgstr "Node not found"
@@ -247,6 +248,7 @@ msgstr "GitHub status is unavailable. Showing local measurements."
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
 #: src/plugins/runners/server.ts
 msgid "插件操作不存在"
 msgstr "Plugin action not found"
@@ -290,6 +292,27 @@ msgstr "The runner is executing a job. Wait for it to finish."
 #: src/plugins/runners/server.ts
 msgid "节点插件未启用"
 msgstr "Node plugin disabled"
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "代理出口"
+msgstr "Proxy exits"
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "节点出境代理的出口状态、节点测速与受控切换。"
+msgstr "Exit status, node checks and controlled switching for node outbound proxies."
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "代理操作参数无效"
+msgstr "Invalid proxy action parameters"
+
+#. js-lingui-explicit-id
+#: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
+msgid "节点离线，操作未执行"
+msgstr "The node is offline. The operation was not performed."
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/contracts.ts
@@ -395,11 +418,6 @@ msgstr "Invalid fan operation parameters"
 #: src/plugins/fan-control/server.ts
 msgid "虚拟机无硬件风扇"
 msgstr "Virtual machines have no hardware fans"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "节点离线，操作未执行"
-msgstr "The node is offline. The operation was not performed."
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/server.ts
@@ -691,6 +709,10 @@ msgstr "GPU usage"
 msgid "HISTORICAL METRICS"
 msgstr "HISTORICAL METRICS"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "NETWORK OPERATIONS"
+msgstr "NETWORK OPERATIONS"
+
 #: src/web/node.tsx
 msgid "NODE"
 msgstr "NODE"
@@ -722,6 +744,10 @@ msgstr "WELCOME BACK"
 #: src/web/storage.tsx
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "The previous scan was interrupted by a node restart. Previous results are retained."
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "上次检查"
+msgstr "Last check"
 
 #: src/web/storage-rules.tsx
 msgid "下钻深度"
@@ -779,6 +805,11 @@ msgstr "A clear view of your cluster, from resources to individual nodes."
 #: src/plugins/runners/workbench.tsx
 msgid "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
 msgstr "Repository connections are independent. A failed connection does not affect other repositories or local runner management."
+
+#: src/plugins/mini-proxy/web.tsx
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "代理出口"
+msgstr "Proxy exits"
 
 #: src/web/App.tsx
 msgid "令牌由集群管理员提供，仅用于建立当前会话。"
@@ -844,6 +875,10 @@ msgstr "Stop service"
 #: src/plugins/fan-control/workbench.tsx
 msgid "停止服务并交还系统"
 msgstr "Stop service and return to system control"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "允许控制"
+msgstr "Control allowed"
 
 #: src/web/storage.tsx
 msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
@@ -949,9 +984,37 @@ msgstr "Maximum speed"
 msgid "写入值"
 msgstr "New value"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口受阻"
+msgstr "Exit degraded"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口延迟"
+msgstr "Exit latency"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口正常"
+msgstr "Exit healthy"
+
 #: src/web/storage-rules.tsx
 msgid "分类"
 msgstr "Category"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换"
+msgstr "Switch"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换出口节点"
+msgstr "Switch exit node"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换到此"
+msgstr "Switch to this"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换请求已完成，出口已验证"
+msgstr "Switch completed; the exit has been verified"
 
 #: src/web/storage-rules.tsx
 msgid "删除"
@@ -1006,6 +1069,7 @@ msgid "历史趋势"
 msgstr "History"
 
 #: src/plugins/fan-control/workbench.tsx
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/plugins/runners/workbench.tsx
 #: src/web/storage-rules.tsx
 msgid "取消"
@@ -1091,6 +1155,10 @@ msgstr "Sum of available volume space reported by online nodes"
 msgid "各核心占用"
 msgstr "Per-core usage"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。"
+msgstr "Exit status, node checks and controlled switching per node; the node verifies a switch before it takes effect."
+
 #: src/plugins/runners/workbench.tsx
 msgid "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
 msgstr "When one runner executes a job, pause other runners on the same node and resume them afterward. Manually stopped runners stay stopped."
@@ -1130,6 +1198,10 @@ msgstr "Start temperature service"
 #: src/plugins/runners/workbench.tsx
 msgid "启用插件"
 msgstr "Enable plugin"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "启用节点"
+msgstr "Enabled nodes"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "启用节点曲线"
@@ -1185,6 +1257,7 @@ msgid "失效判定"
 msgstr "Stale after"
 
 #: src/plugins/fan-control/workbench.tsx
+#: src/plugins/mini-proxy/workbench.tsx
 msgid "失败"
 msgstr "Failed"
 
@@ -1257,6 +1330,10 @@ msgstr "Export diagnostics"
 #: src/plugins/fan-control/workbench.tsx
 msgid "导出走势 CSV"
 msgstr "Export samples as CSV"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "将 {node} 设为该节点的出境出口；切换会先试跑验证，失败自动回滚。"
+msgstr "Set {node} as this node's outbound exit; the switch is trial-verified first and rolls back on failure."
 
 #: src/web/storage-rules.tsx
 msgid "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
@@ -1341,6 +1418,10 @@ msgstr "Cancelled"
 #: src/plugins/runners/workbench.tsx
 msgid "已启动本地监听进程"
 msgstr "Local listener processes are running"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "已启用 mini-proxy 插件的节点"
+msgstr "Nodes with the mini-proxy plugin enabled"
 
 #: src/web/overview.tsx
 msgid "已启用插件"
@@ -1440,6 +1521,10 @@ msgstr "Error"
 #: src/domain.ts
 msgid "当前 {v0}%"
 msgstr "Currently {v0}%"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "当前出口"
+msgstr "Current exit"
 
 #: src/plugins/runners/workbench.tsx
 msgid "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
@@ -1645,6 +1730,7 @@ msgstr "Search node names"
 msgid "搜索进程"
 msgstr "Search processes"
 
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/web/storage-rules.tsx
 msgid "操作"
 msgstr "Actions"
@@ -1764,6 +1850,10 @@ msgstr "Updates paused"
 msgid "有未保存的修改"
 msgstr "Unsaved changes"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "服务停止"
+msgstr "Service stopped"
+
 #: src/web/node.tsx
 msgid "未上报"
 msgstr "Not reported"
@@ -1771,6 +1861,10 @@ msgstr "Not reported"
 #: src/plugins/runners/workbench.tsx
 msgid "未取得远端状态"
 msgstr "Remote status unavailable"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "未安装"
+msgstr "Not installed"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
@@ -1788,6 +1882,10 @@ msgstr "Disabled"
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "No disconnected nodes, low-storage alerts, or thermal warnings."
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "未测试"
+msgstr "Not tested"
 
 #: src/web/storage-errors.ts
 msgid "未获得有效目录统计，请查看节点诊断日志。"
@@ -1995,6 +2093,10 @@ msgstr "No matching nodes. Adjust the name or type filter."
 msgid "没有匹配的进程"
 msgstr "No matching processes"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "没有节点启用 mini-proxy 插件"
+msgstr "No node has the mini-proxy plugin enabled"
+
 #: src/plugins/fan-control/curve.tsx
 msgid "波浪线：系统默认（转速由系统决定）"
 msgstr "Wave: system default (speed set by the system)"
@@ -2007,6 +2109,14 @@ msgstr "Processes"
 #: src/web/preferences.tsx
 msgid "浅色"
 msgstr "Light"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "测速在节点本地试跑并实测 GitHub；切换自带失败回滚与 CI 忙时保护。"
+msgstr "Checks run locally on the node and probe GitHub; switching rolls back on failure and is guarded while CI is busy."
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "测速检查"
+msgstr "Run check"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "浏览器无法保存草稿，请先导出文件。"
@@ -2088,6 +2198,10 @@ msgstr "Physical machine"
 #: src/web/overview.tsx
 msgid "状态"
 msgstr "Status"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "状态待上报"
+msgstr "Status pending"
 
 #: src/plugins/runners/status.tsx
 msgid "状态未知"
@@ -2199,6 +2313,10 @@ msgstr "Confirm start"
 #: src/domain.ts
 msgid "磁盘余量低于水位线"
 msgstr "Low available storage"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "离线"
+msgstr "Offline"
 
 #: src/web/App.tsx
 msgid "私有工作空间"
@@ -2314,6 +2432,10 @@ msgstr "System default"
 msgid "纵轴 0–100%"
 msgstr "Y-axis: 0–100%"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "经代理探测 GitHub 可达"
+msgstr "GitHub reachable through the proxy"
+
 #: src/plugins/runners/workbench.tsx
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "Manage runners by repository and verify local status against GitHub."
@@ -2371,6 +2493,7 @@ msgstr "Custom curve"
 msgid "自检会逐档改变风扇转速并核对实际读数，完成或取消后恢复温控。"
 msgstr "The self-test changes fan speeds step by step and checks actual readings. Temperature control is restored on completion or cancellation."
 
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/web/history.tsx
 msgid "节点"
 msgstr "Nodes"
@@ -2397,9 +2520,17 @@ msgstr "Node not found"
 msgid "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
 msgstr "The node is online. Waiting for collection to resume; stale readings are excluded from cluster totals."
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点侧开启 allow_control 后可切换"
+msgstr "Switching requires allow_control on the node"
+
 #: src/web/node.tsx
 msgid "节点信息"
 msgstr "Node information"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点出口"
+msgstr "Node exits"
 
 #: src/web/node.tsx
 msgid "节点可能已从集群配置中移除。"
@@ -2460,6 +2591,14 @@ msgstr "Plugin not installed on this node"
 #: src/web/overview.tsx
 msgid "节点架构"
 msgstr "Architecture"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点检查未通过，请查看详情"
+msgstr "Node check failed; see details"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点检查通过"
+msgstr "Node check passed"
 
 #: src/web/node.tsx
 msgid "节点概览"
@@ -2541,6 +2680,10 @@ msgstr "Access token"
 #: src/plugins/runners/workbench.tsx
 msgid "诊断日志"
 msgstr "Diagnostic logs"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "该节点未开启代理控制"
+msgstr "Proxy control is not enabled on this node"
 
 #: src/web/preferences.tsx
 msgid "语言：{languageLabel}"
@@ -2685,6 +2828,10 @@ msgstr "Sign out"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
+msgid "通过"
+msgstr "Passed"
+
+#: src/plugins/mini-proxy/workbench.tsx
 msgid "通过"
 msgstr "Passed"
 

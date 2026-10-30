@@ -36,6 +36,7 @@ msgstr "缺少有效的插件开关"
 #: src/app.ts
 #: src/archipel.ts
 #: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
 #: src/plugins/runners/server.ts
 msgid "节点不存在"
 msgstr "节点不存在"
@@ -247,6 +248,7 @@ msgstr "GitHub 状态暂不可用，当前展示本地采集结果"
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
 #: src/plugins/runners/server.ts
 msgid "插件操作不存在"
 msgstr "插件操作不存在"
@@ -290,6 +292,27 @@ msgstr "runner 正在执行作业，请等待作业结束"
 #: src/plugins/runners/server.ts
 msgid "节点插件未启用"
 msgstr "节点插件未启用"
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "代理出口"
+msgstr "代理出口"
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "节点出境代理的出口状态、节点测速与受控切换。"
+msgstr "节点出境代理的出口状态、节点测速与受控切换。"
+
+#. js-lingui-explicit-id
+#: src/plugins/mini-proxy/server.ts
+msgid "代理操作参数无效"
+msgstr "代理操作参数无效"
+
+#. js-lingui-explicit-id
+#: src/plugins/fan-control/server.ts
+#: src/plugins/mini-proxy/server.ts
+msgid "节点离线，操作未执行"
+msgstr "节点离线，操作未执行"
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/contracts.ts
@@ -395,11 +418,6 @@ msgstr "风扇操作参数无效"
 #: src/plugins/fan-control/server.ts
 msgid "虚拟机无硬件风扇"
 msgstr "虚拟机无硬件风扇"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "节点离线，操作未执行"
-msgstr "节点离线，操作未执行"
 
 #. js-lingui-explicit-id
 #: src/plugins/fan-control/server.ts
@@ -691,6 +709,10 @@ msgstr "GPU 占用"
 msgid "HISTORICAL METRICS"
 msgstr "历史指标"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "NETWORK OPERATIONS"
+msgstr "NETWORK OPERATIONS"
+
 #: src/web/node.tsx
 msgid "NODE"
 msgstr "节点"
@@ -722,6 +744,10 @@ msgstr "欢迎回来"
 #: src/web/storage.tsx
 msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "上次扫描因节点重启而中断，保留上次结果。"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "上次检查"
+msgstr "上次检查"
 
 #: src/web/storage-rules.tsx
 msgid "下钻深度"
@@ -779,6 +805,11 @@ msgstr "从全局状态到每台节点，掌握资源与运行情况。"
 #: src/plugins/runners/workbench.tsx
 msgid "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
 msgstr "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
+
+#: src/plugins/mini-proxy/web.tsx
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "代理出口"
+msgstr "代理出口"
 
 #: src/web/App.tsx
 msgid "令牌由集群管理员提供，仅用于建立当前会话。"
@@ -844,6 +875,10 @@ msgstr "停止服务"
 #: src/plugins/fan-control/workbench.tsx
 msgid "停止服务并交还系统"
 msgstr "停止服务并交还系统"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "允许控制"
+msgstr "允许控制"
 
 #: src/web/storage.tsx
 msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
@@ -949,9 +984,37 @@ msgstr "最高转速"
 msgid "写入值"
 msgstr "写入值"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口受阻"
+msgstr "出口受阻"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口延迟"
+msgstr "出口延迟"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "出口正常"
+msgstr "出口正常"
+
 #: src/web/storage-rules.tsx
 msgid "分类"
 msgstr "分类"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换"
+msgstr "切换"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换出口节点"
+msgstr "切换出口节点"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换到此"
+msgstr "切换到此"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "切换请求已完成，出口已验证"
+msgstr "切换请求已完成，出口已验证"
 
 #: src/web/storage-rules.tsx
 msgid "删除"
@@ -1006,6 +1069,7 @@ msgid "历史趋势"
 msgstr "历史趋势"
 
 #: src/plugins/fan-control/workbench.tsx
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/plugins/runners/workbench.tsx
 #: src/web/storage-rules.tsx
 msgid "取消"
@@ -1091,6 +1155,10 @@ msgstr "各在线节点报告的卷可用空间之和"
 msgid "各核心占用"
 msgstr "各核心占用"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。"
+msgstr "各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。"
+
 #: src/plugins/runners/workbench.tsx
 msgid "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
 msgstr "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
@@ -1130,6 +1198,10 @@ msgstr "启动温控服务"
 #: src/plugins/runners/workbench.tsx
 msgid "启用插件"
 msgstr "启用插件"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "启用节点"
+msgstr "启用节点"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "启用节点曲线"
@@ -1185,6 +1257,7 @@ msgid "失效判定"
 msgstr "失效判定"
 
 #: src/plugins/fan-control/workbench.tsx
+#: src/plugins/mini-proxy/workbench.tsx
 msgid "失败"
 msgstr "失败"
 
@@ -1257,6 +1330,10 @@ msgstr "导出诊断记录"
 #: src/plugins/fan-control/workbench.tsx
 msgid "导出走势 CSV"
 msgstr "导出走势 CSV"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "将 {node} 设为该节点的出境出口；切换会先试跑验证，失败自动回滚。"
+msgstr "将 {node} 设为该节点的出境出口；切换会先试跑验证，失败自动回滚。"
 
 #: src/web/storage-rules.tsx
 msgid "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
@@ -1341,6 +1418,10 @@ msgstr "已取消"
 #: src/plugins/runners/workbench.tsx
 msgid "已启动本地监听进程"
 msgstr "已启动本地监听进程"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "已启用 mini-proxy 插件的节点"
+msgstr "已启用 mini-proxy 插件的节点"
 
 #: src/web/overview.tsx
 msgid "已启用插件"
@@ -1440,6 +1521,10 @@ msgstr "异常"
 #: src/domain.ts
 msgid "当前 {v0}%"
 msgstr "当前 {v0}%"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "当前出口"
+msgstr "当前出口"
 
 #: src/plugins/runners/workbench.tsx
 msgid "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
@@ -1645,6 +1730,7 @@ msgstr "搜索节点名称"
 msgid "搜索进程"
 msgstr "搜索进程"
 
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/web/storage-rules.tsx
 msgid "操作"
 msgstr "操作"
@@ -1764,6 +1850,10 @@ msgstr "更新已暂停"
 msgid "有未保存的修改"
 msgstr "有未保存的修改"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "服务停止"
+msgstr "服务停止"
+
 #: src/web/node.tsx
 msgid "未上报"
 msgstr "未上报"
@@ -1771,6 +1861,10 @@ msgstr "未上报"
 #: src/plugins/runners/workbench.tsx
 msgid "未取得远端状态"
 msgstr "未取得远端状态"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "未安装"
+msgstr "未安装"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
@@ -1788,6 +1882,10 @@ msgstr "未开启"
 #: src/web/overview.tsx
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "未检测到节点失联、低磁盘余量或散热告警。"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "未测试"
+msgstr "未测试"
 
 #: src/web/storage-errors.ts
 msgid "未获得有效目录统计，请查看节点诊断日志。"
@@ -1995,6 +2093,10 @@ msgstr "没有匹配的节点，调整名称或类型筛选后重试。"
 msgid "没有匹配的进程"
 msgstr "没有匹配的进程"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "没有节点启用 mini-proxy 插件"
+msgstr "没有节点启用 mini-proxy 插件"
+
 #: src/plugins/fan-control/curve.tsx
 msgid "波浪线：系统默认（转速由系统决定）"
 msgstr "波浪线：系统默认（转速由系统决定）"
@@ -2007,6 +2109,14 @@ msgstr "活跃进程"
 #: src/web/preferences.tsx
 msgid "浅色"
 msgstr "浅色"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "测速在节点本地试跑并实测 GitHub；切换自带失败回滚与 CI 忙时保护。"
+msgstr "测速在节点本地试跑并实测 GitHub；切换自带失败回滚与 CI 忙时保护。"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "测速检查"
+msgstr "测速检查"
 
 #: src/plugins/fan-control/workbench.tsx
 msgid "浏览器无法保存草稿，请先导出文件。"
@@ -2088,6 +2198,10 @@ msgstr "物理机"
 #: src/web/overview.tsx
 msgid "状态"
 msgstr "状态"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "状态待上报"
+msgstr "状态待上报"
 
 #: src/plugins/runners/status.tsx
 msgid "状态未知"
@@ -2199,6 +2313,10 @@ msgstr "确认启动"
 #: src/domain.ts
 msgid "磁盘余量低于水位线"
 msgstr "磁盘余量低于水位线"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "离线"
+msgstr "离线"
 
 #: src/web/App.tsx
 msgid "私有工作空间"
@@ -2314,6 +2432,10 @@ msgstr "系统默认"
 msgid "纵轴 0–100%"
 msgstr "纵轴 0–100%"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "经代理探测 GitHub 可达"
+msgstr "经代理探测 GitHub 可达"
+
 #: src/plugins/runners/workbench.tsx
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "统一管理接单进程，核对本地状态与 GitHub 连接。"
@@ -2371,6 +2493,7 @@ msgstr "自定义曲线"
 msgid "自检会逐档改变风扇转速并核对实际读数，完成或取消后恢复温控。"
 msgstr "自检会逐档改变风扇转速并核对实际读数，完成或取消后恢复温控。"
 
+#: src/plugins/mini-proxy/workbench.tsx
 #: src/web/history.tsx
 msgid "节点"
 msgstr "节点"
@@ -2397,9 +2520,17 @@ msgstr "节点不存在"
 msgid "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
 msgstr "节点仍在线，等待采集器恢复；旧读数不参与集群汇总"
 
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点侧开启 allow_control 后可切换"
+msgstr "节点侧开启 allow_control 后可切换"
+
 #: src/web/node.tsx
 msgid "节点信息"
 msgstr "节点信息"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点出口"
+msgstr "节点出口"
 
 #: src/web/node.tsx
 msgid "节点可能已从集群配置中移除。"
@@ -2460,6 +2591,14 @@ msgstr "节点未安装此插件"
 #: src/web/overview.tsx
 msgid "节点架构"
 msgstr "节点架构"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点检查未通过，请查看详情"
+msgstr "节点检查未通过，请查看详情"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "节点检查通过"
+msgstr "节点检查通过"
 
 #: src/web/node.tsx
 msgid "节点概览"
@@ -2541,6 +2680,10 @@ msgstr "访问令牌"
 #: src/plugins/runners/workbench.tsx
 msgid "诊断日志"
 msgstr "诊断日志"
+
+#: src/plugins/mini-proxy/workbench.tsx
+msgid "该节点未开启代理控制"
+msgstr "该节点未开启代理控制"
 
 #: src/web/preferences.tsx
 msgid "语言：{languageLabel}"
@@ -2685,6 +2828,10 @@ msgstr "退出工作台"
 
 #. js-lingui-explicit-id
 #: src/plugins/runners/domain.ts
+msgid "通过"
+msgstr "通过"
+
+#: src/plugins/mini-proxy/workbench.tsx
 msgid "通过"
 msgstr "通过"
 
