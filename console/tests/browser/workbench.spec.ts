@@ -109,7 +109,10 @@ test("overview, filters, deep links and browser navigation", async ({
   ).toBeGreaterThanOrEqual(15);
 
   await page.getByLabel("筛选节点类型").click();
-  await page.getByRole("option", { name: "虚拟机", exact: true }).click();
+  // A touch scroll-into-view dismisses the Ant menu before the tap lands.
+  await page.getByRole("option", { name: "虚拟机", exact: true }).click({
+    force: isMobile,
+  });
   await expect(page.locator(".nodes-table tbody tr[data-row-key]")).toHaveCount(
     2,
   );
@@ -315,7 +318,9 @@ test("node runner mutual exclusion persists and reflects job pause and recovery"
   await expect(toggle).not.toBeChecked();
   await toggle.click();
   await expect(toggle).toBeChecked();
-  await page.getByRole("button", { name: "选择 yd-mini-2", exact: true }).click();
+  await page
+    .getByRole("button", { name: "选择 yd-mini-2", exact: true })
+    .click();
   await expect(
     page.getByRole("switch", { name: "yd-mini-2 接单互斥", exact: true }),
   ).not.toBeChecked();

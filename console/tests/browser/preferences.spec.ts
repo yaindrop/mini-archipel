@@ -44,6 +44,9 @@ test("system defaults localize every workspace and use the system appearance", a
   await expect(page.getByText("summary · abcdef123456").first()).toBeVisible();
   await expect(page.getByText("Matches").first()).toBeVisible();
   await expect(page.getByText("Passed").first()).toBeVisible();
+  await page
+    .getByRole("button", { name: "Select yd-mini-2", exact: true })
+    .click();
   await expect(page.getByText("No explicit run yet").first()).toBeVisible();
   await expect(page.locator(".ant-dropdown:visible")).toHaveCount(0);
   await page.screenshot({

@@ -156,7 +156,9 @@ export function FanControl({
                 {reading?.have_temp ? `${reading.peak.toFixed(1)} °C` : "—"}
               </span>
               <small>
-                {reading ? `${String(Math.round(reading.rpm))} RPM` : t`等待连接`}
+                {reading
+                  ? `${String(Math.round(reading.rpm))} RPM`
+                  : t`等待连接`}
               </small>
             </>
           );

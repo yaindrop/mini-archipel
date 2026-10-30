@@ -20,13 +20,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import {
-  CirclePause,
-  GitBranch,
-  Play,
-  Square,
-  Terminal,
-} from "lucide-react";
+import { CirclePause, GitBranch, Play, Square, Terminal } from "lucide-react";
 import type { Archipel, Host } from "../../contracts.ts";
 import type { Runner, GitHubRunner, RepositoryState } from "./contracts.ts";
 import {
@@ -630,9 +624,7 @@ export function Runners({
           return (
             <>
               <span>{runners.length}</span>
-              <small>
-                {busy ? t`${busy} 个正在执行` : t`已注册 Runner`}
-              </small>
+              <small>{busy ? t`${busy} 个正在执行` : t`已注册 Runner`}</small>
             </>
           );
         }}
