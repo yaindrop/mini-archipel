@@ -1,5 +1,7 @@
 # 仓库整合验收 · 2026-10-30
 
+以下为仓库整合阶段记录。后续四节点部署已完成，最新状态见 [部署记录](DEPLOYMENT.md)。
+
 范围：将节点上的独立 mini-proxy 后端纳入 Mini Archipel；本次没有部署新版后端、
 切换现有代理出口、重启生产 LaunchAgent 或操作 v2ray/v2rayN。
 

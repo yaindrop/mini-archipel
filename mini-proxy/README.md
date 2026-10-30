@@ -50,7 +50,7 @@ python3 mini-proxy/install.py --rollback
 `~/.local/share/mini-archipel/mini-proxy-backups/`，按自己的保留策略清理旧备份。
 
 安装器只管理 `com.mini.proxy`。首次安装要求 10808 空闲；端口被其他代理占用时直接拒绝，
-不自动迁移。现有 Tart 的 `com.flowbit.ci-proxy` 不属于该安装器；开启工作台插件也不会把它
+不自动迁移。旧的 `com.flowbit.ci-proxy` 不属于该安装器；开启工作台插件也不会把它
 转换成 Mini Proxy 后端。工具不操作 v2ray/v2rayN，不修改系统代理、shell 环境或 Agent 配置。
 
 ## 节点文件与服务
@@ -85,7 +85,8 @@ Google 规则优先走代理，其余默认走代理。升级保留既有路由�
 
 切换先做同样的候选测试，通过后原子写入配置，重启自己的服务，再验证监听进程归属及
 实际连通性。失败或可捕获的中断会恢复旧配置并复验；错误会明确说明恢复是否成功。
-CLI 成功输出 `latency_ms N`，Agent 据此显示测量值，失败返回非零且不输出节点凭据。
+CLI 成功输出 `latency_ms N`，供 Agent 读取网络采样值，失败返回非零且不输出节点凭据。
+较旧 Agent 的 `check_ms` 可能仍表示整次 CLI 耗时，部署时应区分两种口径。
 
 安装、升级、回滚、检查和切换共用节点级文件锁，冲突立即返回。任何仓库存在
 `Runner.Worker` 时禁止安装和切换，候选试跑后再次检查，`--check` 可以在 CI 作业期间使用。
@@ -111,3 +112,4 @@ provisioning/.venv/bin/ruff format --check mini-proxy
 安装升级/回滚、外部服务与端口冲突、保留无关文件。共享 CI 的 provisioning 阶段运行该套测试。
 真实网络验收使用 `--check` 逐个检查节点；安装及 launchd 重启验收需在目标机器维护窗口执行。
 本次检查结果与尚未验证的范围见 [验收记录](VALIDATION.md)。
+已完成的四节点安装、Tart 迁移和在线验收见 [部署记录](DEPLOYMENT.md)。
