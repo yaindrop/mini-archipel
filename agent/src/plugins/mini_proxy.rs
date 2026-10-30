@@ -39,7 +39,7 @@ impl Default for Options {
                 .to_string_lossy()
                 .into(),
             proxy_url: "http://127.0.0.1:10808".into(),
-            probe_url: "https://api.github.com/".into(),
+            probe_url: "https://www.google.com/generate_204".into(),
             probe_timeout_s: 12,
         }
     }
@@ -103,7 +103,16 @@ fn current_node(document: &str) -> Option<String> {
     valid_node_name(&name).then_some(name)
 }
 
-/// curl -w "%{http_code} %{time_total}" on success prints e.g. `200 0.648`.
+/// The select CLI prints `latency_ms 144` for the generate_204 request itself.
+fn reported_latency(stdout: &str) -> Option<u64> {
+    stdout.lines().rev().find_map(|line| {
+        line.trim()
+            .strip_prefix("latency_ms ")
+            .and_then(|ms| ms.parse().ok())
+    })
+}
+
+/// curl -w "%{http_code} %{time_total}" on success prints e.g. `204 0.144`.
 fn parse_probe_output(text: &str) -> Option<(u16, u64)> {
     let mut parts = text.split_whitespace();
     let code: u16 = parts.next()?.parse().ok()?;
@@ -158,12 +167,14 @@ async fn probe(options: &Options) -> Probe {
             }
         }
         Err(_) => {
+            // The local port accepted the connection; the exit request did not
+            // finish. That is a degraded exit, not a stopped service.
             return Probe {
                 status_code: None,
                 latency_ms: None,
                 error: Some("probe timed out".into()),
-                reachable: false,
-            }
+                reachable: true,
+            };
         }
     };
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
@@ -361,11 +372,12 @@ impl Plugin for MiniProxy {
                 400,
             );
             let ok = code == Some(0);
+            let check_ms = reported_latency(&stdout).unwrap_or(elapsed);
             health.lock().await.insert(
                 node.clone(),
                 HealthEntry {
                     ok,
-                    check_ms: elapsed,
+                    check_ms,
                     ts: crate::plugins::now(),
                     detail: output.clone(),
                 },
@@ -373,7 +385,7 @@ impl Plugin for MiniProxy {
             let state = snapshot(&options, &health).await;
             context.publish(state.clone()).await;
             let mut result =
-                json!({"ok": ok, "output": output, "check_ms": elapsed, "state": state});
+                json!({"ok": ok, "output": output, "check_ms": check_ms, "state": state});
             if !ok {
                 result["error"] = json!(format!("mini-proxy-select exited with {code:?}"));
             }
@@ -409,6 +421,16 @@ mod tests {
         assert_eq!(current_node(document), Some("akile-sg".into()));
         assert_eq!(current_node(r#"{"outbounds":[]}"#), None);
         assert_eq!(current_node("{}"), None);
+    }
+
+    #[test]
+    fn reported_latency_reads_the_generate_204_sample() {
+        assert_eq!(
+            reported_latency("akile-de: delay ok\nlatency_ms 144\n"),
+            Some(144)
+        );
+        assert_eq!(reported_latency("latency_ms 0"), Some(0));
+        assert_eq!(reported_latency("no sample"), None);
     }
 
     #[test]

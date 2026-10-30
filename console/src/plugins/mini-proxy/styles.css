@@ -1,13 +1,16 @@
 .mini-proxy-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  min-width: 0;
 }
 
 .mini-proxy-host {
+  min-width: 0;
+  overflow-x: auto;
   border: 1px solid var(--ant-color-border-secondary, rgba(5, 5, 5, 0.1));
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 12px 16px 4px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -24,9 +27,49 @@
   font-weight: 600;
 }
 
+.mini-proxy-node,
+.mini-proxy-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.mini-proxy-actions {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.mini-proxy-table {
+  min-width: 0;
+}
+
+.mini-proxy-table .ant-table,
+.mini-proxy-table table {
+  width: 100%;
+}
+
+.mini-proxy-table .ant-table-cell {
+  white-space: nowrap;
+}
+
 .mini-proxy-probe {
   color: var(--ant-color-text-tertiary, rgba(5, 5, 5, 0.45));
   font-variant-numeric: tabular-nums;
+}
+
+.mini-proxy-delay-ok,
+.mini-proxy-delay-bad {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.mini-proxy-delay-ok {
+  color: var(--ant-color-success, #49aa19);
+}
+
+.mini-proxy-delay-bad {
+  color: var(--ant-color-error, #ff4d4f);
 }
 
 .mini-proxy-probe-error {

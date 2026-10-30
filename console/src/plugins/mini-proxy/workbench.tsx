@@ -1,14 +1,31 @@
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router";
 import { refreshArchipel } from "../../web/useArchipel.ts";
-import { App, Button, Empty, Space, Table, Tag, Tooltip } from "antd";
+import { App, Button, Empty, Table, Tag, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
-import { Activity, ArrowLeftRight, Globe, ShieldCheck } from "lucide-react";
+import { Activity, ArrowLeftRight, ShieldCheck } from "lucide-react";
 import type { Archipel, Host } from "../../contracts.ts";
 import { displayName, stale } from "../../domain.ts";
 import { api } from "../../web/api.ts";
-import { Metric, PageTitle, Section } from "../../web/ui.tsx";
-import { proxyData, proxyEnabled } from "./domain.ts";
+import { NodePager, PageTitle, Section } from "../../web/ui.tsx";
+import { ActionReplySchema } from "./contracts.ts";
+import { checkNodes, nodeDelay, proxyData, proxyEnabled } from "./domain.ts";
+
+const hostLanes = new Map<string, Promise<unknown>>();
+
+function enqueueHost<T>(host: string, job: () => Promise<T>): Promise<T> {
+  const previous = hostLanes.get(host) ?? Promise.resolve();
+  const run = previous.then(job, job);
+  hostLanes.set(
+    host,
+    run.then(
+      () => undefined,
+      () => undefined,
+    ),
+  );
+  return run;
+}
 
 function AvailabilityTag({
   availability,
@@ -36,15 +53,25 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
   const client = useQueryClient();
   const data = proxyData(host);
   const online = !stale(host, now);
+  const exitDelay =
+    data?.current_node != null
+      ? nodeDelay(data.health[data.current_node])
+      : null;
   const switchNode = useMutation({
     mutationFn: (node: string) =>
-      api.pluginAction("mini-proxy", "switch", {
-        host: host.name,
-        node,
-      }),
-    onSuccess: async () => {
+      api.pluginAction(
+        "mini-proxy",
+        "switch",
+        {
+          host: host.name,
+          node,
+        },
+        ActionReplySchema,
+      ),
+    onSuccess: async (reply) => {
       await refreshArchipel(client);
-      void feedback.success(t`切换请求已完成，出口已验证`);
+      if (reply.ok) void feedback.success(t`切换请求已完成，出口已验证`);
+      else void feedback.warning(t`节点检查未通过，请查看详情`);
     },
     onError: (error) => {
       void feedback.error(
@@ -54,10 +81,17 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
   });
   const check = useMutation({
     mutationFn: (node: string) =>
-      api.pluginAction("mini-proxy", "check", {
-        host: host.name,
-        node,
-      }),
+      enqueueHost(host.name, () =>
+        api.pluginAction(
+          "mini-proxy",
+          "check",
+          {
+            host: host.name,
+            node,
+          },
+          ActionReplySchema,
+        ),
+      ),
     onSuccess: async (reply: { ok: boolean }) => {
       await refreshArchipel(client);
       if (reply.ok) void feedback.success(t`节点检查通过`);
@@ -75,35 +109,37 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
       title: t`节点`,
       key: "node",
       render: (_value, node) => (
-        <Space>
+        <span className="mini-proxy-node">
           <span className="mini-proxy-node-name">{node}</span>
           {data?.current_node === node ? (
             <Tag color="blue">{t`当前出口`}</Tag>
           ) : null}
-        </Space>
+        </span>
       ),
     },
     {
-      title: t`上次检查`,
+      title: t`延迟`,
       key: "health",
+      width: 88,
+      align: "end",
       render: (_value, node) => {
-        const record = data?.health[node];
-        if (!record) return <Tag>{t`未测试`}</Tag>;
+        const delay = nodeDelay(data?.health[node]);
+        if (delay == null) return <Tag>{t`未测试`}</Tag>;
         return (
-          <Space>
-            <Tag color={record.ok ? "green" : "red"}>
-              {record.ok ? t`通过` : t`失败`}
-            </Tag>
-            <span>
-              {new Date(record.ts).toLocaleTimeString()} · {record.check_ms}ms
-            </span>
-          </Space>
+          <span
+            className={
+              delay < 0 ? "mini-proxy-delay-bad" : "mini-proxy-delay-ok"
+            }
+          >
+            {delay}
+          </span>
         );
       },
     },
     {
       title: t`操作`,
       key: "actions",
+      width: 260,
       align: "end",
       render: (_value, node) => {
         const isCurrent = data?.current_node === node;
@@ -130,7 +166,7 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
           </Button>
         );
         return (
-          <Space>
+          <span className="mini-proxy-actions">
             <Button
               size="small"
               icon={<Activity size={14} />}
@@ -147,7 +183,7 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
             ) : (
               <Tooltip title={t`该节点未开启代理控制`}>{switchButton}</Tooltip>
             )}
-          </Space>
+          </span>
         );
       },
     },
@@ -155,7 +191,6 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
   return (
     <div className="mini-proxy-host">
       <div className="mini-proxy-host-heading">
-        <span className="mini-proxy-host-name">{displayName(host)}</span>
         <AvailabilityTag availability={data?.availability} />
         {data?.control_allowed ? (
           <Tag icon={<ShieldCheck size={12} />} color="geekblue">
@@ -163,18 +198,18 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
           </Tag>
         ) : null}
         {!online ? <Tag color="default">{t`离线`}</Tag> : null}
-        {data?.probe.latency_ms != null ? (
-          <span className="mini-proxy-probe">
-            {t`出口延迟`} {data.probe.latency_ms}ms
+        {exitDelay != null && exitDelay >= 0 ? (
+          <span className="mini-proxy-probe mini-proxy-delay-ok">
+            {t`出口延迟`} {exitDelay}ms
           </span>
-        ) : data?.probe.error ? (
-          <span className="mini-proxy-probe">{data.probe.error}</span>
         ) : null}
       </div>
       {data && data.availability !== "ready" && data.probe.error ? (
         <div className="mini-proxy-probe-error">{data.probe.error}</div>
       ) : null}
       <Table
+        className="mini-proxy-table"
+        tableLayout="fixed"
         rowKey={(node) => node}
         columns={columns}
         dataSource={data?.nodes ?? []}
@@ -193,13 +228,40 @@ export function MiniProxy({
   now: number;
 }) {
   const { t } = useLinguiMacro();
-  const hosts = archipel.hosts.filter((host) => proxyEnabled(host));
-  const ready = hosts.filter(
-    (host) => proxyData(host)?.availability === "ready",
-  ).length;
-  const controllable = hosts.filter(
-    (host) => proxyData(host)?.control_allowed,
-  ).length;
+  const client = useQueryClient();
+  const { message: feedback } = App.useApp();
+  const [search, setSearch] = useSearchParams();
+  const enabled = archipel.hosts.filter((item) => proxyEnabled(item));
+  const host =
+    enabled.find((item) => item.name === search.get("host")) ?? enabled[0];
+  const checkAll = useMutation({
+    mutationFn: () =>
+      Promise.all(
+        (host && !stale(host, now) ? [host] : []).map((item) =>
+          checkNodes(proxyData(item)?.nodes ?? [], (node) =>
+            enqueueHost(item.name, () =>
+              api.pluginAction(
+                "mini-proxy",
+                "check",
+                { host: item.name, node },
+                ActionReplySchema,
+              ),
+            ),
+          ),
+        ),
+      ),
+    onSuccess: async (counts) => {
+      await refreshArchipel(client);
+      const failed = counts.reduce((sum, count) => sum + count, 0);
+      if (failed === 0) void feedback.success(t`全部测速完成`);
+      else void feedback.warning(t`${failed} 个出口未通过`);
+    },
+    onError: (error) => {
+      void feedback.error(
+        error instanceof Error ? error.message : String(error),
+      );
+    },
+  });
   return (
     <>
       <PageTitle
@@ -207,36 +269,61 @@ export function MiniProxy({
         title={t`代理出口`}
         description={t`各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。`}
       />
-      <div className="metrics-row">
-        <Metric
-          label={t`启用节点`}
-          value={hosts.length}
-          detail={t`已启用 mini-proxy 插件的节点`}
-          icon={<Globe size={18} />}
-        />
-        <Metric
-          label={t`出口正常`}
-          value={ready}
-          detail={t`经代理探测 GitHub 可达`}
-          icon={<Activity size={18} />}
-        />
-        <Metric
-          label={t`允许控制`}
-          value={controllable}
-          detail={t`节点侧开启 allow_control 后可切换`}
-          icon={<ShieldCheck size={18} />}
-        />
-      </div>
+      <NodePager
+        hosts={enabled}
+        now={now}
+        selected={host?.name}
+        onSelect={(name) => {
+          setSearch({ host: name }, { replace: true });
+        }}
+        label={(item) => t`选择 ${displayName(item)}`}
+        summary={(item) => {
+          const data = proxyData(item);
+          const delay =
+            data?.current_node != null
+              ? nodeDelay(data.health[data.current_node])
+              : null;
+          const shown =
+            delay != null && delay >= 0 ? `${String(delay)} ms` : "—";
+          return (
+            <>
+              <span>{shown}</span>
+              <small>
+                {data?.availability === "ready"
+                  ? t`出口正常`
+                  : data?.availability === "service_down"
+                    ? t`服务停止`
+                    : data?.availability === "degraded"
+                      ? t`出口受阻`
+                      : t`状态待上报`}
+              </small>
+            </>
+          );
+        }}
+      />
       <Section
-        title={t`节点出口`}
-        subtitle={t`测速在节点本地试跑并实测 GitHub；切换自带失败回滚与 CI 忙时保护。`}
+        title={host ? displayName(host) : t`节点出口`}
+        subtitle={t`测速与 v2rayN 相同：经代理请求 generate_204 两次，间隔 100 毫秒，取较快的一次；没完成就是 -1。切换失败会回滚。`}
+        action={
+          <Button
+            icon={<Activity size={14} />}
+            loading={checkAll.isPending}
+            disabled={
+              checkAll.isPending ||
+              !host ||
+              stale(host, now) ||
+              !proxyData(host)?.nodes.length
+            }
+            onClick={() => {
+              checkAll.mutate();
+            }}
+          >
+            {t`全部测速`}
+          </Button>
+        }
       >
-        {hosts.length ? (
-          <div className="mini-proxy-grid">
-            {hosts.map((host) => (
-              <HostProxy key={host.name} host={host} now={now} />
-            ))}
-          </div>
+        {host ? (
+          <HostProxy host={host} now={now} />
         ) : (
           <Empty description={t`没有节点启用 mini-proxy 插件`} />
         )}

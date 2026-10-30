@@ -2,6 +2,10 @@ import { z } from "zod";
 
 const NodeName = z.string().regex(/^[a-z0-9][a-z0-9-]{0,31}$/);
 
+export const ActionReplySchema = z.object({
+  ok: z.boolean(),
+});
+
 export const AgentDataSchema = z.object({
   availability: z.enum(["ready", "degraded", "service_down", "not_installed"]),
   current_node: NodeName.nullable(),

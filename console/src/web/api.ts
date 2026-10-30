@@ -80,10 +80,15 @@ export const api = {
         signal,
       },
     ),
-  pluginAction: (id: string, action: string, body: unknown) =>
+  pluginAction: <T = { ok: true }>(
+    id: string,
+    action: string,
+    body: unknown,
+    schema?: z.ZodType<T>,
+  ) =>
     request(
       `/api/plugins/${encodeURIComponent(id)}/actions/${encodeURIComponent(action)}`,
-      OkSchema,
+      schema ?? (OkSchema as unknown as z.ZodType<T>),
       {
         method: "POST",
         body: JSON.stringify(body),
