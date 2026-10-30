@@ -36,7 +36,7 @@
           ]
         }
       ],
-      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && cd provisioning && uv run --no-sync ruff check scripts ../.github/actions/quality && uv run --no-sync ruff format --check scripts ../.github/actions/quality && cd .. && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
+      "check": "python3 -m unittest discover -s provisioning/scripts/tests -v && python3 -m unittest discover -s mini-proxy/tests -v && cd provisioning && uv run --no-sync ruff check scripts ../.github/actions/quality ../mini-proxy && uv run --no-sync ruff format --check scripts ../.github/actions/quality ../mini-proxy && cd .. && shellcheck provisioning/scripts/*.sh && clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c"
     },
     {
       "id": "fan-control",

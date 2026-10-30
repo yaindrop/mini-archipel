@@ -8,6 +8,13 @@ v2rayN GUI 双入口方案已废弃：GUI 的生命周期与节点选择由人�
 节点名称当前为 `akile-sg`、`akile-de`、`akko-lon`；地址、UUID 与 Reality 参数
 存放在节点的 `~/.local/mini-proxy/nodes.json`（权限 600），不进仓库。
 
+后端源码、固定版本依赖和安装器已纳入本仓库的 [mini-proxy 模块](../../mini-proxy/README.md)。
+先运行 `python3 mini-proxy/fetch.py` 准备资源，再在目标节点执行
+`python3 mini-proxy/install.py --nodes /path/to/private-nodes.json --node <出口名>`。
+已有独立安装升级只需 `python3 mini-proxy/install.py`，失败自动恢复，可用 `--rollback`
+恢复上次安装前状态。安装器不修改系统代理或 shell；10808 被其他服务占用时拒绝安装，
+不会自动接管 Tart 上既有的 `com.flowbit.ci-proxy`。
+
 | 用途                 | 实现                                    | 监听                              | 启动                                                        |
 | -------------------- | --------------------------------------- | --------------------------------- | ----------------------------------------------------------- |
 | CI、shell、系统代理  | mini-proxy（`~/.local/mini-proxy/bin`） | `127.0.0.1:10808`（HTTP+SOCKS）   | 用户 LaunchAgent `com.mini.proxy`（RunAtLoad/KeepAlive）    |
@@ -25,8 +32,8 @@ v2rayN GUI 双入口方案已废弃：GUI 的生命周期与节点选择由人�
 
 - 只监听本机；不开局域网代理，不用 TUN。客体不能把宿主机临时 SSH 转发当作
   常驻代理，否则宿主机关闭终端就会断 CI。
-- 路由：`geoip:private`、`geosite:cn`、`geoip:cn` 直连，其余走出口节点；国内
-  流量不绕行境外。切换节点保留路由规则。
+- 新装默认路由：`geoip:private`、`geosite:cn`、`geoip:cn` 直连，Google 优先走代理，
+  其余走出口节点。升级和切换保留原路由，不自动补写旧配置。
 - 系统代理（HTTP/HTTPS/SOCKS）与 shell 环境变量全部指向 10808；系统代理绕过
   本地名称及管理网段（当前为 `*.local`、`*.lan`、`192.168.9.0/24`、
   `192.168.64.0/24`）；shell 的 `no_proxy` 不会替系统应用设置绕过名单。
@@ -45,22 +52,22 @@ export NO_PROXY="$no_proxy"
 验证：
 
 ```sh
-curl --proxy http://127.0.0.1:10808 --noproxy '' -I https://api.github.com/
+curl --proxy http://127.0.0.1:10808 --noproxy '' -o /dev/null -w '%{http_code} %{time_total}\n' --max-time 10 https://www.google.com/generate_204
 # 国内直连应显著快于境外站点
 curl --proxy http://127.0.0.1:10808 --noproxy '' -sS -o /dev/null -w '%{time_total}\n' https://www.baidu.com
 ```
 
 ## 节点管理
 
-- `mini-proxy-select <node>`：先在临时端口 10810 试跑并实测 api.github.com 返回
-  200，再原子替换配置并重启服务；新节点不通自动回滚到原节点。
-- `mini-proxy-select --check <node>`：只测不切，同样实测 GitHub。
-- runner 有作业运行时切换会被拒绝，等作业结束；验证与回滚逻辑只在 CLI 一处实现。
+- `mini-proxy-select <node>`：先在随机回环端口做真连接延迟测试。测试流量只走该节点，不套用日常的直连规则。同一条连接请求 `https://www.google.com/generate_204` 两次，间隔 100 毫秒，两次均须返回 204，取较快的一次。通过后再原子替换配置并重启自己的服务，新节点不通自动回滚。
+- `mini-proxy-select --check <node>`：只测不切。
+- 日常路由在 `geoip:cn` 之前把 `geosite:google` 送进代理。否则 `IPIfNonMatch` 可能按解析地址把 Google 判成直连，探测会超时。
+- 任意仓库的 runner 有作业运行时禁止安装和切换，候选试跑后再次检查；所有操作共用文件锁。
 - 加节点：编辑 `nodes.json` 追加同名条目（address、password、sni、publicKey、
   shortId 等），CLI 自动识别。vless 分享链接参数映射：`type=tcp` → `"network":
   "raw"`、`pbk` → `publicKey`、`sid` → `shortId`、`spx` → `spiderX`。
-- 升级 xray：用新二进制覆盖 `~/.local/mini-proxy/bin/xray` 后
-  `launchctl kickstart -k gui/$(id -u)/com.mini.proxy`。
+- 升级 xray：更新仓库的 `assets.lock.json` 并校验资源，使用安装器升级；
+  保留旧版程序、节点库、配置和服务状态备份，不再直接覆盖运行中的二进制。
 - 验收逐个节点 `--check`、系统代理指向、shell 导出与 10808 连通性；不能只验证
   默认节点或安装包存在。
 

@@ -1,0 +1,15 @@
+{
+  "example-exit": {
+    "address": "proxy.example.com",
+    "port": 443,
+    "password": "REPLACE_WITH_YOUR_UUID",
+    "network": "raw",
+    "security": "reality",
+    "sni": "REPLACE_WITH_SERVER_NAME",
+    "fingerprint": "chrome",
+    "publicKey": "REPLACE_WITH_REALITY_PUBLIC_KEY",
+    "shortId": "",
+    "spiderX": "/",
+    "flow": "xtls-rprx-vision"
+  }
+}

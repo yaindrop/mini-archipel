@@ -1,0 +1,4 @@
+.cache/
+nodes.json
+config.json
+*.zip
