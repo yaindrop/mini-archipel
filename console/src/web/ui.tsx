@@ -1,7 +1,7 @@
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { useLingui } from "@lingui/react";
 import type { ReactNode } from "react";
-import { Badge, Card, Flex, Statistic, Typography } from "antd";
+import { Badge, Button, Card, Flex, Statistic, Tag, Typography } from "antd";
 import { Layers, Server } from "lucide-react";
 import type { Host } from "../contracts.ts";
 import {
@@ -53,6 +53,51 @@ export function PageTitle({
         </Typography.Paragraph>
       </div>
       {action}
+    </div>
+  );
+}
+export function NodePager({
+  hosts,
+  now,
+  selected,
+  onSelect,
+  label,
+  summary,
+}: {
+  hosts: Host[];
+  now: number;
+  selected: string | undefined;
+  onSelect: (name: string) => void;
+  label: (host: Host) => string;
+  summary: (host: Host) => ReactNode;
+}) {
+  const { t } = useLinguiMacro();
+  return (
+    <div className="storage-volume-grid">
+      {hosts.map((host) => {
+        const active = host.name === selected;
+        return (
+          <Card
+            key={host.name}
+            className={`volume-card ${active ? "selected" : ""}`}
+            title={<span className="volume-name">{displayName(host)}</span>}
+            extra={
+              stale(host, now) ? <Tag color="error">{t`数据过期`}</Tag> : null
+            }
+          >
+            <Button
+              type="text"
+              className="volume-select"
+              aria-label={label(host)}
+              aria-pressed={active}
+              onClick={() => {
+                onSelect(host.name);
+              }}
+            />
+            <div className="node-pager-summary">{summary(host)}</div>
+          </Card>
+        );
+      })}
     </div>
   );
 }

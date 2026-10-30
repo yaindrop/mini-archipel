@@ -21,7 +21,6 @@ import {
   Typography,
 } from "antd";
 import {
-  Check,
   CirclePause,
   GitBranch,
   Play,
@@ -40,20 +39,25 @@ import {
   matchingRemote,
   repositoryGroups,
   conclusionLabel,
+  showOperation,
 } from "./domain.ts";
 import { RunnerStatus } from "./status.tsx";
 import { readEnvelope } from "../contracts.ts";
 import { displayName, formatBytes } from "../../domain.ts";
 import { api, message } from "../../web/api.ts";
-import { Metric, PageTitle, Section } from "../../web/ui.tsx";
+import { NodePager, PageTitle, Section } from "../../web/ui.tsx";
 
 function OperationStatus({
   operation,
+  now,
 }: {
-  operation: { status: string; error: string | null } | undefined;
+  operation:
+    | { status: string; error: string | null; finished_at: number | null }
+    | undefined;
+  now: number;
 }) {
   const { t } = useLinguiMacro();
-  if (!operation) return null;
+  if (!showOperation(operation, now) || !operation) return null;
   const pending = ["queued", "running"].includes(operation.status);
   return (
     <Alert
@@ -140,7 +144,7 @@ function NodeCoordination({ host, now }: { host: Host; now: number }) {
                   ? t`已开启，空闲时所有 Runner 正常接单`
                   : t`未开启`}
       </Typography.Text>
-      <OperationStatus operation={operation} />
+      <OperationStatus operation={operation} now={now} />
       {mutation.isError ? (
         <Alert
           type="error"
@@ -375,7 +379,7 @@ export function RunnerList({
                       </Space>
                     }
                   >
-                    <OperationStatus operation={operation} />
+                    <OperationStatus operation={operation} now={now} />
                     <Descriptions
                       column={{
                         xs: 2,
@@ -595,18 +599,11 @@ export function Runners({
   now: number;
 }) {
   const { t } = useLinguiMacro();
+  const [search, setSearch] = useSearchParams();
   const remoteRunners = remoteFor(archipel);
-  const rows = archipel.hosts.flatMap((host) =>
-      runnersFor(host).map((runner) => ({
-        host,
-        runner,
-      })),
-    ),
-    count = (state: string) =>
-      rows.filter(
-        ({ host, runner }) =>
-          runnerState(host, runner, remoteRunners, now) === state,
-      ).length;
+  const host =
+    archipel.hosts.find((item) => item.name === search.get("host")) ??
+    archipel.hosts[0];
   return (
     <>
       <PageTitle
@@ -614,53 +611,57 @@ export function Runners({
         title="Runners"
         description={t`统一管理接单进程，核对本地状态与 GitHub 连接。`}
       />
-      <div className="metrics-row">
-        <Metric
-          label={t`已注册runner`}
-          value={rows.length}
-          detail={t`按仓库、节点分别注册`}
-          icon={<Terminal size={18} />}
-        />
-        <Metric
-          label={t`正在执行作业`}
-          value={count("busy")}
-          detail={t`运行中的作业受到启停保护`}
-          icon={<Play size={18} />}
-        />
-        <Metric
-          label={t`监听 / 可接单`}
-          value={count("listening") + count("ready")}
-          detail={t`已启动本地监听进程`}
-          icon={<Check size={18} />}
-        />
-        <Metric
-          label={t`已停止`}
-          value={count("stopped")}
-          detail={t`可在下方确认后恢复接单`}
-          icon={<CirclePause size={18} />}
-        />
-      </div>
-      <Section
-        title={t`节点接单互斥`}
-        subtitle={t`同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。`}
-      >
-        <div className="runner-coordination-grid">
-          {archipel.hosts.map((host) => (
-            <NodeCoordination key={host.name} host={host} now={now} />
-          ))}
-        </div>
-      </Section>
-      <Section
-        title={t`接单进程`}
-        subtitle={t`执行操作前，工作台和节点都会重新检查作业状态。`}
-      >
-        <RunnerList
-          hosts={archipel.hosts}
-          now={now}
-          repositories={consoleData(archipel).repositories}
-          remoteRunners={remoteRunners}
-        />
-      </Section>
+      <NodePager
+        hosts={archipel.hosts}
+        now={now}
+        selected={host?.name}
+        onSelect={(name) => {
+          const next = new URLSearchParams(search);
+          next.set("host", name);
+          setSearch(next, { replace: true });
+        }}
+        label={(item) => t`选择 ${displayName(item)}`}
+        summary={(item) => {
+          const runners = runnersFor(item);
+          const busy = runners.filter(
+            (runner) =>
+              runnerState(item, runner, remoteRunners, now) === "busy",
+          ).length;
+          return (
+            <>
+              <span>{runners.length}</span>
+              <small>
+                {busy ? t`${busy} 个正在执行` : t`已注册 Runner`}
+              </small>
+            </>
+          );
+        }}
+      />
+      {host ? (
+        <>
+          <Section
+            title={t`节点接单互斥`}
+            subtitle={t`同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。`}
+          >
+            <div className="runner-coordination-grid">
+              <NodeCoordination host={host} now={now} />
+            </div>
+          </Section>
+          <Section
+            title={t`接单进程`}
+            subtitle={t`执行操作前，工作台和节点都会重新检查作业状态。`}
+          >
+            <RunnerList
+              hosts={[host]}
+              now={now}
+              repositories={consoleData(archipel).repositories}
+              remoteRunners={remoteRunners}
+            />
+          </Section>
+        </>
+      ) : (
+        <Empty description={t`尚未配置节点`} />
+      )}
     </>
   );
 }

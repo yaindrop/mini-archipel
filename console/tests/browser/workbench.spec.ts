@@ -237,7 +237,7 @@ test("repository tabs isolate runners and controls across nodes", async ({
   await page.goto("/runners?repo=yaindrop%2Fflowbit");
   const tabs = page.locator(".runner-repo-tabs");
   await expect(tabs.getByRole("tab")).toHaveCount(2);
-  await expect(page.locator(".runner-card")).toHaveCount(4);
+  await expect(page.locator(".runner-card")).toHaveCount(1);
   await tabs.getByRole("tab", { name: /acme\/flowbit/ }).click();
   await expect(page.locator(".runner-card")).toHaveCount(1);
   await page.getByRole("button", { name: "停止接单", exact: true }).click();
@@ -247,7 +247,7 @@ test("repository tabs isolate runners and controls across nodes", async ({
     page.getByRole("button", { name: "启动接单", exact: true }),
   ).toBeEnabled();
   await tabs.getByRole("tab", { name: /yaindrop\/flowbit/ }).click();
-  await expect(page.locator(".runner-card")).toHaveCount(4);
+  await expect(page.locator(".runner-card")).toHaveCount(1);
   const original = page.locator(".runner-card").filter({
     has: page.getByRole("heading", { name: "yd-mini", exact: true }),
   });
@@ -315,10 +315,12 @@ test("node runner mutual exclusion persists and reflects job pause and recovery"
   await expect(toggle).not.toBeChecked();
   await toggle.click();
   await expect(toggle).toBeChecked();
+  await page.getByRole("button", { name: "选择 yd-mini-2", exact: true }).click();
   await expect(
     page.getByRole("switch", { name: "yd-mini-2 接单互斥", exact: true }),
   ).not.toBeChecked();
   await page.reload();
+  await page.getByRole("button", { name: "选择 yd-mini", exact: true }).click();
   await expect(toggle).toBeChecked();
   await page.request.post("/__test/runner-job", {
     data: { host: "yd-mini", runner: "flowbit" },
@@ -376,6 +378,9 @@ test("runner stop confirmation, cancellation, busy protection and restart", asyn
   page,
 }) => {
   await page.goto("/runners");
+  await page
+    .getByRole("button", { name: "选择 yd-mbp-tart-2", exact: true })
+    .click();
   const busy = page
     .locator(".runner-card")
     .filter({ hasText: "flowbit-yd-mbp-tart-2" });
@@ -389,6 +394,7 @@ test("runner stop confirmation, cancellation, busy protection and restart", asyn
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(busy.getByRole("button", { name: "中断作业" })).toHaveCount(0);
   await expect(busy.getByRole("button", { name: "停止接单" })).toBeEnabled();
+  await page.getByRole("button", { name: "选择 yd-mini", exact: true }).click();
   const runner = page
     .locator(".runner-card")
     .filter({ hasText: "flowbit-yd-mini" })
@@ -962,7 +968,8 @@ test("console plugin can be disabled, reloaded and reenabled without losing core
   await expect(
     page.getByRole("heading", { name: "Runners", exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".runner-card")).toHaveCount(4);
+  await expect(page.locator(".volume-card")).toHaveCount(4);
+  await expect(page.locator(".runner-card")).toHaveCount(1);
 });
 
 test("node plugin toggles independently while an active Worker remains untouched", async ({

@@ -7,6 +7,7 @@ import {
   readyState,
   controllable,
   activeJob,
+  showFanReceipt,
   withProtectionTemperature,
 } from "../../src/plugins/fan-control/domain.ts";
 import { fanControlPlugin } from "../../src/plugins/fan-control/server.ts";
@@ -14,6 +15,23 @@ import type { PluginContext } from "../../src/plugins/runtime.ts";
 import { makeHost } from "../fixtures.ts";
 import { fanFixture } from "./fan-fixture.ts";
 describe("fan-control boundary", () => {
+  it("drops an old cancelled receipt and keeps an unrestored failure", () => {
+    const finished = 1_000_000;
+    const cancelled = {
+      status: "cancelled",
+      error: "cancelled",
+      finished_at: finished,
+      restored: true,
+    };
+    expect(showFanReceipt(cancelled, finished + 10_000)).toBe(true);
+    expect(showFanReceipt(cancelled, finished + 130_000)).toBe(false);
+    expect(
+      showFanReceipt(
+        { ...cancelled, status: "failed", restored: false },
+        finished + 130_000,
+      ),
+    ).toBe(true);
+  });
   it("links the protection point to the temperature and keeps it at maximum RPM", () => {
     const original = fanFixture().policy;
     const next = withProtectionTemperature(original, 80);

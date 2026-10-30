@@ -34,6 +34,28 @@ export function readyState(host: Host): FanState | null {
   const data = fanData(host);
   return data?.availability === "ready" ? data : null;
 }
+const RECEIPT_MS = 120_000;
+
+/** A cancelled or completed fan job is a receipt. Failures and unrestored jobs stay. */
+export function showFanReceipt(
+  job:
+    | {
+        status: string;
+        error: string | null;
+        finished_at: number | null;
+        restored: boolean | null;
+      }
+    | undefined,
+  now: number,
+) {
+  if (!job?.error) return false;
+  if (job.restored === false) return true;
+  if (job.status === "failed" || job.status === "interrupted") return true;
+  if (job.status === "cancelled" || job.status === "completed")
+    return job.finished_at != null && now - job.finished_at < RECEIPT_MS;
+  return true;
+}
+
 export function activeJob(state: FanState) {
   return state.jobs.findLast((job) =>
     ["queued", "running", "cancelling", "restoring"].includes(job.status),

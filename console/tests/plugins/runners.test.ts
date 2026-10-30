@@ -11,6 +11,7 @@ import {
   agentData,
   current,
   runnerState,
+  showOperation,
   runnersFor,
   repositoryGroups,
   conclusionLabel,
@@ -20,6 +21,28 @@ import type { PluginContext } from "../../src/plugins/runtime.ts";
 import { makeHost, makeSnapshot, fixtureRunnerData } from "../fixtures.ts";
 afterEach(() => vi.useRealTimers());
 describe("runner plugin domain", () => {
+  it("keeps a completed receipt only for a short time", () => {
+    const finished = 1_000_000;
+    expect(
+      showOperation(
+        { status: "completed", finished_at: finished },
+        finished + 10_000,
+      ),
+    ).toBe(true);
+    expect(
+      showOperation(
+        { status: "completed", finished_at: finished },
+        finished + 130_000,
+      ),
+    ).toBe(false);
+    expect(
+      showOperation(
+        { status: "failed", finished_at: finished },
+        finished + 130_000,
+      ),
+    ).toBe(true);
+    expect(showOperation(undefined, finished)).toBe(false);
+  });
   it("shows local mutual exclusion before stale GitHub state", () => {
     const host = makeHost();
     if (!host.snapshot) throw Error("fixture");

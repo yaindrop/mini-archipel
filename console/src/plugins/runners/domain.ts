@@ -16,6 +16,20 @@ const CONCLUSION = {
   interrupted: /*i18n*/ { id: "中断", message: "中断" },
   incomplete: /*i18n*/ { id: "未完成", message: "未完成" },
 } as const;
+const RECEIPT_MS = 120_000;
+
+/** A finished success is only a receipt. Leave it up briefly, not on every later visit. */
+export function showOperation(
+  operation: { status: string; finished_at: number | null } | undefined,
+  now: number,
+) {
+  if (!operation) return false;
+  if (operation.status !== "completed") return true;
+  return (
+    operation.finished_at != null && now - operation.finished_at < RECEIPT_MS
+  );
+}
+
 export function conclusionLabel(
   conclusion: string,
   translate: Translate = defaultTranslate,

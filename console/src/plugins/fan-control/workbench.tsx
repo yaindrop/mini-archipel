@@ -23,16 +23,18 @@ import {
   Typography,
   Upload,
 } from "antd";
-import { Download, Fan, Plus, Trash2 } from "lucide-react";
+import { Download, Plus, Trash2 } from "lucide-react";
 import type { Archipel, Host } from "../../contracts.ts";
-import { displayName, nodeIdentityLabel, stale } from "../../domain.ts";
+import { displayName, stale } from "../../domain.ts";
+import { readEnvelope } from "../contracts.ts";
 import { remoteText } from "../../messages.ts";
 import { api, message } from "../../web/api.ts";
 import { refreshArchipel } from "../../web/useArchipel.ts";
-import { PageTitle, Section } from "../../web/ui.tsx";
+import { NodePager, PageTitle, Section } from "../../web/ui.tsx";
 import { TimeChart } from "../../web/chart.tsx";
 import {
   activeJob,
+  showFanReceipt,
   controllable,
   fanData,
   readyState,
@@ -118,49 +120,55 @@ export function FanControl({
   archipel: Archipel;
   now: number;
 }) {
-  const { t } = useLinguiMacro(),
-    { _ } = useLingui(),
-    [search, setSearch] = useSearchParams();
+  const { t } = useLinguiMacro();
+  const [search, setSearch] = useSearchParams();
+  const hosts = archipel.hosts.filter(
+    (item) => readEnvelope(item, "fan-control")?.enabled,
+  );
   const host =
-    archipel.hosts.find((h) => h.name === search.get("host")) ??
-    archipel.hosts[0];
+    hosts.find((item) => item.name === search.get("host")) ?? hosts[0];
   return (
     <>
       <PageTitle
         title={t`风扇控制`}
         description={t`查看每台节点的温控状态，编辑曲线并运行本地诊断。`}
       />
-      <div className="fan-nodes">
-        {archipel.hosts.map((h) => {
-          const r = readyState(h)?.telemetry?.reading;
+      <NodePager
+        hosts={hosts}
+        now={now}
+        selected={host?.name}
+        onSelect={(name) => {
+          setSearch({ host: name }, { replace: true });
+        }}
+        label={(item) => t`选择 ${displayName(item)}`}
+        summary={(item) => {
+          const reading = readyState(item)?.telemetry?.reading;
+          if (item.kind === "virtual")
+            return (
+              <>
+                <span>—</span>
+                <small>{t`虚拟机`}</small>
+              </>
+            );
           return (
-            <Button
-              key={h.name}
-              className={`fan-node ${host?.name === h.name ? "selected" : ""}`}
-              onClick={() => {
-                setSearch({ host: h.name });
-              }}
-            >
-              <Fan size={22} />
+            <>
               <span>
-                <strong>{displayName(h)}</strong>
-                <small>{nodeIdentityLabel(h, _)}</small>
+                {reading?.have_temp ? `${reading.peak.toFixed(1)} °C` : "—"}
               </span>
-              <span className="fan-node-value">
-                {r?.have_temp ? `${r.peak.toFixed(1)} °C` : "—"}
-                <small>
-                  {r
-                    ? `${String(Math.round(r.rpm))} RPM`
-                    : h.kind === "virtual"
-                      ? t`虚拟机`
-                      : t`等待连接`}
-                </small>
-              </span>
-            </Button>
+              <small>
+                {reading ? `${String(Math.round(reading.rpm))} RPM` : t`等待连接`}
+              </small>
+            </>
           );
-        })}
-      </div>
-      {host ? <Workbench key={host.name} host={host} now={now} /> : <Empty />}
+        }}
+      />
+      {host ? (
+        <div id={host.name}>
+          <Workbench key={host.name} host={host} now={now} />
+        </div>
+      ) : (
+        <Empty />
+      )}
     </>
   );
 }
@@ -526,7 +534,7 @@ function Editor({
           }
         />
       ) : null}
-      {last?.error ? (
+      {showFanReceipt(last, now) && last?.error ? (
         <Alert
           showIcon
           type={last.restored === false ? "error" : "warning"}
