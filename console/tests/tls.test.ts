@@ -3,7 +3,9 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { request as httpRequest } from "node:http";
 import { request, type RequestOptions } from "node:https";
+import { redirectLocation } from "../src/tls-front.ts";
 import { WebSocket } from "ws";
 import { createApp } from "../src/app.ts";
 import { config, TOKEN } from "./fixtures.ts";
@@ -133,6 +135,55 @@ it("serves verified HTTPS, Secure sessions and authenticated WSS", async () => {
     } finally {
       socket.terminate();
     }
+  } finally {
+    await app.close();
+  }
+});
+
+it("redirects a plain HTTP request on the TLS port to HTTPS", async () => {
+  const { app } = createApp(
+    { ...config, plugins: {}, tls: { certFile, keyFile } },
+    { webDir: dir, startPolling: false },
+  );
+  try {
+    await app.listen({ host: "127.0.0.1", port: 0 });
+    const address = app.server.address();
+    if (!address || typeof address === "string") throw Error("address");
+    const response = await new Promise<{
+      status: number | undefined;
+      location: string | undefined;
+    }>((resolve, reject) => {
+      const req = httpRequest(
+        {
+          host: "127.0.0.1",
+          port: address.port,
+          path: "/runners?host=yd-mini",
+          headers: { host: `yd-mini.local:${String(address.port)}` },
+        },
+        (res) => {
+          res.resume();
+          res.on("end", () => {
+            resolve({
+              status: res.statusCode,
+              location: res.headers.location,
+            });
+          });
+        },
+      );
+      req.on("error", reject);
+      req.end();
+    });
+    expect(response.status).toBe(308);
+    expect(response.location).toBe(
+      `https://yd-mini.local:${String(address.port)}/runners?host=yd-mini`,
+    );
+    expect(
+      redirectLocation(
+        Buffer.from(
+          "GET http://evil.test/ HTTP/1.1\r\nHost: yd-mini.local\r\n\r\n",
+        ),
+      ),
+    ).toBeNull();
   } finally {
     await app.close();
   }

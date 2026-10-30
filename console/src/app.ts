@@ -1,5 +1,7 @@
 import fastify from "fastify";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { Duplex } from "node:stream";
 import { readFileSync } from "node:fs";
 import { resolve, extname, sep } from "node:path";
 import { WebSocketServer, WebSocket } from "ws";
@@ -17,6 +19,7 @@ import { METRIC_KEYS, stale } from "./domain.ts";
 import { OkSchema } from "./contracts.ts";
 import { PluginManager, type PluginDefinition } from "./plugins/runtime.ts";
 import { DiskRulesUpdateSchema, DiskRulesViewSchema } from "./storage-rules.ts";
+import { httpsWithHttpRedirect } from "./tls-front.ts";
 const COOKIE = "archipel-session";
 function equal(a: string, b: string): boolean {
   const x = Buffer.from(a),
@@ -71,7 +74,16 @@ export function createApp(
       }
     : undefined;
   const app = fastify({
-    ...(https ? { https } : {}),
+    ...(https
+      ? {
+          serverFactory: (
+            handler: (
+              request: IncomingMessage,
+              response: ServerResponse,
+            ) => void,
+          ) => httpsWithHttpRedirect(https, handler),
+        }
+      : {}),
     logger: false,
     bodyLimit: 16_384,
   });
@@ -416,20 +428,23 @@ export function createApp(
   const wss = new WebSocketServer({
     noServer: true,
   });
-  app.server.on("upgrade", (request, socket, head) => {
-    if (
-      request.url !== "/ws" ||
-      !sameOrigin(request.headers) ||
-      !authenticated(config, request.headers)
-    ) {
-      socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
-      socket.destroy();
-      return;
-    }
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit("connection", ws, request);
-    });
-  });
+  app.server.on(
+    "upgrade",
+    (request: IncomingMessage, socket: Duplex, head: Buffer) => {
+      if (
+        request.url !== "/ws" ||
+        !sameOrigin(request.headers) ||
+        !authenticated(config, request.headers)
+      ) {
+        socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit("connection", ws, request);
+      });
+    },
+  );
   const sessions = new WeakMap<
     WebSocket,
     {
