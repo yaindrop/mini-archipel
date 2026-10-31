@@ -13,6 +13,7 @@ import {
   runnerState,
   showOperation,
   runnersFor,
+  runnerCounts,
   repositoryGroups,
   conclusionLabel,
 } from "../../src/plugins/runners/domain.ts";
@@ -21,6 +22,18 @@ import type { PluginContext } from "../../src/plugins/runtime.ts";
 import { makeHost, makeSnapshot, fixtureRunnerData } from "../fixtures.ts";
 afterEach(() => vi.useRealTimers());
 describe("runner plugin domain", () => {
+  it("counts running listeners against registered runners", () => {
+    const host = makeHost();
+    expect(runnerCounts(host)).toEqual({ active: 1, total: 1 });
+    const stored = (
+      host.snapshot?.plugins.runners as {
+        data: { runners: { listener_pid: number | null }[] };
+      }
+    ).data.runners[0];
+    if (!stored) throw Error("fixture");
+    stored.listener_pid = null;
+    expect(runnerCounts(host)).toEqual({ active: 0, total: 1 });
+  });
   it("keeps a completed receipt only for a short time", () => {
     const finished = 1_000_000;
     expect(

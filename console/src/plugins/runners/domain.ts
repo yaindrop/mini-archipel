@@ -83,6 +83,14 @@ export function agentData(host: Host) {
 export function runnersFor(host: Host): Runner[] {
   return agentData(host)?.runners ?? [];
 }
+/** Active means the listener is running. The card shows active/total. */
+export function runnerCounts(host: Host): { active: number; total: number } {
+  const runners = runnersFor(host);
+  return {
+    active: runners.filter((runner) => runner.listener_pid !== null).length,
+    total: runners.length,
+  };
+}
 export function consoleData(archipel: Archipel) {
   const parsed = ConsoleDataSchema.safeParse(archipel.plugins.runners?.data);
   return parsed.success

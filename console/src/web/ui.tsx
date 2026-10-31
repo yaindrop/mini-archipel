@@ -63,6 +63,7 @@ export function NodePager({
   onSelect,
   label,
   summary,
+  mark,
 }: {
   hosts: Host[];
   now: number;
@@ -70,6 +71,7 @@ export function NodePager({
   onSelect: (name: string) => void;
   label: (host: Host) => string;
   summary: (host: Host) => ReactNode;
+  mark?: (host: Host) => ReactNode;
 }) {
   const { t } = useLinguiMacro();
   return (
@@ -94,6 +96,7 @@ export function NodePager({
                 onSelect(host.name);
               }}
             />
+            {mark ? <div className="volume-mark">{mark(host)}</div> : null}
             <div className="node-pager-summary">{summary(host)}</div>
           </Card>
         );

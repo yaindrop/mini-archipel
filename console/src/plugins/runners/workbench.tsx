@@ -27,6 +27,7 @@ import {
   agentData,
   consoleData,
   runnersFor,
+  runnerCounts,
   remoteFor,
   current,
   runnerState,
@@ -616,15 +617,13 @@ export function Runners({
         }}
         label={(item) => t`选择 ${displayName(item)}`}
         summary={(item) => {
-          const runners = runnersFor(item);
-          const busy = runners.filter(
-            (runner) =>
-              runnerState(item, runner, remoteRunners, now) === "busy",
-          ).length;
+          const counts = runnerCounts(item);
           return (
             <>
-              <span>{runners.length}</span>
-              <small>{busy ? t`${busy} 个正在执行` : t`已注册 Runner`}</small>
+              <span>
+                {counts.active}/{counts.total}
+              </span>
+              <small>{t`活跃 / 总数`}</small>
             </>
           );
         }}
