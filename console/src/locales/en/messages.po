@@ -478,6 +478,10 @@ msgid " 持续检查节点状态 "
 msgstr "Continuously monitoring node health"
 
 #: src/web/App.tsx
+msgid " 插件"
+msgstr " Plugins"
+
+#: src/web/App.tsx
 msgid " 数据来自节点实际采集 "
 msgstr "Live measurements from your nodes"
 
@@ -1875,6 +1879,10 @@ msgstr "Submit job"
 #: src/web/storage-rules.tsx
 msgid "插件"
 msgstr "Plugin"
+
+#: src/web/App.tsx
+msgid "插件导航"
+msgstr "Plugin navigation"
 
 #: src/web/App.tsx
 msgid "插件异常"

@@ -478,6 +478,10 @@ msgid " 持续检查节点状态 "
 msgstr " 持续检查节点状态 "
 
 #: src/web/App.tsx
+msgid " 插件"
+msgstr " 插件"
+
+#: src/web/App.tsx
 msgid " 数据来自节点实际采集 "
 msgstr " 数据来自节点实际采集 "
 
@@ -1875,6 +1879,10 @@ msgstr "提交任务"
 #: src/web/storage-rules.tsx
 msgid "插件"
 msgstr "插件"
+
+#: src/web/App.tsx
+msgid "插件导航"
+msgstr "插件导航"
 
 #: src/web/App.tsx
 msgid "插件异常"

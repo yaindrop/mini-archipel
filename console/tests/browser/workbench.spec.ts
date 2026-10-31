@@ -38,16 +38,24 @@ test("overview, filters, deep links and browser navigation", async ({
     "Tart on M4 Max MacBook",
     "Tart on M4 Max MacBook",
   ]);
+  expect(
+    await page
+      .getByRole("navigation", { name: "主导航" })
+      .getByRole("link")
+      .allTextContents(),
+  ).toEqual(["集群概览", "存储空间", "历史趋势", "插件管理"]);
+  await expect(page.locator(".nav-caption").nth(0)).toContainText("插件");
+  await expect(page.locator(".nav-caption").nth(0).locator("span")).toHaveText(
+    "1",
+  );
+  expect(
+    await page
+      .getByRole("navigation", { name: "插件导航" })
+      .getByRole("link")
+      .allTextContents(),
+  ).toEqual(["Runners4"]);
   if (isMobile)
     await page.getByRole("button", { name: "关闭导航菜单" }).click();
-  if (!isMobile) {
-    expect(
-      await page
-        .getByRole("navigation", { name: "主导航" })
-        .getByRole("link")
-        .allTextContents(),
-    ).toEqual(["集群概览", "存储空间", "历史趋势", "插件管理", "Runners4"]);
-  }
   const icon = await page.request.get("/archipelago.svg");
   expect(icon.ok()).toBe(true);
   expect(await icon.text()).not.toContain("#15243b");

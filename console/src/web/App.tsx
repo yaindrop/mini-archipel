@@ -387,29 +387,37 @@ function Workbench() {
           : location.pathname.startsWith(n.to),
       )?.label ?? t`连接诊断`);
   const effectiveNow = paused && archipel ? archipel.ts : now;
-  const menuItems = navigationItems.map((item) => ({
-    key: item.to,
-    icon: <item.icon size={18} />,
-    label: (
-      <Link
-        to={item.to}
-        onClick={() => {
-          setMobile(false);
-        }}
-      >
-        {item.label}
-        {plugins.find((plugin) => plugin.to === item.to)?.badge ? (
-          <Tag variant="filled">
-            {archipel
-              ? plugins
-                  .find((plugin) => plugin.to === item.to)
-                  ?.badge?.(archipel)
-              : 0}
-          </Tag>
-        ) : null}
-      </Link>
-    ),
-  }));
+  const menuItem = (item: {
+    to: string;
+    label: string;
+    icon: (typeof NAV)[number]["icon"];
+  }) => {
+    const badge = plugins.find((plugin) => plugin.to === item.to)?.badge;
+    return {
+      key: item.to,
+      icon: <item.icon size={18} />,
+      label: (
+        <Link
+          to={item.to}
+          onClick={() => {
+            setMobile(false);
+          }}
+        >
+          {item.label}
+          {badge ? (
+            <Tag variant="filled">{archipel ? badge(archipel) : 0}</Tag>
+          ) : null}
+        </Link>
+      ),
+    };
+  };
+  const menuItems = NAV.map((item) =>
+    menuItem({
+      ...item,
+      label: _(item.label),
+    }),
+  );
+  const pluginItems = plugins.map(menuItem);
   const selected = navigationItems.some((item) => item.to === location.pathname)
     ? location.pathname
     : location.pathname.startsWith("/nodes/")
@@ -442,6 +450,22 @@ function Workbench() {
           items={menuItems}
         />
       </nav>
+      {pluginItems.length ? (
+        <>
+          <div className="nav-caption">
+            {t` 插件`}
+            <span>{pluginItems.length}</span>
+          </div>
+          <nav aria-label={t`插件导航`}>
+            <Menu
+              theme="dark"
+              mode="inline"
+              selectedKeys={[selected]}
+              items={pluginItems}
+            />
+          </nav>
+        </>
+      ) : null}
       <div className="nav-caption">
         {t` 节点`}
         <span>{archipel?.hosts.length ?? 0}</span>
