@@ -2,6 +2,7 @@ import AppKit
 import ApplicationServices
 
 struct Request: Decodable {
+    let request_id: String?
     let message: String
     let session_id: String?
     let title: String?
@@ -32,12 +33,9 @@ func waitUntil(_ seconds: Double, _ condition: () -> Bool) -> Bool {
     } while ProcessInfo.processInfo.systemUptime < end
     return false
 }
-func key(_ code: CGKeyCode, command: Bool = false) throws {
-    guard let down = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: true),
-          let up = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: false) else { try fail("Cannot create key event") }
-    down.flags = command ? .maskCommand : []; up.flags = down.flags
-    down.post(tap: .cghidEventTap); up.post(tap: .cghidEventTap)
-}
+let chatKeyboard = ChatKeyboard()
+func key(_ code: CGKeyCode, command: Bool = false) throws { try chatKeyboard.key(code,command:command) }
+
 func axFrameOf(_ e: AXUIElement) -> CGRect? {
     guard let p = attr(e, "AXPosition"), let s = attr(e, "AXSize"),
           CFGetTypeID(p as AnyObject) == AXValueGetTypeID(), CFGetTypeID(s as AnyObject) == AXValueGetTypeID() else { return nil }
@@ -88,6 +86,9 @@ func copySessionID(_ node: AXUIElement, _ window: AXUIElement, _ version: inout 
     return copied
 }
 
+@main enum ZCodeUIMain {
+static func main() throws {
+chatKeyboard.installSignals()
 let start = ProcessInfo.processInfo.systemUptime
 var sent = false
 var sendAttempted = false
@@ -95,6 +96,8 @@ var output: [String: Any]
 do {
     guard CommandLine.arguments.count == 2 else { try fail("Expected request JSON path") }
     let request = try JSONDecoder().decode(Request.self, from: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1])))
+    chatKeyboard.configure(request.request_id)
+    try chatKeyboard.checkIdle()
     guard (request.probe == true || !clean(request.message).isEmpty), AXIsProcessTrusted() else { try fail("Empty message or missing inherited Accessibility permission") }
     let nativeLock = Darwin.open(NSHomeDirectory() + "/.agent-chat-native.lock", O_CREAT | O_RDWR, 0o600)
     guard nativeLock >= 0 else { try fail("Cannot open native UI lock") }
@@ -201,10 +204,16 @@ do {
     output = ["ok": true, "sent": sent, "target_verified": true]
     }
 } catch {
-    output = ["ok": false, "sent": sent, "error": (error as? Failure)?.message ?? error.localizedDescription]
+    output = ["ok": false, "sent": sent, "error": (error as? Failure)?.message ?? String(describing: error)]
     // AX can time out after delivering the action. Only history can settle it.
     if sendAttempted && !sent { output["sent"] = NSNull() }
 }
 output["ui_ms"] = Int((ProcessInfo.processInfo.systemUptime - start) * 1000)
+output["input_cleanup"] = chatKeyboard.summary()
+output["input_state"] = inputStateSnapshot()
+output["related_request_id"] = chatKeyboard.requestID
 print(String(data: try JSONSerialization.data(withJSONObject: output, options: .sortedKeys), encoding: .utf8)!)
 exit(output["ok"] as? Bool == true ? 0 : 1)
+
+}
+}

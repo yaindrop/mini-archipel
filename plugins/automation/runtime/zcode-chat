@@ -102,7 +102,7 @@ def observe(checkpoint, message, timeout):
 
 
 def run_ui(checkpoint, message, probe=False):
-    request = {"new_chat": checkpoint["session_id"] is None, "message": message,
+    request = {"request_id": checkpoint.get("request_id"), "new_chat": checkpoint["session_id"] is None, "message": message,
                "session_id": checkpoint["session_id"], "title": checkpoint["title"], "probe": probe}
     with tempfile.TemporaryDirectory(prefix="zcode-chat-") as directory:
         path = Path(directory) / "request.json"

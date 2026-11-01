@@ -50,8 +50,10 @@ final class NativeInputSession {
                 result["activation"] = activation; result["ui_side_effects_may_have_occurred"] = activation["application_activation_called"]; control.record(["event":"activation_verified","activation":activation])
                 result.merge(["ok":true,"exit_code":0,"code":"input_activated","activation_verified":true,"events_may_have_been_posted":false]) { _, new in new }
             } else {
+                let state = inputStateSnapshot(); result["input_state"] = state; result["related_request_id"] = request.request_id
+                control.record(["event":"input_state_before_post","request_id":request.request_id,"state":state])
                 for b in [CGMouseButton.left,.right,.center] { try inputRequire(!CGEventSource.buttonState(.combinedSessionState,button:b),"Physical mouse button is already held; nothing released",code:"input_busy") }
-                try inputRequire(CGEventSource.flagsState(.combinedSessionState).intersection([.maskCommand,.maskShift,.maskAlternate,.maskControl]).isEmpty,"Physical modifier is already held; nothing released",code:"input_busy")
+                try inputRequire(inputModifiersClear(state),"Existing session modifier state; nothing released; inspect input_state",code:"input_busy")
                 if a.kind == "key" { try inputRequire(!CGEventSource.keyState(.combinedSessionState,key:a.key_code ?? inputKeyCodes[a.key!]!),"Physical target key is already held",code:"input_busy") }
                 if a.kind == "text" { try inputRequire(!CGEventSource.keyState(.combinedSessionState,key:0),"Physical Unicode carrier key is already held",code:"input_busy") }
                 let watcher = NativeInputMonitor(target:target,control:control,stop:stop); monitor = watcher; try watcher.start()

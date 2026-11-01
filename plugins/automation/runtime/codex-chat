@@ -113,10 +113,10 @@ def latest_reply(info):
     return result
 
 
-def run_ui(info, mode, message=None):
+def run_ui(info, mode, message=None, request_id=None):
     if not info["unique_title"]:
         raise ValueError("Chat title is not unique; refusing ambiguous GUI targeting")
-    request = {"mode": mode, "thread_id": info["id"], "title": info["display_title"], "message": message}
+    request = {"request_id": request_id or info.get("request_id"), "mode": mode, "thread_id": info["id"], "title": info["display_title"], "message": message}
     with tempfile.TemporaryDirectory(prefix="codex-chat-") as directory:
         path = Path(directory) / "request.json"
         path.write_text(json.dumps(request, ensure_ascii=False))
@@ -180,7 +180,7 @@ def main():
                 raise ValueError("Chat has an unfinished turn; read it before sending")
             return {"info": info, "offset": Path(info["rollout_path"]).stat().st_size}
         return chat_requests.submit("codex", args.request_id, str(uuid.UUID(args.thread_id)), message, prepare,
-                                    lambda checkpoint, value: run_ui(checkpoint["info"], "send", value), observe, args.timeout)
+                                    lambda checkpoint, value: run_ui(checkpoint["info"], "send", value, request_id=checkpoint.get("request_id")), observe, args.timeout)
     if args.mode == "read":
         try:
             return latest_reply(thread_info(args.thread_id))

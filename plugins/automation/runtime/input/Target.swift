@@ -146,7 +146,7 @@ final class NativeInputTarget: InputActionTarget {
 
 func nativeInputInfo() -> [String:Any] {
     let trusted = AXIsProcessTrusted(), post = CGPreflightPostEventAccess()
-    var result: [String:Any] = ["ok":true,"exit_code":0,"protocol_version":1,"actions":NativeInputRequest.kinds,"modes":["preflight","execute"],"easing":["linear","smoothstep","smootherstep"],"permissions":["accessibility":trusted,"post_events":post],"target":NSNull(),"key_names":inputKeyCodes.keys.sorted(),"modifiers":inputModifierCodes.keys.sorted(),"coordinate_spaces":["screen","window"],"coordinate_units":["points","pixels"],"default_timeout":15,"max_timeout":120,"permission_requested":false,"secure_input_active":IsSecureEventInputEnabled()]
+    var result: [String:Any] = ["ok":true,"exit_code":0,"protocol_version":1,"actions":NativeInputRequest.kinds,"modes":["preflight","execute"],"easing":["linear","smoothstep","smootherstep"],"permissions":["accessibility":trusted,"post_events":post],"target":NSNull(),"key_names":inputKeyCodes.keys.sorted(),"modifiers":inputModifierCodes.keys.sorted(),"coordinate_spaces":["screen","window"],"coordinate_units":["points","pixels"],"default_timeout":15,"max_timeout":120,"permission_requested":false,"secure_input_active":IsSecureEventInputEnabled(),"input_state":inputStateSnapshot()]
     var ids = [CGDirectDisplayID](repeating:0,count:32), count: UInt32 = 0
     if CGGetActiveDisplayList(32,&ids,&count) == .success {
         result["displays"] = ids.prefix(Int(count)).map { id -> [String:Any] in

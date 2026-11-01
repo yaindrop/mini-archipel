@@ -121,6 +121,7 @@ def submit(app, request_id, target, message, prepare, dispatch, observe, timeout
             with desktop():
                 try:
                     checkpoint = prepare()
+                    checkpoint["request_id"] = request_id
                 except Exception as error:
                     return {"ok": False, "status": "not_sent", "sent": False, "request_id": request_id, "error": str(error)}
                 receipt = {"app": app, "request_id": request_id, "target": target, "message": message,

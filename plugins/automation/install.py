@@ -141,7 +141,8 @@ def install_locked():
         staged = Path(temporary) / "toolkit"
         shutil.copytree(source, staged, ignore=shutil.ignore_patterns("__pycache__", "test_*"))
         for name in ["codex-ui", "zcode-ui", "permissions"]:
-            subprocess.run(["/usr/bin/xcrun", "swiftc", "-swift-version", "5", "-target", platform.machine() + "-apple-macos15.0", str(staged / (name + ".swift")), "-o", str(staged / name)], check=True)
+            shared = [str(staged / "input" / file) for file in ["Payload.swift", "InputControl.swift", "InputState.swift", "ChatKeyboard.swift"]] if name != "permissions" else []
+            subprocess.run(["/usr/bin/xcrun", "swiftc", "-swift-version", "5", *(["-parse-as-library"] if shared else []), "-target", platform.machine() + "-apple-macos15.0", str(staged / (name + ".swift")), *shared, "-o", str(staged / name)], check=True)
         for name in ["desktop-automation", "codex-chat", "zcode-chat", "agent-script-runner"]:
             (staged / name).chmod(0o700)
         replace_app = not app.exists() or args.upgrade_app or args.companion is not None
@@ -153,7 +154,7 @@ def install_locked():
             verify_app(candidate)
         backup = snapshot_companion(root / "companion-backups")
         (staged / "companion-backup.json").write_text(json.dumps({"directory": str(backup)}))
-        manifest = {"version": "1.2.3", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file()}}
+        manifest = {"version": "1.2.4", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file()}}
         (staged / "manifest.json").write_text(json.dumps(manifest, indent=2))
         if previous.exists():
             shutil.rmtree(previous)

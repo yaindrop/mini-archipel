@@ -3,6 +3,7 @@ import ApplicationServices
 
 // Run as a child of the already-authorized Agent Script Runner.app.
 struct Request: Decodable {
+    let request_id: String?
     let mode: String
     let thread_id: String
     let title: String
@@ -35,14 +36,9 @@ func composerIsEmpty(_ composer: AXUIElement) -> Bool {
         (attr($0, "AXDOMClassList") as? [String] ?? []).contains("placeholder")
     }
 }
-func key(_ code: CGKeyCode, command: Bool = false) throws {
-    guard let down = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: true),
-          let up = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: false) else {
-        try fail("Could not create keyboard event")
-    }
-    down.flags = command ? .maskCommand : []; up.flags = down.flags
-    down.post(tap: .cghidEventTap); up.post(tap: .cghidEventTap)
-}
+let chatKeyboard = ChatKeyboard()
+func key(_ code: CGKeyCode, command: Bool = false) throws { try chatKeyboard.key(code,command:command) }
+
 func waitUntil(_ seconds: Double, _ condition: () -> Bool) -> Bool {
     let deadline = ProcessInfo.processInfo.systemUptime + seconds
     repeat {
@@ -52,12 +48,17 @@ func waitUntil(_ seconds: Double, _ condition: () -> Bool) -> Bool {
     return false
 }
 
+@main enum CodexUIMain {
+static func main() throws {
+chatKeyboard.installSignals()
 let started = ProcessInfo.processInfo.systemUptime
 var sent = false
 var output: [String: Any]
 do {
     guard CommandLine.arguments.count == 2 else { try fail("Expected one request JSON file") }
     let request = try JSONDecoder().decode(Request.self, from: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1])))
+    chatKeyboard.configure(request.request_id)
+    try chatKeyboard.checkIdle()
     guard ["probe", "send"].contains(request.mode), UUID(uuidString: request.thread_id) != nil,
           !request.title.isEmpty else { try fail("Invalid request") }
     guard AXIsProcessTrusted() else { try fail("Run through the authorized Agent Script Runner.app") }
@@ -131,8 +132,14 @@ do {
     }
 } catch {
     output = ["ok": false, "sent": sent,
-              "error": (error as? Failure)?.message ?? error.localizedDescription]
+              "error": (error as? Failure)?.message ?? String(describing: error)]
 }
 output["ui_ms"] = Int((ProcessInfo.processInfo.systemUptime - started) * 1000)
+output["input_cleanup"] = chatKeyboard.summary()
+output["input_state"] = inputStateSnapshot()
+output["related_request_id"] = chatKeyboard.requestID
 print(String(data: try JSONSerialization.data(withJSONObject: output, options: .sortedKeys), encoding: .utf8)!)
 exit(output["ok"] as? Bool == true ? 0 : 1)
+
+}
+}
