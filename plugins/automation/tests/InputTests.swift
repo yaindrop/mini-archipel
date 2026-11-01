@@ -90,6 +90,10 @@ final class Target: InputActionTarget {
         let instant = ClockInput()
         try performNativeInput(action(["kind":"click","x":300,"y":300,"move_seconds":0,"settle_seconds":0]),control:instant.control,target:target)
         check(instant.events.filter { $0.0 == "move" }.count == 1,"explicit instant approach posts exactly one actual move")
+        let fractional = ClockInput()
+        try inputMove(fractional.control,from:fractional.cursor,to:CGPoint(x:300,y:300),seconds:0.36,easing:"linear")
+        let fractionalMoves = fractional.events.filter { $0.0 == "move" }
+        check(zip(fractionalMoves,fractionalMoves.dropFirst()).allSatisfy { $1.4-$0.4 >= 16_000_000 },"fractional duration final endpoint cannot burst after the last tick")
         let wheel = ClockInput()
         try performNativeInput(action(["kind":"scroll","x":300,"y":300,"delta_x":-114,"delta_y":1007]),control:wheel.control,target:target)
         check(wheel.scrolls.reduce(0) { $0+Int($1.0) } == -114 && wheel.scrolls.reduce(0) { $0+Int($1.1) } == 1007,"bounded scroll preserves exact total pixel deltas")

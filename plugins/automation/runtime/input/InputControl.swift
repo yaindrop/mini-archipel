@@ -128,7 +128,11 @@ func inputMove(_ c: NativeInputControl, from: CGPoint, to: CGPoint, seconds: Dou
         try c.move(point, drag:drag, flags:flags, fields:["tick":tick,"missed_ticks":max(0,tick-lastTick-1),"lag_ns":now-start-UInt64(Double(tick)/60*1e9),"configured_duration_seconds":seconds])
         lastPost = c.io.now(); lastTick = tick
     }
-    if !drag { try c.move(to, fields:["event_phase":"final_endpoint"]) }
+    if !drag {
+        let now = c.io.now()
+        if lastPost > 0 && now < lastPost+16_000_000 { try inputPause(Double(lastPost+16_000_000-now)/1e9,c) }
+        try c.move(to, fields:["event_phase":"final_endpoint"])
+    }
     let arrivalDeadline = c.io.now()+100_000_000
     while inputDistance(c.io.pointer(),to) >= 2.5 && c.io.now() < arrivalDeadline { try inputPause(0.004,c) }
     try inputRequire(inputDistance(c.io.pointer(),to)<2.5, "Actual pointer did not reach the endpoint", code:"pointer_not_arrived")
