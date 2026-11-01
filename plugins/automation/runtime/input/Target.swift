@@ -17,6 +17,21 @@ func inputWindowInfo(_ id: UInt32) -> [String:Any]? {
 func inputMatchesHit(role: String, labels: [String], expectedRole: String?, expectedText: String?) -> Bool {
     (expectedRole == nil || role == expectedRole) && (expectedText == nil || labels.joined(separator:" ").contains(expectedText!))
 }
+func inputActivateTarget(timeout: Double, stop: () -> Bool, verify: () -> Bool, activate: () -> Bool, raise: () -> AXError, io: InputIO = InputIO()) throws -> [String:Any] {
+    try inputRequire(!stop(),"Activation cancelled",code:"input_stopped")
+    if verify() { try inputRequire(!stop(),"Activation cancelled",code:"input_stopped"); return ["already_focused":true,"application_activation_called":false,"focus_verified":true] }
+    let began = io.now()
+    try inputRequire(activate(),"Application activation was rejected",code:"activation_rejected")
+    var report: [String:Any] = ["already_focused":false,"application_activation_called":true]
+    if !verify() { report["ax_raise_status"] = raise().rawValue }
+    let until = began+UInt64(min(2,timeout)*1e9)
+    while io.now() < until {
+        try inputRequire(!stop(),"Activation cancelled; already requested focus is not undone",code:"input_stopped")
+        if verify() { try inputRequire(!stop(),"Activation cancelled",code:"input_stopped"); report["focus_verified"] = true; return report }
+        io.sleep(0.02)
+    }
+    throw InputFailure("activation_unconfirmed","Activation did not yield the observed focused window (AXRaise \(report["ax_raise_status"] ?? "not needed")); inspect before retrying")
+}
 final class NativeInputTarget: InputActionTarget {
     let application: NSRunningApplication
     let axApplication: AXUIElement
@@ -85,19 +100,8 @@ final class NativeInputTarget: InputActionTarget {
         }
         if let title = request.target.title { try inputRequire(inputAttr(window,kAXTitleAttribute) as? String == title,"Observed window title changed",code:"target_changed") }
     }
-    func activate(timeout: Double, stop: () -> Bool) throws {
-        try inputRequire(!stop(),"Activation cancelled",code:"input_stopped")
-        let accepted = DispatchQueue.main.sync { application.activate(options:[]) }
-        try inputRequire(accepted,"Application activation was rejected",code:"activation_rejected")
-        let raised = AXUIElementPerformAction(window,kAXRaiseAction as CFString)
-        try inputRequire(raised == .success,"Window activation was rejected (AX \(raised.rawValue))",code:"activation_rejected")
-        let until = inputMonotonicNS()+UInt64(min(2,timeout)*1e9)
-        while inputMonotonicNS() < until {
-            try inputRequire(!stop(),"Activation cancelled; already requested focus is not undone",code:"input_stopped")
-            if (try? verify()) != nil { return }
-            Thread.sleep(forTimeInterval:0.02)
-        }
-        throw InputFailure("activation_unconfirmed","Activation did not yield the observed focused window; inspect before retrying")
+    func activate(timeout: Double, stop: () -> Bool) throws -> [String:Any] {
+        try inputActivateTarget(timeout:timeout,stop:stop,verify:{ (try? self.verify()) != nil },activate:{ DispatchQueue.main.sync { self.application.activate(options:[]) } },raise:{ AXUIElementPerformAction(self.window,kAXRaiseAction as CFString) })
     }
     func verifyHit(_ point: CGPoint) throws {
         var hit: AXUIElement?

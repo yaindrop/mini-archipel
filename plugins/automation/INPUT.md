@@ -29,7 +29,7 @@
 继续使用现有 `desktop-automation submit/get/wait/cancel` 和 Console `/api/plugins/automation/actions/...`。由负责产品操作的 Agent/ZCode 实际调用，不由旁路伪造动作证据。
 
 - `input-info`：静默返回动作/坐标/键名协议、真实权限、运行中的普通GUI App、窗口列表、当前前台应用的准确聚焦窗口及display信息；不激活App、不请求权限、不post。
-- `activate`：使用与输入相同的显式目标及 `action:{"kind":"activate"}` 提交；只在execute模式激活并提升该窗口，核验实际前台/聚焦/几何。info和preflight不激活，失败不自动换App。
+- `activate`：使用与输入相同的显式目标及 `action:{"kind":"activate"}` 提交；只在execute模式激活并提升该窗口，核验实际前台/聚焦/几何。已正确聚焦时直接核验；需要切换时请求应用激活，AXRaise仅辅助并保留实际返回码，最终以前台/准确聚焦窗口/几何复验决定成功。info和preflight不激活，失败不自动换App。
 - `input-log {request_id,offset}`：读取本次释放后生成的脱敏日志，每页最多256条，返回next_offset/total_events；不是任意路径读取。
 - `submit`：`operation:input`，显式`mode:preflight|execute`，一请求一动作；同ID同内容查询复用，变参冲突。
 - `get/wait`：查询同一个durable request ID；输入成功仅表示本次实际post已完成且自有键钮已释放。

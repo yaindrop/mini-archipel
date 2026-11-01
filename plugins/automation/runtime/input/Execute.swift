@@ -46,7 +46,8 @@ final class NativeInputSession {
             } else if a.kind == "activate" {
                 control.record(["event":"activation_requested","target":target.summary])
                 result["activation_requested"] = true; result["activation_verified"] = false; result["ui_side_effects_may_have_occurred"] = true
-                try target.activate(timeout:Double(request.timeout ?? 15),stop:stop)
+                let activation = try target.activate(timeout:Double(request.timeout ?? 15),stop:stop)
+                result["activation"] = activation; result["ui_side_effects_may_have_occurred"] = activation["application_activation_called"]; control.record(["event":"activation_verified","activation":activation])
                 result.merge(["ok":true,"exit_code":0,"code":"input_activated","activation_verified":true,"events_may_have_been_posted":false]) { _, new in new }
             } else {
                 for b in [CGMouseButton.left,.right,.center] { try inputRequire(!CGEventSource.buttonState(.combinedSessionState,button:b),"Physical mouse button is already held; nothing released",code:"input_busy") }

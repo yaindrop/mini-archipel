@@ -160,16 +160,29 @@ test("native input discovery, preflight, activation and STOP never replay", asyn
   expect(new URL(page.url()).searchParams.get("job")).toBe(
     submitted.request_id,
   );
+  const result = node.getByRole("region", { name: "任务结果" });
+  await expect(result).toContainText(`"id": "${submitted.request_id}"`);
+  await expect(result).toContainText('"status": "completed"');
   await clickReady("显式激活窗口");
   await expect(
     node.getByRole("button", { name: "执行单个输入", exact: true }),
   ).toBeEnabled();
   const activated = actions.filter((entry) => entry.action === "submit").at(-1)
-    ?.body.request as { mode: string; action: { kind: string } };
+    ?.body.request as {
+    request_id: string;
+    mode: string;
+    action: { kind: string };
+  };
   expect(activated).toMatchObject({
     mode: "execute",
     action: { kind: "activate" },
   });
+  // A transient enabled button is not the preceding job's completion receipt.
+  await expect(result).toContainText(`"id": "${activated.request_id}"`);
+  await expect(result).toContainText('"status": "completed"');
+  expect(new URL(page.url()).searchParams.get("job")).toBe(
+    activated.request_id,
+  );
   await clickReady("执行单个输入");
   await expect
     .poll(() => actions.filter((entry) => entry.action === "submit").length)

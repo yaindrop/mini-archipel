@@ -33,8 +33,8 @@ def build_app(app):
         subprocess.run(["/usr/bin/lipo", "-create", *architectures, "-output", str(executable)], check=True)
         info = {"CFBundleIdentifier": BUNDLE_ID, "CFBundleName": app.stem, "CFBundleDisplayName": app.stem,
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "zh-Hans"],
-            "CFBundleExecutable": executable.name, "CFBundlePackageType": "APPL", "CFBundleVersion": "3",
-            "CFBundleShortVersionString": "1.2.0", "LSMinimumSystemVersion": "15.0", "LSUIElement": True,
+            "CFBundleExecutable": executable.name, "CFBundlePackageType": "APPL", "CFBundleVersion": "4",
+            "CFBundleShortVersionString": "1.2.1", "LSMinimumSystemVersion": "15.0", "LSUIElement": True,
             "NSAppleEventsUsageDescription": "Run your requested scripts and check access to the selected applications."}
         (staged / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
         for language, name in NAMES.items():

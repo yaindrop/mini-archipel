@@ -144,6 +144,17 @@ func act(_ v: [String:Any]) throws -> InputAction { try JSONDecoder().decode(Inp
             f.control.abort("finally")
             try requireTest(!f.events.contains { $0.kind == "down" },"wrong control was pressed")
         }
+        try test("activation verifies actual focus despite unsupported optional raise") {
+            let f = FakeIO(); var activateCalls = 0, raises = 0
+            let already = try inputActivateTarget(timeout:1,stop:{ false },verify:{ true },activate:{ activateCalls += 1; return true },raise:{ raises += 1; return .attributeUnsupported },io:f.control.io)
+            try requireTest(activateCalls == 0 && raises == 0 && already["already_focused"] as? Bool == true,"already focused window requires unsupported raise")
+            let began = f.now
+            let switched = try inputActivateTarget(timeout:1,stop:{ false },verify:{ f.now >= began+40_000_000 },activate:{ activateCalls += 1; return true },raise:{ raises += 1; return .attributeUnsupported },io:f.control.io)
+            try requireTest(activateCalls == 1 && raises == 1 && switched["ax_raise_status"] as? Int32 == -25205 && switched["focus_verified"] as? Bool == true,"actual activation not verified after unsupported raise")
+            try expectFailure("activation_unconfirmed") { _ = try inputActivateTarget(timeout:0.1,stop:{ false },verify:{ false },activate:{ true },raise:{ .attributeUnsupported },io:f.control.io) }
+            try expectFailure("activation_rejected") { _ = try inputActivateTarget(timeout:1,stop:{ false },verify:{ false },activate:{ false },raise:{ .success },io:f.control.io) }
+            try expectFailure("input_stopped") { _ = try inputActivateTarget(timeout:1,stop:{ true },verify:{ true },activate:{ true },raise:{ .success },io:f.control.io) }
+        }
         print("PASS \(passed) independent negative groups; fake IO only, OS post disabled")
     }
 }
