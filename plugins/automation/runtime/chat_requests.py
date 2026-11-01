@@ -140,11 +140,12 @@ def submit(app, request_id, target, message, prepare, dispatch, observe, timeout
                     return output(receipt, result, False)
                 receipt["stage"] = "submitted" if result.get("sent") else "dispatch_uncertain"
                 save(path, receipt)
-                result = reconcile(path, receipt, observe, timeout, reused=False)
-                result["total_ms"] = round((time.monotonic() - started) * 1000)
-                receipt["result"] = result
-                save(path, receipt)
-                return result
+            # Model observation is read-only; keep the receipt lock, not the desktop.
+            result = reconcile(path, receipt, observe, timeout, reused=False)
+            result["total_ms"] = round((time.monotonic() - started) * 1000)
+            receipt["result"] = result
+            save(path, receipt)
+            return result
     except BusyError as error:
         exists = path.exists()
         return {"ok": False, "status": "in_progress" if exists else "busy", "sent": None if exists else False, "request_id": request_id, "error": str(error)}

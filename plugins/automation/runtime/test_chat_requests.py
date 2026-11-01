@@ -64,6 +64,23 @@ class Receipts(unittest.TestCase):
         second = self.submit(lambda *args: self.fail("No resend"))
         self.assertEqual((first["status"], second["status"], self.sends), ("not_sent", "not_sent", 0))
 
+    def test_uncertain_dispatch_releases_gui_before_observation_but_keeps_receipt_owned(self):
+        def observe(*args):
+            with requests.locked(requests.GUI_LOCK), requests.locked(requests.NATIVE_LOCK):
+                pass
+            same = self.submit(lambda *args: self.fail("Same owned receipt must not observe or resend"))
+            self.assertEqual(same["status"],"in_progress")
+            return {"ok":False,"status":"send_unconfirmed"}
+        def uncertain(*args):
+            self.sends += 1
+            return {"ok":False,"sent":None}
+        first = self.submit(observe,uncertain)
+        self.assertEqual(first["status"],"send_unconfirmed")
+        second = self.submit(lambda *args:{"ok":True,"status":"completed","reply":"DONE"})
+        self.assertEqual(second["status"],"completed")
+        self.submit(lambda *args:self.fail("Completed receipt must stay cached"))
+        self.assertEqual(self.sends,1)
+
     def test_busy_desktop_does_not_create_a_dispatch_receipt(self):
         with requests.locked(requests.GUI_LOCK):
             result = self.submit(lambda *args: None)

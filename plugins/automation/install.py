@@ -153,7 +153,7 @@ def install_locked():
             verify_app(candidate)
         backup = snapshot_companion(root / "companion-backups")
         (staged / "companion-backup.json").write_text(json.dumps({"directory": str(backup)}))
-        manifest = {"version": "1.2.2", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file()}}
+        manifest = {"version": "1.2.3", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file()}}
         (staged / "manifest.json").write_text(json.dumps(manifest, indent=2))
         if previous.exists():
             shutil.rmtree(previous)

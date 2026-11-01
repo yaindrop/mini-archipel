@@ -357,7 +357,8 @@ def worker(job_id):
         if job["status"] != "queued":
             return
         try:
-            with lock(ROOT / ".desktop-worker.lock", blocking=False), (nullcontext() if job["request"]["operation"] == "chat" else chat_requests.desktop()):
+            worker_lock = ROOT / (".chat-worker.lock" if job["request"]["operation"] == "chat" else ".desktop-worker.lock")
+            with lock(worker_lock, blocking=False), (nullcontext() if job["request"]["operation"] == "chat" else chat_requests.desktop()):
                 request = validate(job["request"])
                 with lock(ROOT / ".admission.lock"):
                     if (ROOT / ".paused").exists():
