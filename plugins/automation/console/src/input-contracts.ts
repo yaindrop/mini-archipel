@@ -170,7 +170,7 @@ const action = z
     if (a.kind === "key" && (a.key == null) === (a.key_code == null))
       ctx.addIssue({ code: "custom", message: "Specify one key or key code" });
   });
-export const InputTargetSchema = z.strictObject({
+const InputTargetSchema = z.strictObject({
   bundle_id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$/),
   pid: z.number().int().min(1).max(2147483647),
   window_id: z.number().int().min(1).max(4294967295),

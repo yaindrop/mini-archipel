@@ -14,6 +14,7 @@
 | fresh目标/前台/几何/命中/编辑域 | 任意显式bundle_id+pid+window_id+观察frame | 无硬编码App或工作区；变化立即拒绝 |
 | 180ms校验lease/10Hz续验/AX通知 | 保留，与动作调度分离 | 慢AX不能延长过期lease，失效释放自有输入 |
 | STOP/信号/取消/硬超时/独占/单用ID | 复用durable jobs与桌面锁；补input-stop | 默认15秒，可显式设1–120秒，释放后才落盘，不重放 |
+| 旧动作后自动AX全文快照 | 改为调用方显式核真实状态及录屏插件同流PNG，不默认采集通用窗口AX正文 | 观测方式调整；不声明等同AX全文导出 |
 | 实际post边界、单调时间、实际指针、结果日志 | 每请求独立events.jsonl/result.json | posted不代表UI已生效，必须独立核图/核状态 |
 | 旧场景SHA、固定路径/标签、限定App和400点ROI | 移除；由节点鉴权/allow_control和通用目标范围承接 | 无外部自有实现依赖 |
 | 旧动作表不支持的right click/scroll | 新增rightClick/scroll，原生像素滚轮 | 验证真实应用响应，不只统计post |
