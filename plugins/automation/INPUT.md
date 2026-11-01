@@ -1,6 +1,6 @@
 # 通用原生输入
 
-本接口正在实现，尚未冻结或真机验收。输入由现有 Automation 伴随 App 直接执行，沿用其 Bundle ID、持续签名和辅助功能权限；不启动另一套输入 App，不依赖旧工具或录屏插件。录屏与独立核图仍使用 screen-recording。
+本接口随 Automation 1.2 提供。输入由现有 Automation 伴随 App 直接执行，沿用其 Bundle ID、持续签名和辅助功能权限；不启动另一套输入 App，不依赖旧工具或录屏插件。录屏与独立核图仍使用 screen-recording。
 
 ## 能力与边界
 
@@ -90,5 +90,7 @@ printf '%s' '{"stopped":true}' | ~/.local/libexec/mini-archipel-desktop/desktop-
 先查info，取真实窗口目标；目标观察最多120秒且几何变化立即拒绝。必要时明确activate，再重新查info/控件观察，最后preflight或execute。不要复用示例坐标、旧PID或把截图像素直接当屏幕点。协议JSON随伴随App打包，由info.request_schema发布；实际的目标新鲜度、几何/权限/编辑域及预算检查仍由运行时执行。
 
 `input_posted`表示实际post调用返回，`gui_effect_verified`始终false。以原request ID查询结果及分页日志，确认owned_input_at_exit的buttons/keys为空；再通过目标状态或录屏插件同流PNG独立核UI效果。失败的events_may_have_been_posted、activation_requested与ui_side_effects_may_have_occurred可能表明已有部分效果；取消不会撤销。STOP对活跃任务锁存取消，即使立即resume也不能复活动作。相同ID不能改参或再次派发；不确定时先读原记录，不自动换ID重试。
+
+打开或关闭原生对话框可能在输入已经产生效果后触发焦点守卫。例如 Return 关闭子面板后，结果可能为 `input_stopped`，同时保留可能已派发和自有键已释放的回执。此时应保留原结果，独立核图或核真实状态，确认释放后刷新目标，再执行下一独立动作；不要重发原按键或把停止解释为零效果。
 
 离线检查只验证构造、协议和调度，不能证明App接收。跨App真机验收须单独覆盖普通编辑器、计算器及目标产品的实际响应、显式切换、取消、权限拒绝与坐标；没有实测的应用不声明兼容。
