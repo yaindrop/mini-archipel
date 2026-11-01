@@ -2,19 +2,25 @@
 
 群岛是物理机与虚拟机集群的节点工作台。集中查看资源、活跃进程、存储目录、历史趋势、GitHub Actions Runner 及可视化风扇控制。
 
-| 组件         | 技术                                                      | 部署位置                          |
-| ------------ | --------------------------------------------------------- | --------------------------------- |
-| agent        | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
-| console      | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
-| provisioning | Python / Bash · 装机规范、CI 群岛与共享钩子               | 本仓库维护，部署到四台节点        |
-| mini-proxy   | Python · 独立 Xray 后端、安装升级、出口检查与切换         | 各节点用户 LaunchAgent            |
-| VM 连接      | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
+| 组件             | 技术                                                      | 部署位置                          |
+| ---------------- | --------------------------------------------------------- | --------------------------------- |
+| agent            | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
+| console          | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
+| provisioning     | Python / Bash · 装机规范、CI 群岛与共享钩子               | 本仓库维护，部署到四台节点        |
+| proxy            | 原生插件 · Xray 后端、安装升级、出口检查与受控切换        | 各节点用户 LaunchAgent            |
+| fan-control      | 原生插件 · 传感器、风扇策略与管理员安装入口               | 支持的实体节点                    |
+| automation       | 原生插件 · 桌面权限、脚本、ZCode 会话与后台任务           | 授权的目标桌面节点                |
+| screen-recording | 原生插件 · ScreenCaptureKit、native 鼠标轨道与同流核图    | 授权的 macOS 桌面节点             |
+| runners          | 原生插件 · GitHub Runner 发现、安装、作业保护与控制       | 各节点用户 LaunchAgent            |
+| VM 连接          | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
 装机规范、CI 群岛脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](plugins/fan-control/README.md)。
 
-代理插件的独立后端、固定版本资源、安装升级及回滚见 [mini-proxy](plugins/proxy/README.md)。
+代理插件的独立后端、固定版本资源、安装升级及回滚见 [proxy](plugins/proxy/README.md)。
+
+五项自有实现、适配、构建安装与测试完整归属 `plugins/<id>/`；共享宿主机制与旧配置兼容规则见 [插件系统](docs/plugins.md)。
 
 采集过期、历史缓冲、扫描任务、Runner 操作回执与签名恢复约定见 [可靠性说明](docs/reliability.md)。
 
