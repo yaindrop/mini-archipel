@@ -89,6 +89,17 @@ pub fn load(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
         }
     }
     let mut config: Config = value.try_into()?;
+    let mut plugins = BTreeMap::new();
+    for (id, setting) in config.plugins {
+        let canonical = crate::plugins::catalog::canonical_id(&id).to_string();
+        if plugins.insert(canonical.clone(), setting).is_some() {
+            return Err(format!(
+                "duplicate legacy and canonical plugin configuration: {canonical}"
+            )
+            .into());
+        }
+    }
+    config.plugins = plugins;
     if !config.collectors.fan_socket.is_empty()
         && (!config.collectors.fan_socket.starts_with('/')
             || config.collectors.fan_socket.len() > 100)
@@ -181,4 +192,34 @@ pub fn save(path: &std::path::Path, config: &Config) -> Result<(), String> {
         let _ = std::fs::remove_file(&temp);
     }
     result
+}
+
+#[cfg(test)]
+mod plugin_identity_tests {
+    use super::*;
+    #[test]
+    fn legacy_keys_preserve_options_without_running_plugins() {
+        let path =
+            std::env::temp_dir().join(format!("archipel-config-alias-{}.toml", std::process::id()));
+        let original = "bind='127.0.0.1:0'\ntoken='fixture'\n[plugins.desktop-automation]\nenabled=true\n[plugins.desktop-automation.options]\nallow_control=true\ncli='/tmp/fixture'\n";
+        std::fs::write(&path, original).unwrap();
+        let config = load(path.to_str().unwrap()).unwrap();
+        assert!(config.plugins["automation"].enabled);
+        assert_eq!(
+            config.plugins["automation"].options["cli"].as_str(),
+            Some("/tmp/fixture")
+        );
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+        save(&path, &config).unwrap();
+        let persisted = std::fs::read_to_string(&path).unwrap();
+        assert!(persisted.contains("plugins.automation"));
+        assert!(!persisted.contains("desktop-automation"));
+        std::fs::write(
+            &path,
+            format!("{original}\n[plugins.automation]\nenabled=false\n"),
+        )
+        .unwrap();
+        assert!(load(path.to_str().unwrap()).is_err());
+        std::fs::remove_file(path).unwrap();
+    }
 }

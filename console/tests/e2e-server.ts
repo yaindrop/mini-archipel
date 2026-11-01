@@ -1,11 +1,12 @@
+import { recordingFixture } from "../../plugins/screen-recording/console/tests/browser-fixture.ts";
 import {
   DiskRulesUpdateSchema,
   type DiskRulesView,
 } from "../src/storage-rules.ts";
 import type { ScanNode } from "../src/contracts.ts";
-import { fanFixture } from "./plugins/fan-fixture.ts";
-import { desktopBrowserFixture } from "./plugins/desktop-browser-fixture.ts";
-import { CommandSchema } from "../src/plugins/fan-control/contracts.ts";
+import { fanFixture } from "../../plugins/fan-control/console/tests/fan-fixture.ts";
+import { desktopBrowserFixture } from "../../plugins/automation/console/tests/desktop-browser-fixture.ts";
+import { CommandSchema } from "../../plugins/fan-control/console/src/contracts.ts";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -23,6 +24,7 @@ import {
 const dir = mkdtempSync(join(tmpdir(), "archipel-browser-")),
   dbPath = join(dir, "test.db");
 const desktop = desktopBrowserFixture();
+const recording = recordingFixture();
 const store = new Store(dbPath);
 await store.insertSamples(
   config.hosts.flatMap((h, index) =>
@@ -105,7 +107,12 @@ const transport: Transport = (url, _token, body) => {
   }
   const snapshot = makeSnapshot(index);
   desktop.apply(name, snapshot);
-  if (url.includes("/plugins/desktop-automation/actions/")) {
+  recording.apply(snapshot);
+  if (url.includes("/plugins/screen-recording/actions/"))
+    return Promise.resolve(
+      recording.action(url.slice(url.lastIndexOf("/") + 1), body),
+    );
+  if (url.includes("/plugins/automation/actions/")) {
     return Promise.resolve(
       desktop.action(name, url.slice(url.lastIndexOf("/") + 1), body),
     );
@@ -417,7 +424,9 @@ app.post<{ Body: { host: string } }>(
 );
 app.post("/__test/reset", async () => {
   desktop.reset();
-  await plugins.setEnabled("desktop-automation", false);
+  recording.reset();
+  await plugins.setEnabled("screen-recording", false);
+  await plugins.setEnabled("automation", false);
   multiRepo = false;
   fanEnabled = false;
   fans.clear();
@@ -436,9 +445,15 @@ app.post("/__test/reset", async () => {
   await monitor.poll();
   return { ok: true };
 });
-app.post("/__test/desktop-automation", async () => {
+app.post("/__test/screen-recording", async () => {
+  recording.enable();
+  await plugins.setEnabled("screen-recording", true);
+  await monitor.poll();
+  return { ok: true };
+});
+app.post("/__test/automation", async () => {
   desktop.enable();
-  await plugins.setEnabled("desktop-automation", true);
+  await plugins.setEnabled("automation", true);
   await monitor.poll();
   return { ok: true };
 });

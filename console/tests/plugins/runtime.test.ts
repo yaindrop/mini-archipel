@@ -413,3 +413,129 @@ it("keeps runner implementation out of core modules", () => {
       file,
     ).not.toMatch(/\brunners?\b|github/i);
 });
+
+describe("plugin identity compatibility", () => {
+  it("keeps legacy settings and options in one instance and persists canonical keys", async () => {
+    const create = vi.fn<PluginDefinition["create"]>(() => ({
+      read: () => null,
+      start: vi.fn(),
+      stop: vi.fn(),
+      action: () => Promise.resolve({ ok: true }),
+    }));
+    const persist = vi.fn();
+    const manager = new PluginManager(
+      {
+        ...config,
+        plugins: {
+          legacy: {
+            enabled: true,
+            options: { token: "fixture-private-token", interval: 3000 },
+          },
+        },
+      },
+      {} as PluginContext,
+      [
+        {
+          id: "current",
+          legacyIds: ["legacy"],
+          label: "fixture",
+          description: "",
+          version: "1",
+          create,
+        },
+      ],
+      persist,
+    );
+    expect(create).toHaveBeenCalledOnce();
+    expect(create.mock.calls[0]?.[1]).toEqual({
+      token: "fixture-private-token",
+      interval: 3000,
+    });
+    await expect(manager.action("legacy", "check", {})).resolves.toEqual({
+      ok: true,
+    });
+    await manager.setEnabled("legacy", false);
+    expect(persist.mock.calls[0]?.[0]).toMatchObject({
+      plugins: {
+        current: {
+          enabled: false,
+          options: { token: "fixture-private-token", interval: 3000 },
+        },
+      },
+    });
+    expect(manager.views()).not.toHaveProperty("legacy");
+    expect(
+      () =>
+        new PluginManager(
+          {
+            ...config,
+            plugins: {
+              legacy: { enabled: true, options: {} },
+              current: { enabled: false, options: {} },
+            },
+          },
+          {} as PluginContext,
+          [
+            {
+              id: "current",
+              legacyIds: ["legacy"],
+              label: "",
+              description: "",
+              version: "1",
+              create,
+            },
+          ],
+        ),
+    ).toThrow("Duplicate legacy");
+  });
+  it("uses canonical snapshots while routing commands to an old node's actual identity", async () => {
+    const transport = vi.fn<PluginContext["transport"]>((url) => {
+      if (!url.endsWith("/snapshot")) return Promise.resolve({ ok: true });
+      const snapshot = makeSnapshot();
+      snapshot.plugins.legacy = {
+        version: 1,
+        enabled: true,
+        status: "ready",
+        ts: Date.now(),
+        data: {},
+        error: null,
+      };
+      return Promise.resolve(snapshot);
+    });
+    const { monitor } = setup(
+      {
+        transport,
+        plugins: [
+          {
+            id: "current",
+            legacyIds: ["legacy"],
+            label: "",
+            description: "",
+            version: "1",
+            create: () => ({
+              read: () => null,
+              start: () => undefined,
+              stop: () => undefined,
+              action: () => Promise.resolve(null),
+            }),
+          },
+        ],
+      },
+      { ...config, plugins: {} },
+    );
+    await monitor.poll();
+    expect(monitor.state().hosts[0]?.snapshot?.plugins).toHaveProperty(
+      "current",
+    );
+    const host = config.hosts[0];
+    if (!host) throw Error("fixture");
+    await monitor.command(
+      host.name,
+      "plugins/current/actions/permission-check",
+      {},
+    );
+    expect(transport.mock.calls.at(-1)?.[0]).toBe(
+      `${host.url}/plugins/legacy/actions/permission-check`,
+    );
+  });
+});

@@ -16,3 +16,9 @@ console/src/locales/**/*.ts
 __pycache__/
 *.pyc
 provisioning/.venv/
+
+/build/
+plugins/*/build/
+plugins/*/test-results/
+
+.ruff_cache/

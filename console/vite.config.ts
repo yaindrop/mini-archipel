@@ -8,7 +8,9 @@ export default defineConfig({
     lingui(),
     babel({ presets: [reactCompilerPreset(), linguiTransformerBabelPreset()] }),
   ],
+  resolve: { dedupe: ["react", "react-dom", "@lingui/react", "@lingui/core"] },
   server: {
+    fs: { allow: [".."] },
     port: 5174,
     proxy: {
       "/api": "http://127.0.0.1:19100",

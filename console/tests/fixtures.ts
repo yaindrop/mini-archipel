@@ -1,6 +1,6 @@
 import type { ConsoleConfig } from "../src/config.ts";
 import type { Host, Snapshot, ScanNode } from "../src/contracts.ts";
-import { AgentDataSchema } from "../src/plugins/runners/contracts.ts";
+import { AgentDataSchema } from "../../plugins/runners/console/src/contracts.ts";
 import { EnvelopeSchema } from "../src/plugins/contracts.ts";
 export const TOKEN = "test-console-token-only-not-a-real-secret";
 export const config: ConsoleConfig = {

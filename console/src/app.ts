@@ -88,7 +88,18 @@ export function createApp(
     bodyLimit: 16_384,
   });
   const store = new Store(config.dbPath),
-    monitor = new ArchipelMonitor(config, store, options.transport);
+    monitor = new ArchipelMonitor(
+      config,
+      store,
+      options.transport,
+      new Map(
+        (options.plugins ?? []).flatMap((definition) =>
+          (definition.legacyIds ?? []).map(
+            (legacy) => [legacy, definition.id] as const,
+          ),
+        ),
+      ),
+    );
   const plugins = new PluginManager(
     config,
     {
@@ -127,7 +138,7 @@ export function createApp(
       .header("x-frame-options", "DENY");
     reply.header(
       "content-security-policy",
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
     );
     if (request.url.startsWith("/api/"))
       reply.header("cache-control", "no-store");

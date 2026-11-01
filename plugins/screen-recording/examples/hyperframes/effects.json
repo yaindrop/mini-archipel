@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "color": "#ff9b36",
+  "clickDuration": 0.5,
+  "clickRadius": 29,
+  "holdRadius": 17,
+  "pressDuration": 0.22,
+  "releaseDuration": 0.65,
+  "releaseRadius": 39,
+  "strokeWidth": 3,
+  "duration": 5,
+  "holdOpacity": 0.2
+}

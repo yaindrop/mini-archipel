@@ -1,9 +1,31 @@
-# 插件系统
+# 原生插件
 
-桌面自动化插件 `desktop-automation` 提供节点授权引导、脚本和聊天后台任务、桌面暂停接单与诊断。
-安装、API、控制开关和回执规则见 [桌面自动化说明](../desktop-automation/README.md)。
+规范插件目录与ID为 `fan-control`、`proxy`、`automation`、`screen-recording`、`runners`。每项在 `plugins/<id>/` 拥有实际实现、Agent适配、Console服务端/工作台、测试、构建、安装及说明。通用Plugin/Manager、鉴权、配置保存和共享UI留宿主；唯一内置组合入口仍是Agent与Console的catalog。不依赖外部自有项目checkout、symlink或submodule。
 
-代理插件 `mini-proxy` 的节点后端由仓库内的 [mini-proxy 模块](../mini-proxy/README.md)
+Console使用仓根pnpm workspace，各插件Console包声明正常第三方依赖；从console目录执行原有脚本仍会解析到根lockfile。类型/静态/翻译/单元/浏览器扫描覆盖plugins目录。录屏Swift/App/CLI完整位于screen-recording，原外部仓库停止作为权威实现与独立发布源。
+
+## 权限
+
+各插件自行声明所需权限与实际检测，请求由明确用户操作发起；普通轮询不弹窗。共用权限表显示目标节点、状态、最近检查和失败原因。用户态proxy/runners无需额外TCC，不把token当系统授权；fan-control检查实际特权服务，缺失时提供管理员安装/修复入口；automation检查AX与System Events AppleEvents；screen-recording检查真实屏幕帧和可选输入tap。系统本人确认仍由节点操作者完成。
+
+## 旧配置兼容
+
+旧ID `mini-proxy`、`desktop-automation`、`screen-recorder` 在配置与API边界映射到 `proxy`、`automation`、`screen-recording`。读取不重写文件，保留enabled/options/令牌；下次正常设置保存沿既有原子写入机制保存规范名。旧名和规范名同时存在时拒绝启动并报告冲突，不选一份覆盖。Console读取旧节点快照后按该节点实际wire ID路由动作，允许分步升级。改名不会重启Runner、切代理或重放后台任务；历史数据和稳定已安装CLI路径保留。
+
+## 插件入口
+
+- [风扇控制](../plugins/fan-control/README.md)
+- [代理](../plugins/proxy/README.md)
+- [自动化](../plugins/automation/README.md)
+- [屏幕录制](../plugins/screen-recording/README.md)
+- [Runners](../plugins/runners/README.md)
+
+## 生命周期与接入细节
+
+桌面自动化插件 `automation` 提供节点授权引导、脚本和聊天后台任务、桌面暂停接单与诊断。
+安装、API、控制开关和回执规则见 [桌面自动化说明](../plugins/automation/README.md)。
+
+代理插件 `proxy` 的节点后端由仓库内的 [proxy 模块](../plugins/proxy/README.md)
 提供，包含固定版本 Xray 资源校验、安装升级、测速切换及失败恢复。开启插件与安装后端
 是独立步骤；未安装后端时显示 `not_installed`，不会接管其他代理服务。
 
@@ -13,9 +35,9 @@
 
 | 层             | 通用机制                                                                       | Runner 实现                             | 唯一注册位置                            |
 | -------------- | ------------------------------------------------------------------------------ | --------------------------------------- | --------------------------------------- |
-| Agent          | `agent/src/plugins/mod.rs` 的 Plugin / Manager / Context                       | `agent/src/plugins/runners.rs`          | `agent/src/plugins/catalog.rs`          |
-| Console 服务端 | `console/src/plugins/runtime.ts`                                               | `console/src/plugins/runners/server.ts` | `console/src/plugins/catalog.server.ts` |
-| 工作台         | `console/src/web/plugins.tsx` 的 WorkbenchPlugin / PluginProvider / PluginSlot | `console/src/plugins/runners/`          | `console/src/plugins/catalog.web.tsx`   |
+| Agent          | `agent/src/plugins/mod.rs` 的 Plugin / Manager / Context                       | `plugins/runners/agent/mod.rs`          | `agent/src/plugins/catalog.rs`          |
+| Console 服务端 | `console/src/plugins/runtime.ts`                                               | `plugins/runners/console/src/server.ts` | `console/src/plugins/catalog.server.ts` |
+| 工作台         | `console/src/web/plugins.tsx` 的 WorkbenchPlugin / PluginProvider / PluginSlot | `plugins/runners/console/src/`          | `console/src/plugins/catalog.web.tsx`   |
 
 插件随产物编译注册，启停即时生效，不需要重启核心。修改插件代码或安装新的插件需要重新构建产物。新增插件只添加自己的实现和注册项；核心不按插件 ID 分支，不导入具体插件的类型或操作。
 

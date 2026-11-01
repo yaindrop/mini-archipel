@@ -13,7 +13,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { fanFixture } from "../tests/plugins/fan-fixture.ts";
+import { fanFixture } from "../../plugins/fan-control/console/tests/fan-fixture.ts";
 await test(
   "real Agent fan telemetry survives plugin disablement and rejects stale samples",
   { timeout: 30000 },

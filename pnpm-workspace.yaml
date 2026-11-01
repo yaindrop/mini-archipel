@@ -1,0 +1,11 @@
+packages:
+  - console
+  - plugins/*/console
+
+allowBuilds:
+  esbuild: true
+
+onlyBuiltDependencies:
+  - esbuild
+
+minimumReleaseAge: 0

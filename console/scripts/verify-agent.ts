@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { SnapshotSchema } from "../src/contracts.ts";
 import { EnvelopeSchema } from "../src/plugins/contracts.ts";
-import { AgentDataSchema } from "../src/plugins/runners/contracts.ts";
+import { AgentDataSchema } from "../../plugins/runners/console/src/contracts.ts";
 
 await test(
   "real agent: authenticated plugin lifecycle persists without restarting core or controlling CI",

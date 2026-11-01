@@ -7,14 +7,14 @@
 | agent        | Rust · axum · sysinfo · macmon                            | 每台实体机 / VM，用户 LaunchAgent |
 | console      | TypeScript · React · Ant Design · Vite · Fastify · SQLite | yd-mini，浏览器访问               |
 | provisioning | Python / Bash · 装机规范、CI 群岛与共享钩子               | 本仓库维护，部署到四台节点        |
-| mini-proxy   | Python · 独立 Xray 后端、安装升级、出口检查与切换         | 各节点用户 LaunchAgent           |
+| mini-proxy   | Python · 独立 Xray 后端、安装升级、出口检查与切换         | 各节点用户 LaunchAgent            |
 | VM 连接      | 独立 SSH 隧道 LaunchAgent                                 | Tart 宿主 MacBook                 |
 
 项目、仓库、本地目录与监控服务统一使用 `mini-archipel`。中文名称为“群岛 · 节点工作台”，英文为“Mini Archipel · Node workbench”。
 
-装机规范、CI 群岛脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](fan-control/README.md)。
+装机规范、CI 群岛脚本与验收记录统一维护在本仓库的 [provisioning](provisioning/README.md)，实体节点风扇插件见 [fan-control](plugins/fan-control/README.md)。
 
-代理插件的独立后端、固定版本资源、安装升级及回滚见 [mini-proxy](mini-proxy/README.md)。
+代理插件的独立后端、固定版本资源、安装升级及回滚见 [mini-proxy](plugins/proxy/README.md)。
 
 采集过期、历史缓冲、扫描任务、Runner 操作回执与签名恢复约定见 [可靠性说明](docs/reliability.md)。
 
@@ -67,10 +67,10 @@ pnpm test:browser
 
 ```sh
 python3 -m unittest discover -s provisioning/scripts/tests -v
-python3 -m unittest discover -s mini-proxy/tests -v
+python3 -m unittest discover -s plugins/proxy/tests -v
 cd provisioning && uv sync --locked --all-groups
-uv run --no-sync ruff check scripts ../.github/actions/quality ../mini-proxy
-uv run --no-sync ruff format --check scripts ../.github/actions/quality ../mini-proxy
+uv run --no-sync ruff check scripts ../.github/actions/quality ../plugins/proxy
+uv run --no-sync ruff format --check scripts ../.github/actions/quality ../plugins/proxy
 cd ..
 shellcheck provisioning/scripts/*.sh
 clang -Wall -Wextra -Werror -fsyntax-only provisioning/scripts/tests/hook-worker.c
@@ -96,7 +96,7 @@ pnpm dev
 更新 PR 后需重新请求，结果对应请求时的不可变 merge commit。仅接受本仓库 PR。
 Agent 不主动加标签或调用 CI，除非人明确要求验证。
 
-风扇隔离测试运行 `fan-control/test.sh`，来源校验运行 `fan-control/check-source.sh`。部署与权限设计见 [插件说明](fan-control/docs/plugin.md)，Agent 持续签名与完全磁盘访问见 [签名说明](agent/SIGNING.md)。
+风扇隔离测试运行 `plugins/fan-control/test.sh`，来源校验运行 `plugins/fan-control/check-source.sh`。部署与权限设计见 [插件说明](plugins/fan-control/docs/plugin.md)，Agent 持续签名与完全磁盘访问见 [签名说明](agent/SIGNING.md)。
 
 ```sh
 gh pr edit <PR编号> --repo yaindrop/mini-archipel --add-label run-ci

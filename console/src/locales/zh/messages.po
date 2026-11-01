@@ -8,6 +8,275 @@ msgstr ""
 "Language: zh\n"
 
 #. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
+msgstr "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "GitHub 状态暂不可用，当前展示本地采集结果"
+msgstr "GitHub 状态暂不可用，当前展示本地采集结果"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+#: ../plugins/proxy/console/src/server.ts
+#: ../plugins/runners/console/src/server.ts
+msgid "插件操作不存在"
+msgstr "插件操作不存在"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "缺少有效的节点、仓库、安装目录或操作"
+msgstr "缺少有效的节点、仓库、安装目录或操作"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+#: ../plugins/fan-control/console/src/server.ts
+#: ../plugins/proxy/console/src/server.ts
+#: ../plugins/runners/console/src/server.ts
+#: ../plugins/screen-recording/console/src/server.ts
+#: src/app.ts
+#: src/archipel.ts
+msgid "节点不存在"
+msgstr "节点不存在"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "节点或插件数据不可用，操作未执行"
+msgstr "节点或插件数据不可用，操作未执行"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "此节点只启用了监控，尚未授权 Runner 服务控制"
+msgstr "此节点只启用了监控，尚未授权 Runner 服务控制"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "节点接单互斥不可用，请更新共用作业钩子"
+msgstr "节点接单互斥不可用，请更新共用作业钩子"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "runner 不存在"
+msgstr "runner 不存在"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "节点接单互斥中，请等待当前作业结束"
+msgstr "节点接单互斥中，请等待当前作业结束"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "runner 正在执行作业，请等待作业结束"
+msgstr "runner 正在执行作业，请等待作业结束"
+
+#. js-lingui-explicit-id
+#: ../plugins/runners/console/src/server.ts
+msgid "节点插件未启用"
+msgstr "节点插件未启用"
+
+#. js-lingui-explicit-id
+#: ../plugins/proxy/console/src/server.ts
+msgid "代理出口"
+msgstr "代理出口"
+
+#. js-lingui-explicit-id
+#: ../plugins/proxy/console/src/server.ts
+msgid "节点出境代理的出口状态、节点测速与受控切换。"
+msgstr "节点出境代理的出口状态、节点测速与受控切换。"
+
+#. js-lingui-explicit-id
+#: ../plugins/proxy/console/src/server.ts
+msgid "代理操作参数无效"
+msgstr "代理操作参数无效"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+#: ../plugins/proxy/console/src/server.ts
+msgid "节点离线，操作未执行"
+msgstr "节点离线，操作未执行"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "节点曲线已被其他操作修改，请重新载入后比较草稿。"
+msgstr "节点曲线已被其他操作修改，请重新载入后比较草稿。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "节点已有活动任务，请先等待完成或取消。"
+msgstr "节点已有活动任务，请先等待完成或取消。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "曲线或响应参数无效，请检查标记的字段。"
+msgstr "曲线或响应参数无效，请检查标记的字段。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "此节点不支持所选控制参数。"
+msgstr "此节点不支持所选控制参数。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "温度传感器缺失或数据过期，控制操作未执行。"
+msgstr "温度传感器缺失或数据过期，控制操作未执行。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "温度达到保护线，任务已中止并恢复温控。"
+msgstr "温度达到保护线，任务已中止并恢复温控。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "恢复系统控制未能确认，请立即检查节点。"
+msgstr "恢复系统控制未能确认，请立即检查节点。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "未能确认曲线生效，已尝试恢复之前的配置。"
+msgstr "未能确认曲线生效，已尝试恢复之前的配置。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "此 SMC 键未获节点管理员授权写入。"
+msgstr "此 SMC 键未获节点管理员授权写入。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "SMC 当前值已变化，诊断写入未执行。"
+msgstr "SMC 当前值已变化，诊断写入未执行。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "任务未通过，请查看诊断记录。"
+msgstr "任务未通过，请查看诊断记录。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "任务超时，已停止进程并执行恢复。"
+msgstr "任务超时，已停止进程并执行恢复。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "温控守护进程未响应，操作未继续。"
+msgstr "温控守护进程未响应，操作未继续。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "任务已取消。"
+msgstr "任务已取消。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "所选曲线版本已不在节点历史中。"
+msgstr "所选曲线版本已不在节点历史中。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "操作编号已被使用，请重新提交。"
+msgstr "操作编号已被使用，请重新提交。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/contracts.ts
+msgid "风扇操作未完成，请查看节点任务记录。"
+msgstr "风扇操作未完成，请查看节点任务记录。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "风扇控制"
+msgstr "风扇控制"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "节点风扇曲线、实时传感器、限时控制与可取消的硬件诊断。"
+msgstr "节点风扇曲线、实时传感器、限时控制与可取消的硬件诊断。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "风扇操作参数无效"
+msgstr "风扇操作参数无效"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "虚拟机无硬件风扇"
+msgstr "虚拟机无硬件风扇"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "风扇控制端未就绪，请检查节点安装与插件状态。"
+msgstr "风扇控制端未就绪，请检查节点安装与插件状态。"
+
+#. js-lingui-explicit-id
+#: ../plugins/fan-control/console/src/server.ts
+msgid "此节点仅允许查看风扇，尚未授权控制。"
+msgstr "此节点仅允许查看风扇，尚未授权控制。"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "屏幕录制"
+msgstr "屏幕录制"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "节点屏幕或窗口录制、系统授权及独立鼠标轨道。"
+msgstr "节点屏幕或窗口录制、系统授权及独立鼠标轨道。"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "录屏操作参数无效"
+msgstr "录屏操作参数无效"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "节点或录屏插件未就绪"
+msgstr "节点或录屏插件未就绪"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "此节点不支持屏幕录制"
+msgstr "此节点不支持屏幕录制"
+
+#. js-lingui-explicit-id
+#: ../plugins/screen-recording/console/src/server.ts
+msgid "节点尚未启用录屏控制"
+msgstr "节点尚未启用录屏控制"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "桌面自动化"
+msgstr "桌面自动化"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点桌面授权、脚本与聊天操作、后台任务和诊断。"
+msgstr "节点桌面授权、脚本与聊天操作、后台任务和诊断。"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "桌面操作参数无效"
+msgstr "桌面操作参数无效"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点或桌面插件未就绪"
+msgstr "节点或桌面插件未就绪"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "请先在节点安装桌面工具包"
+msgstr "请先在节点安装桌面工具包"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点尚未启用桌面控制"
+msgstr "节点尚未启用桌面控制"
+
+#. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点尚未启用脚本执行"
+msgstr "节点尚未启用脚本执行"
+
+#. js-lingui-explicit-id
 #: src/app.ts
 msgid "不允许跨站操作"
 msgstr "不允许跨站操作"
@@ -31,16 +300,6 @@ msgstr "请选择有效的节点、指标与时间范围"
 #: src/app.ts
 msgid "缺少有效的插件开关"
 msgstr "缺少有效的插件开关"
-
-#. js-lingui-explicit-id
-#: src/app.ts
-#: src/archipel.ts
-#: src/plugins/desktop-automation/server.ts
-#: src/plugins/fan-control/server.ts
-#: src/plugins/mini-proxy/server.ts
-#: src/plugins/runners/server.ts
-msgid "节点不存在"
-msgstr "节点不存在"
 
 #. js-lingui-explicit-id
 #: src/app.ts
@@ -237,234 +496,6 @@ msgstr "插件暂不可用，请检查插件状态"
 msgid "插件正在切换状态，请稍后重试"
 msgstr "插件正在切换状态，请稍后重试"
 
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
-msgstr "GitHub Actions 接单进程、作业保护、工作区及诊断日志。"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "GitHub 状态暂不可用，当前展示本地采集结果"
-msgstr "GitHub 状态暂不可用，当前展示本地采集结果"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-#: src/plugins/mini-proxy/server.ts
-#: src/plugins/runners/server.ts
-msgid "插件操作不存在"
-msgstr "插件操作不存在"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "缺少有效的节点、仓库、安装目录或操作"
-msgstr "缺少有效的节点、仓库、安装目录或操作"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "节点或插件数据不可用，操作未执行"
-msgstr "节点或插件数据不可用，操作未执行"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "此节点只启用了监控，尚未授权 Runner 服务控制"
-msgstr "此节点只启用了监控，尚未授权 Runner 服务控制"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "节点接单互斥不可用，请更新共用作业钩子"
-msgstr "节点接单互斥不可用，请更新共用作业钩子"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "runner 不存在"
-msgstr "runner 不存在"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "节点接单互斥中，请等待当前作业结束"
-msgstr "节点接单互斥中，请等待当前作业结束"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "runner 正在执行作业，请等待作业结束"
-msgstr "runner 正在执行作业，请等待作业结束"
-
-#. js-lingui-explicit-id
-#: src/plugins/runners/server.ts
-msgid "节点插件未启用"
-msgstr "节点插件未启用"
-
-#. js-lingui-explicit-id
-#: src/plugins/mini-proxy/server.ts
-msgid "代理出口"
-msgstr "代理出口"
-
-#. js-lingui-explicit-id
-#: src/plugins/mini-proxy/server.ts
-msgid "节点出境代理的出口状态、节点测速与受控切换。"
-msgstr "节点出境代理的出口状态、节点测速与受控切换。"
-
-#. js-lingui-explicit-id
-#: src/plugins/mini-proxy/server.ts
-msgid "代理操作参数无效"
-msgstr "代理操作参数无效"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-#: src/plugins/mini-proxy/server.ts
-msgid "节点离线，操作未执行"
-msgstr "节点离线，操作未执行"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "节点曲线已被其他操作修改，请重新载入后比较草稿。"
-msgstr "节点曲线已被其他操作修改，请重新载入后比较草稿。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "节点已有活动任务，请先等待完成或取消。"
-msgstr "节点已有活动任务，请先等待完成或取消。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "曲线或响应参数无效，请检查标记的字段。"
-msgstr "曲线或响应参数无效，请检查标记的字段。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "此节点不支持所选控制参数。"
-msgstr "此节点不支持所选控制参数。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "温度传感器缺失或数据过期，控制操作未执行。"
-msgstr "温度传感器缺失或数据过期，控制操作未执行。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "温度达到保护线，任务已中止并恢复温控。"
-msgstr "温度达到保护线，任务已中止并恢复温控。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "恢复系统控制未能确认，请立即检查节点。"
-msgstr "恢复系统控制未能确认，请立即检查节点。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "未能确认曲线生效，已尝试恢复之前的配置。"
-msgstr "未能确认曲线生效，已尝试恢复之前的配置。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "此 SMC 键未获节点管理员授权写入。"
-msgstr "此 SMC 键未获节点管理员授权写入。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "SMC 当前值已变化，诊断写入未执行。"
-msgstr "SMC 当前值已变化，诊断写入未执行。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "任务未通过，请查看诊断记录。"
-msgstr "任务未通过，请查看诊断记录。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "任务超时，已停止进程并执行恢复。"
-msgstr "任务超时，已停止进程并执行恢复。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "温控守护进程未响应，操作未继续。"
-msgstr "温控守护进程未响应，操作未继续。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "任务已取消。"
-msgstr "任务已取消。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "所选曲线版本已不在节点历史中。"
-msgstr "所选曲线版本已不在节点历史中。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "操作编号已被使用，请重新提交。"
-msgstr "操作编号已被使用，请重新提交。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/contracts.ts
-msgid "风扇操作未完成，请查看节点任务记录。"
-msgstr "风扇操作未完成，请查看节点任务记录。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "风扇控制"
-msgstr "风扇控制"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "节点风扇曲线、实时传感器、限时控制与可取消的硬件诊断。"
-msgstr "节点风扇曲线、实时传感器、限时控制与可取消的硬件诊断。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "风扇操作参数无效"
-msgstr "风扇操作参数无效"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "虚拟机无硬件风扇"
-msgstr "虚拟机无硬件风扇"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "风扇控制端未就绪，请检查节点安装与插件状态。"
-msgstr "风扇控制端未就绪，请检查节点安装与插件状态。"
-
-#. js-lingui-explicit-id
-#: src/plugins/fan-control/server.ts
-msgid "此节点仅允许查看风扇，尚未授权控制。"
-msgstr "此节点仅允许查看风扇，尚未授权控制。"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "桌面自动化"
-msgstr "桌面自动化"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "节点桌面授权、脚本与聊天操作、后台任务和诊断。"
-msgstr "节点桌面授权、脚本与聊天操作、后台任务和诊断。"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "桌面操作参数无效"
-msgstr "桌面操作参数无效"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "节点或桌面插件未就绪"
-msgstr "节点或桌面插件未就绪"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "请先在节点安装桌面工具包"
-msgstr "请先在节点安装桌面工具包"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "节点尚未启用桌面控制"
-msgstr "节点尚未启用桌面控制"
-
-#. js-lingui-explicit-id
-#: src/plugins/desktop-automation/server.ts
-msgid "节点尚未启用脚本执行"
-msgstr "节点尚未启用脚本执行"
-
 #: src/web/App.tsx
 msgid " 从资源状态，到每一次接单。 "
 msgstr " 从资源状态，到每一次接单。 "
@@ -559,7 +590,7 @@ msgid "{0} 分类"
 msgstr "{0} 分类"
 
 #. placeholder {0}: policy.active_repo
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "{0} 占用节点，其他 Runner 暂停接单"
 msgstr "{0} 占用节点，其他 Runner 暂停接单"
 
@@ -580,7 +611,7 @@ msgid "{0} 台物理机 · {1} 台虚拟机"
 msgstr "{0} 台物理机 · {1} 台虚拟机"
 
 #. placeholder {0}: displayName(host)
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "{0} 接单互斥"
 msgstr "{0} 接单互斥"
 
@@ -610,7 +641,7 @@ msgid "{0} 项需要关注"
 msgstr "{0} 项需要关注"
 
 #. placeholder {0}: unavailable.map(displayName).join("、")
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "{0}：Runner 插件数据不可用"
 msgstr "{0}：Runner 插件数据不可用"
 
@@ -631,11 +662,11 @@ msgstr "{0}{1} 更新 · 耗时 {2} 秒"
 msgid "{0}历史趋势"
 msgstr "{0}历史趋势"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "{busy} 个作业运行中"
 msgstr "{busy} 个作业运行中"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "{failed} 个出口未通过"
 msgstr "{failed} 个出口未通过"
 
@@ -707,13 +738,17 @@ msgstr "7 天"
 msgid "AI 工具"
 msgstr "AI 工具"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "Apple Events / System Events"
+msgstr "Apple Events / System Events"
+
 #: src/web/App.tsx
 msgid "Archipel operations"
 msgstr "节点运维"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "CI OPERATIONS"
-msgstr "持续集成"
+msgstr "CI OPERATIONS"
 
 #: src/web/App.tsx
 msgid "CONNECTIONS"
@@ -753,7 +788,7 @@ msgstr "GPU 占用"
 msgid "HISTORICAL METRICS"
 msgstr "历史指标"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "NETWORK OPERATIONS"
 msgstr "NETWORK OPERATIONS"
 
@@ -765,11 +800,11 @@ msgstr "节点"
 msgid "P / E 核频率"
 msgstr "P / E 核频率"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "SMC 前缀"
 msgstr "SMC 前缀"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "SMC 键"
 msgstr "SMC 键"
 
@@ -790,13 +825,21 @@ msgid "上次扫描因节点重启而中断，保留上次结果。"
 msgstr "上次扫描因节点重启而中断，保留上次结果。"
 
 #. placeholder {0}: new Date(toolkit.permissions.checked_at * 1000).toLocaleString()
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "上次检查：{0}"
 msgstr "上次检查：{0}"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "下载录像"
+msgstr "下载录像"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "下载诊断包"
 msgstr "下载诊断包"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "下载鼠标轨道"
+msgstr "下载鼠标轨道"
 
 #: src/web/storage-rules.tsx
 msgid "下钻深度"
@@ -806,11 +849,11 @@ msgstr "下钻深度"
 msgid "不可读取"
 msgstr "不可读取"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "不符合"
 msgstr "不符合"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "与节点一致"
 msgstr "与节点一致"
 
@@ -819,11 +862,11 @@ msgid "严重"
 msgstr "严重"
 
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "中断"
 msgstr "中断"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "中断作业"
 msgstr "中断作业"
 
@@ -831,23 +874,27 @@ msgstr "中断作业"
 msgid "主导航"
 msgstr "主导航"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "主屏幕"
+msgstr "主屏幕"
+
 #: src/web/preferences.tsx
 msgid "主题：{themeLabel}"
 msgstr "主题：{themeLabel}"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "互斥暂停接单"
 msgstr "互斥暂停接单"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "交还系统自动控制"
 msgstr "交还系统自动控制"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "仅允许节点管理员列出的风扇键；写入前会核对当前值，任务结束后恢复温控。"
 msgstr "仅允许节点管理员列出的风扇键；写入前会核对当前值，任务结束后恢复温控。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "仍需授权"
 msgstr "仍需授权"
 
@@ -855,12 +902,12 @@ msgstr "仍需授权"
 msgid "从全局状态到每台节点，掌握资源与运行情况。"
 msgstr "从全局状态到每台节点，掌握资源与运行情况。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
 msgstr "仓库之间独立连接，连接失败不会影响其他仓库或本地 Runner 管理。"
 
-#: src/plugins/mini-proxy/web.tsx
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/web.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "代理出口"
 msgstr "代理出口"
 
@@ -868,88 +915,113 @@ msgstr "代理出口"
 msgid "令牌由集群管理员提供，仅用于建立当前会话。"
 msgstr "令牌由集群管理员提供，仅用于建立当前会话。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "任务"
 msgstr "任务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "任务、版本与日志"
 msgstr "任务、版本与日志"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "任务已提交，进度由节点持续记录。"
 msgstr "任务已提交，进度由节点持续记录。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "任务正在使用桌面"
 msgstr "任务正在使用桌面"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "任务结果"
 msgstr "任务结果"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "任务记录"
 msgstr "任务记录"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "会产生全核心 CPU 负载，但不写风扇。可随时取消。"
 msgstr "会产生全核心 CPU 负载，但不写风扇。可随时取消。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 #: src/web/node.tsx
 msgid "传感器"
 msgstr "传感器"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "传感器聚合"
 msgstr "传感器聚合"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "伴随应用"
+msgstr "伴随应用"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "伴随应用已安装"
+msgstr "伴随应用已安装"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "伴随应用未就绪"
+msgstr "伴随应用未就绪"
+
+#: ../plugins/runners/console/src/status.tsx
 msgid "作业运行中"
 msgstr "作业运行中"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "作业运行中，暂时不能切换"
 msgstr "作业运行中，暂时不能切换"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "使用节点已部署的固定安装包。升级前必须结束录制；旧应用、技术入口和数据保留回退，授权继承以真实检查为准。"
+msgstr "使用节点已部署的固定安装包。升级前必须结束录制；旧应用、技术入口和数据保留回退，授权继承以真实检查为准。"
 
 #: src/web/storage-rules.tsx
 msgid "保存到节点"
 msgstr "保存到节点"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "保护档：达到此温度，立即使用最高转速（100%）。"
 msgstr "保护档：达到此温度，立即使用最高转速（100%）。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "保护温度"
 msgstr "保护温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "保留最后一次读数。恢复控制仍可从节点本地执行。"
 msgstr "保留最后一次读数。恢复控制仍可从节点本地执行。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
 msgstr "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "停止后仍需等待收尾。关闭插件不会停止已接受的录制；超时请先查状态，不要用新编号重复启动。"
+msgstr "停止后仍需等待收尾。关闭插件不会停止已接受的录制；超时请先查状态，不要用新编号重复启动。"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "停止并保存"
+msgstr "停止并保存"
+
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "停止接单"
 msgstr "停止接单"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "停止服务"
 msgstr "停止服务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "停止服务并交还系统"
 msgstr "停止服务并交还系统"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "停止等待"
 msgstr "停止等待"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "允许控制"
 msgstr "允许控制"
 
@@ -957,15 +1029,15 @@ msgstr "允许控制"
 msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
 msgstr "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "全部传感器与风扇"
 msgstr "全部传感器与风扇"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "全部测速"
 msgstr "全部测速"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "全部测速完成"
 msgstr "全部测速完成"
 
@@ -1031,7 +1103,7 @@ msgstr "内存已用"
 msgid "内存走势"
 msgstr "内存走势"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "最低转速"
 msgstr "最低转速"
 
@@ -1043,7 +1115,15 @@ msgstr "最后一次"
 msgid "最近 10 分钟"
 msgstr "最近 10 分钟"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "最近录制与结果"
+msgstr "最近录制与结果"
+
+#: src/web/permission-checks.tsx
+msgid "最近检测"
+msgstr "最近检测"
+
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "最近结论"
 msgstr "最近结论"
 
@@ -1052,28 +1132,28 @@ msgstr "最近结论"
 msgid "最近采集 {0}"
 msgstr "最近采集 {0}"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 #: src/web/node.tsx
 msgid "最高温度"
 msgstr "最高温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "最高转速"
 msgstr "最高转速"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "写入值"
 msgstr "写入值"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "出口受阻"
 msgstr "出口受阻"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "出口延迟"
 msgstr "出口延迟"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "出口正常"
 msgstr "出口正常"
 
@@ -1081,19 +1161,19 @@ msgstr "出口正常"
 msgid "分类"
 msgstr "分类"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "切换"
 msgstr "切换"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "切换出口节点"
 msgstr "切换出口节点"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "切换到此"
 msgstr "切换到此"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "切换请求已完成，出口已验证"
 msgstr "切换请求已完成，出口已验证"
 
@@ -1107,28 +1187,44 @@ msgid "删除 {0}"
 msgstr "删除 {0}"
 
 #. placeholder {0}: String(i + 1)
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "删除第 {0} 档"
 msgstr "删除第 {0} 档"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "刷新状态"
+msgstr "刷新状态"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "刷新目标"
+msgstr "刷新目标"
+
 #. placeholder {0}: String(Math.max(0, Math.ceil((job.expires_at - now) / 1000)))
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "剩余 {0} 秒"
 msgstr "剩余 {0} 秒"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "升温平滑系数"
 msgstr "升温平滑系数"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "升级伴随应用"
+msgstr "升级伴随应用"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "升速限制（RPM/秒，0 为不限）"
 msgstr "升速限制（RPM/秒，0 为不限）"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "单独保存真实鼠标轨道"
+msgstr "单独保存真实鼠标轨道"
 
 #: src/web/storage.tsx
 msgid "占当前目录"
 msgstr "占当前目录"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "占用状态"
 msgstr "占用状态"
 
@@ -1153,26 +1249,26 @@ msgstr "历史节点"
 msgid "历史趋势"
 msgstr "历史趋势"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "原请求 ID"
 msgstr "原请求 ID"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "参数（JSON 字符串数组）"
 msgstr "参数（JSON 字符串数组）"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "发送消息"
 msgstr "发送消息"
 
-#: src/plugins/fan-control/workbench.tsx
-#: src/plugins/mini-proxy/workbench.tsx
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 #: src/web/storage-rules.tsx
 msgid "取消"
 msgstr "取消"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "取消中"
 msgstr "取消中"
 
@@ -1180,12 +1276,12 @@ msgstr "取消中"
 msgid "取消中…"
 msgstr "取消中…"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "取消任务"
 msgstr "取消任务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "取消并交还系统"
 msgstr "取消并交还系统"
 
@@ -1193,27 +1289,27 @@ msgstr "取消并交还系统"
 msgid "取消扫描"
 msgstr "取消扫描"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
 msgstr "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "受控风扇"
 msgstr "受控风扇"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "只读模拟"
 msgstr "只读模拟"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "可回退的曲线版本"
 msgstr "可回退的曲线版本"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "可接单"
 msgstr "可接单"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "可接收任务"
 msgstr "可接收任务"
 
@@ -1257,11 +1353,11 @@ msgstr "各在线节点报告的卷可用空间之和"
 msgid "各核心占用"
 msgstr "各核心占用"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。"
 msgstr "各节点出境代理的出口状态、节点测速与受控切换；切换由节点侧先验证再生效。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
 msgstr "同一节点的一个 Runner 执行作业时，暂停其他 Runner 接单，结束后自动恢复。手动停止的 Runner 保持停止。"
 
@@ -1273,7 +1369,7 @@ msgstr "名称排序"
 msgid "后台待机"
 msgstr "后台待机"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "否"
 msgstr "否"
 
@@ -1281,27 +1377,27 @@ msgstr "否"
 msgid "启动中"
 msgstr "启动中"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "启动后，该 runner 会连接 GitHub 并接受新的作业。"
 msgstr "启动后，该 runner 会连接 GitHub 并接受新的作业。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "启动接单"
 msgstr "启动接单"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "启动服务"
 msgstr "启动服务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "启动温控服务"
 msgstr "启动温控服务"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "启用插件"
 msgstr "启用插件"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "启用节点曲线"
 msgstr "启用节点曲线"
 
@@ -1309,19 +1405,27 @@ msgstr "启用节点曲线"
 msgid "启用默认规则"
 msgstr "启用默认规则"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "响应参数与传感器"
 msgstr "响应参数与传感器"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "回退伴随应用"
+msgstr "回退伴随应用"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "回退曲线版本"
 msgstr "回退曲线版本"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "回退版本"
+msgstr "回退版本"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "固定转速"
 msgstr "固定转速"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "圆点：守护进程当前状态"
 msgstr "圆点：守护进程当前状态"
 
@@ -1333,30 +1437,34 @@ msgstr "在线"
 msgid "在线节点"
 msgstr "在线节点"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "在节点上的 mini-archipel 仓库运行安装命令，然后刷新状态。"
 msgstr "在节点上的 mini-archipel 仓库运行安装命令，然后刷新状态。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "在节点安装风扇控制插件后，即可读取曲线和管理温控。基础监测仍可使用。"
 msgstr "在节点安装风扇控制插件后，即可读取曲线和管理温控。基础监测仍可使用。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
 msgstr "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 msgstr "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "基础设施故障"
 msgstr "基础设施故障"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "增加档位"
 msgstr "增加档位"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "处理中"
+msgstr "处理中"
 
 #: src/web/storage.tsx
 msgid "大小"
@@ -1366,8 +1474,9 @@ msgstr "大小"
 msgid "失效判定"
 msgstr "失效判定"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "失败"
 msgstr "失败"
 
@@ -1380,7 +1489,19 @@ msgstr "存储分析"
 msgid "存储空间"
 msgstr "存储空间"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/fan-control/console/src/permissions.tsx
+msgid "安装/修复入口"
+msgstr "安装/修复入口"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "安装与回退"
+msgstr "安装与回退"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "安装伴随应用"
+msgstr "安装伴随应用"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "定位对话"
 msgstr "定位对话"
 
@@ -1393,7 +1514,7 @@ msgstr "实时更新"
 msgid "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
 msgstr "实时更新已暂停，当前显示 {0} 的采集结果。恢复更新后可获取最新状态。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "实时温控"
 msgstr "实时温控"
 
@@ -1409,27 +1530,27 @@ msgstr "实时资源"
 msgid "实时采集已连接"
 msgstr "实时采集已连接"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "实测校准"
 msgstr "实测校准"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "实线：草稿"
 msgstr "实线：草稿"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "实际转速"
 msgstr "实际转速"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "对话 ID"
 msgstr "对话 ID"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "导入文件不是有效的风扇策略。"
 msgstr "导入文件不是有效的风扇策略。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "导入草稿"
 msgstr "导入草稿"
 
@@ -1437,19 +1558,19 @@ msgstr "导入草稿"
 msgid "导出 CSV"
 msgstr "导出 CSV"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "导出草稿"
 msgstr "导出草稿"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "导出诊断记录"
 msgstr "导出诊断记录"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "导出走势 CSV"
 msgstr "导出走势 CSV"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "将 {node} 设为该节点的出境出口；切换会先试跑验证，失败自动回滚。"
 msgstr "将 {node} 设为该节点的出境出口；切换会先试跑验证，失败自动回滚。"
 
@@ -1457,19 +1578,23 @@ msgstr "将 {node} 设为该节点的出境出口；切换会先试跑验证，�
 msgid "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
 msgstr "将删除所有自定义规则和覆盖，保留已启用插件的规则。保存到节点后生效。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
 msgstr "将在节点本地终止该 Worker 及其子进程，不调用 GitHub 取消接口。接单服务保持运行，此操作不能撤销。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "将校准建议导入草稿"
 msgstr "将校准建议导入草稿"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "尚无主动检查记录"
 msgstr "尚无主动检查记录"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "尚无已完成的录制"
+msgstr "尚无已完成的录制"
+
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "尚无已注册 Runner，节点上报注册信息后会自动显示。"
 msgstr "尚无已注册 Runner，节点上报注册信息后会自动显示。"
 
@@ -1481,18 +1606,30 @@ msgstr "尚无目录扫描结果，点击重新扫描开始采集目录空间。
 msgid "尚未扫描下级目录"
 msgstr "尚未扫描下级目录"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "尚未检查"
 msgstr "尚未检查"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/fan-control/console/src/permissions.tsx
+#: ../plugins/proxy/console/src/permissions.tsx
+#: ../plugins/runners/console/src/permissions.tsx
+msgid "尚未检查节点能力。"
+msgstr "尚未检查节点能力。"
+
+#: ../plugins/runners/console/src/workbench.tsx
 #: src/web/storage.tsx
 msgid "尚未配置节点"
 msgstr "尚未配置节点"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "屏幕"
 msgstr "屏幕"
+
+#: ../plugins/screen-recording/console/src/web.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "屏幕录制"
+msgstr "屏幕录制"
 
 #: src/web/node.tsx
 msgid "展示节点上报的核心顺序，不推测核心类型。"
@@ -1502,7 +1639,7 @@ msgstr "展示节点上报的核心顺序，不推测核心类型。"
 msgid "峰值"
 msgstr "峰值"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "工作区"
 msgstr "工作区"
 
@@ -1522,11 +1659,11 @@ msgstr "工作台暂时无法显示"
 msgid "工作台版本"
 msgstr "工作台版本"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "工具包已安装"
 msgstr "工具包已安装"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "工具包未就绪"
 msgstr "工具包未就绪"
 
@@ -1534,20 +1671,20 @@ msgstr "工具包未就绪"
 msgid "工具链"
 msgstr "工具链"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "已中断"
 msgstr "已中断"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "已中断并恢复"
 msgstr "已中断并恢复"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "已停止接单"
 msgstr "已停止接单"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "已取消"
 msgstr "已取消"
 
@@ -1555,20 +1692,17 @@ msgstr "已取消"
 msgid "已启用插件"
 msgstr "已启用插件"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "已完成"
 msgstr "已完成"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "已开启，空闲时所有 Runner 正常接单"
 msgstr "已开启，空闲时所有 Runner 正常接单"
 
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "已授权"
-msgstr "已授权"
-
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "已接入"
 msgstr "已接入"
 
@@ -1577,16 +1711,16 @@ msgstr "已接入"
 msgid "已暂停"
 msgstr "已暂停"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "已暂停，可以人工接管"
 msgstr "已暂停，可以人工接管"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "已暂停接单"
 msgstr "已暂停接单"
 
 #. placeholder {0}: rows.length
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "已注册 {0} 个 Runner"
 msgstr "已注册 {0} 个 Runner"
 
@@ -1602,7 +1736,7 @@ msgstr "已用 {0} / {1}"
 msgid "已用{0} {1}"
 msgstr "已用{0} {1}"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "已登录"
 msgstr "已登录"
 
@@ -1614,32 +1748,36 @@ msgstr "已禁用"
 msgid "已统计目录"
 msgstr "已统计目录"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "已锁定"
 msgstr "已锁定"
+
+#: src/web/permission-checks.tsx
+msgid "已验证可用"
+msgstr "已验证可用"
 
 #: src/web/history.tsx
 msgid "平均"
 msgstr "平均"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "平均温度"
 msgstr "平均温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "平滑后用于曲线决策"
 msgstr "平滑后用于曲线决策"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 #: src/web/storage-classes.ts
 msgid "应用"
 msgstr "应用"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "应用到节点"
 msgstr "应用到节点"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "应用安装"
 msgstr "应用安装"
 
@@ -1647,23 +1785,32 @@ msgstr "应用安装"
 msgid "应用数据"
 msgstr "应用数据"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "应用路径"
+msgstr "应用路径"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "应用风扇曲线"
 msgstr "应用风扇曲线"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "延迟"
 msgstr "延迟"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "开始实测校准"
 msgstr "开始实测校准"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "开始录制"
+msgstr "开始录制"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "开始校准试运行"
 msgstr "开始校准试运行"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "开始限时控制"
 msgstr "开始限时控制"
 
@@ -1671,24 +1818,16 @@ msgstr "开始限时控制"
 msgid "异常"
 msgstr "异常"
 
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "引导自动化授权"
-msgstr "引导自动化授权"
-
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "引导辅助功能授权"
-msgstr "引导辅助功能授权"
-
 #. js-lingui-explicit-id
 #: src/domain.ts
 msgid "当前 {v0}%"
 msgstr "当前 {v0}%"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "当前出口"
 msgstr "当前出口"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
 msgstr "当前展示本地 Runner 状态。GitHub 接入由 Runner 插件按仓库单独配置。"
 
@@ -1700,13 +1839,57 @@ msgstr "当前未安装插件"
 msgid "当前运行平稳"
 msgstr "当前运行平稳"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "当前适配器支持显式传感器和 force 模式，升档不延迟；不支持 floor 模式或自动枚举。"
 msgstr "当前适配器支持显式传感器和 force 模式，升档不延迟；不支持 floor 模式或自动枚举。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "当前阶段"
 msgstr "当前阶段"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制中"
+msgstr "录制中"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制文件"
+msgstr "录制文件"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制文件分片不完整"
+msgstr "录制文件分片不完整"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制目标"
+msgstr "录制目标"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制秒数"
+msgstr "录制秒数"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制节点上的屏幕或指定窗口，原视频与鼠标轨道分别保存。"
+msgstr "录制节点上的屏幕或指定窗口，原视频与鼠标轨道分别保存。"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制范围"
+msgstr "录制范围"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制设置"
+msgstr "录制设置"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "录制预览"
+msgstr "录制预览"
+
+#: src/web/permission-checks.tsx
+msgid "待授权"
+msgstr "待授权"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "待机"
+msgstr "待机"
 
 #. placeholder {0}: formatBytes(disk?.total_bytes)
 #: src/web/node.tsx
@@ -1722,7 +1905,7 @@ msgstr "恢复"
 msgid "恢复 {0}"
 msgstr "恢复 {0}"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "恢复原请求"
 msgstr "恢复原请求"
 
@@ -1730,7 +1913,7 @@ msgstr "恢复原请求"
 msgid "恢复实时更新"
 msgstr "恢复实时更新"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "恢复接单"
 msgstr "恢复接单"
 
@@ -1738,7 +1921,7 @@ msgstr "恢复接单"
 msgid "恢复此节点的默认目录规则？"
 msgstr "恢复此节点的默认目录规则？"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "恢复温控中"
 msgstr "恢复温控中"
 
@@ -1750,7 +1933,7 @@ msgstr "恢复默认"
 msgid "我的集群"
 msgstr "我的集群"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "手动接管"
 msgstr "手动接管"
 
@@ -1758,23 +1941,23 @@ msgstr "手动接管"
 msgid "打开导航菜单"
 msgstr "打开导航菜单"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "执行 SMC 写入诊断"
 msgstr "执行 SMC 写入诊断"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "执行写入诊断"
 msgstr "执行写入诊断"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "执行操作前，工作台和节点都会重新检查作业状态。"
 msgstr "执行操作前，工作台和节点都会重新检查作业状态。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "执行方式"
 msgstr "执行方式"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "执行节点：{host}。相同请求 ID 会复用原结果；要执行新任务，请先新建请求。"
 msgstr "执行节点：{host}。相同请求 ID 会复用原结果；要执行新任务，请先新建请求。"
 
@@ -1806,9 +1989,13 @@ msgstr "扫描状态无法保存，请检查节点可用空间和目录权限。
 msgid "扫描范围"
 msgstr "扫描范围"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "持续秒数"
 msgstr "持续秒数"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "指定窗口"
+msgstr "指定窗口"
 
 #: src/web/history.tsx
 msgid "指标"
@@ -1822,24 +2009,24 @@ msgstr "指标分析"
 msgid "按目录与用途定位空间占用，扫描完成后自动更新。"
 msgstr "按目录与用途定位空间占用，扫描完成后自动更新。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "授权窗口出现在节点机器上。请在那里完成密码、Touch ID 或允许操作；工具会复验，不保存密码。暂停接单后，等待当前任务结束或取消后再接管桌面。"
 msgstr "授权窗口出现在节点机器上。请在那里完成密码、Touch ID 或允许操作；工具会复验，不保存密码。暂停接单后，等待当前任务结束或取消后再接管桌面。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "授权键"
 msgstr "授权键"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "排队中"
 msgstr "排队中"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。"
 msgstr "接单互斥：运行一个 Runner 时暂停同机其他 Runner，结束后恢复。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "接单进程"
 msgstr "接单进程"
 
@@ -1856,11 +2043,11 @@ msgstr "控制台 {0}"
 msgid "控制模式"
 msgstr "控制模式"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "控制温度"
 msgstr "控制温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "控制端尚未就绪"
 msgstr "控制端尚未就绪"
 
@@ -1868,7 +2055,7 @@ msgstr "控制端尚未就绪"
 msgid "提交中…"
 msgstr "提交中…"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "提交任务"
 msgstr "提交任务"
 
@@ -1884,7 +2071,7 @@ msgstr "插件导航"
 msgid "插件异常"
 msgstr "插件异常"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "插件提供的 CI 作业与接单状态"
 msgstr "插件提供的 CI 作业与接单状态"
 
@@ -1897,7 +2084,7 @@ msgstr "插件未启用"
 msgid "插件管理"
 msgstr "插件管理"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "插件设置"
 msgstr "插件设置"
 
@@ -1917,32 +2104,33 @@ msgstr "搜索节点名称"
 msgid "搜索进程"
 msgstr "搜索进程"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
+#: src/web/permission-checks.tsx
 #: src/web/storage-rules.tsx
 msgid "操作"
 msgstr "操作"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "操作处理中"
 msgstr "操作处理中"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "操作已完成"
 msgstr "操作已完成"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "操作未确认完成，请核对当前节点状态"
 msgstr "操作未确认完成，请核对当前节点状态"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 msgstr "操作由节点本地执行。关闭页面不会中断任务，可在任务记录中取消。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "操作类型"
 msgstr "操作类型"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "操作请求已提交，请查看节点操作状态"
 msgstr "操作请求已提交，请查看节点操作状态"
 
@@ -1976,19 +2164,31 @@ msgstr "数据已过期"
 msgid "数据过期"
 msgstr "数据过期"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "数据过期或节点不可用，控制操作暂不可用。"
 msgstr "数据过期或节点不可用，控制操作暂不可用。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "文件大小"
+msgstr "文件大小"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "文件过大或分片已变化，请使用节点上的原文件。"
+msgstr "文件过大或分片已变化，请使用节点上的原文件。"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "新建对话"
 msgstr "新建对话"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "新建录制"
+msgstr "新建录制"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "新建请求"
 msgstr "新建请求"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 msgstr "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 
@@ -1996,7 +2196,7 @@ msgstr "新版本确认载入后才视为生效。若校验或载入失败，节
 msgid "无子目录"
 msgstr "无子目录"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "无日志输出"
 msgstr "无日志输出"
 
@@ -2004,15 +2204,23 @@ msgstr "无日志输出"
 msgid "无法连接工作台"
 msgstr "无法连接工作台"
 
+#: src/web/permission-checks.tsx
+msgid "无需额外授权"
+msgstr "无需额外授权"
+
 #: src/web/history.tsx
 msgid "早期数据不足时仅展示已有样本；传感器未上报的指标保持空白。"
 msgstr "早期数据不足时仅展示已有样本；传感器未上报的指标保持空白。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "时长"
+msgstr "时长"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "是"
 msgstr "是"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "暂不可用"
 msgstr "暂不可用"
 
@@ -2020,7 +2228,7 @@ msgstr "暂不可用"
 msgid "暂停实时更新"
 msgstr "暂停实时更新"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "暂停接单"
 msgstr "暂停接单"
 
@@ -2028,23 +2236,23 @@ msgstr "暂停接单"
 msgid "暂无可用的采样数据"
 msgstr "暂无可用的采样数据"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "暂无节点"
 msgstr "暂无节点"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "暂无诊断日志"
 msgstr "暂无诊断日志"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "曲线传感器"
 msgstr "曲线传感器"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "曲线已暂停"
 msgstr "曲线已暂停"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "曲线控制"
 msgstr "曲线控制"
 
@@ -2057,7 +2265,7 @@ msgstr "更新已暂停"
 msgid "有未保存的修改"
 msgstr "有未保存的修改"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "服务停止"
 msgstr "服务停止"
 
@@ -2065,32 +2273,32 @@ msgstr "服务停止"
 msgid "未上报"
 msgstr "未上报"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "未取得远端状态"
 msgstr "未取得远端状态"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "未安装"
 msgstr "未安装"
 
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "未完成"
 msgstr "未完成"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "未应用的草稿"
 msgstr "未应用的草稿"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "未开启"
 msgstr "未开启"
 
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "未授权"
-msgstr "未授权"
+#: src/web/permission-checks.tsx
+msgid "未检查"
+msgstr "未检查"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "未检测到"
 msgstr "未检测到"
 
@@ -2098,11 +2306,11 @@ msgstr "未检测到"
 msgid "未检测到节点失联、低磁盘余量或散热告警。"
 msgstr "未检测到节点失联、低磁盘余量或散热告警。"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "未测试"
 msgstr "未测试"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "未登录"
 msgstr "未登录"
 
@@ -2111,37 +2319,41 @@ msgid "未获得有效目录统计，请查看节点诊断日志。"
 msgstr "未获得有效目录统计，请查看节点诊断日志。"
 
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "未识别仓库 · {directory}"
 msgstr "未识别仓库 · {directory}"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "未识别注册仓库，无法执行服务操作"
 msgstr "未识别注册仓库，无法执行服务操作"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "未读到"
 msgstr "未读到"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "未运行"
 msgstr "未运行"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "未锁定"
 msgstr "未锁定"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "未验收"
 msgstr "未验收"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "本地监听中"
 msgstr "本地监听中"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "本地进程"
 msgstr "本地进程"
+
+#: src/web/permission-checks.tsx
+msgid "权限"
+msgstr "权限"
 
 #: src/web/overview.tsx
 msgid "查看"
@@ -2161,7 +2373,12 @@ msgstr "查看 {0} 的存储空间"
 msgid "查看历史趋势"
 msgstr "查看历史趋势"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/proxy/console/src/permissions.tsx
+#: ../plugins/runners/console/src/permissions.tsx
+msgid "查看授权说明"
+msgstr "查看授权说明"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "查看每台节点的温控状态，编辑曲线并运行本地诊断。"
 msgstr "查看每台节点的温控状态，编辑曲线并运行本地诊断。"
 
@@ -2170,23 +2387,23 @@ msgstr "查看每台节点的温控状态，编辑曲线并运行本地诊断。
 msgid "查看节点 {0}"
 msgstr "查看节点 {0}"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "查看连接"
 msgstr "查看连接"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "校准、自检与 SMC 诊断"
 msgstr "校准、自检与 SMC 诊断"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "校准和校准试运行都会产生全核心 CPU 负载。试运行不写风扇，也不会生成实测曲线建议。"
 msgstr "校准和校准试运行都会产生全核心 CPU 负载。试运行不写风扇，也不会生成实测曲线建议。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "校准温度上限"
 msgstr "校准温度上限"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "校准试运行"
 msgstr "校准试运行"
 
@@ -2200,12 +2417,12 @@ msgstr "核心 {0}"
 msgid "核心 {0} 占用"
 msgstr "核心 {0} 占用"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "桌面会话"
 msgstr "桌面会话"
 
-#: src/plugins/desktop-automation/web.tsx
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/web.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "桌面自动化"
 msgstr "桌面自动化"
 
@@ -2213,11 +2430,7 @@ msgstr "桌面自动化"
 msgid "检查插件设置；基础监控仍可使用。"
 msgstr "检查插件设置；基础监控仍可使用。"
 
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "检查环境与权限"
-msgstr "检查环境与权限"
-
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "检查节点连接和插件开关"
 msgstr "检查节点连接和插件开关"
 
@@ -2225,7 +2438,11 @@ msgstr "检查节点连接和插件开关"
 msgid "检查节点采集通道与插件接入状态。"
 msgstr "检查节点采集通道与插件接入状态。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: src/web/permission-checks.tsx
+msgid "检测失败"
+msgstr "检测失败"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "模拟温控 15 秒"
 msgstr "模拟温控 15 秒"
 
@@ -2249,6 +2466,14 @@ msgstr "正在后台扫描此目录，保留上次结果"
 msgid "正在恢复连接"
 msgstr "正在恢复连接"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "正在收尾"
+msgstr "正在收尾"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "正在等待录制完成"
+msgstr "正在等待录制完成"
+
 #: src/web/App.tsx
 msgid "正在等待节点上报"
 msgstr "正在等待节点上报"
@@ -2257,7 +2482,7 @@ msgstr "正在等待节点上报"
 msgid "正在读取连接地址"
 msgstr "正在读取连接地址"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "正在连接 GitHub"
 msgstr "正在连接 GitHub"
 
@@ -2269,7 +2494,7 @@ msgstr "正在连接集群"
 msgid "正常"
 msgstr "正常"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。"
 msgstr "此仓库当前显示本地进程状态。接入 GitHub 后可核对远端在线与作业状态。"
 
@@ -2277,23 +2502,31 @@ msgstr "此仓库当前显示本地进程状态。接入 GitHub 后可核对远�
 msgid "此功能由可选插件提供。"
 msgstr "此功能由可选插件提供。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "此操作将产生全核心 CPU 负载并逐档调整风扇，约需数分钟。可随时取消；建议曲线只会导入草稿，不会自动应用。"
 msgstr "此操作将产生全核心 CPU 负载并逐档调整风扇，约需数分钟。可随时取消；建议曲线只会导入草稿，不会自动应用。"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "此文件来自其他录制入口，请使用节点上的文件路径。"
+msgstr "此文件来自其他录制入口，请使用节点上的文件路径。"
 
 #: src/web/storage.tsx
 msgid "此目录不可读取，未将其视为空目录。"
 msgstr "此目录不可读取，未将其视为空目录。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "此节点不支持屏幕录制"
+msgstr "此节点不支持屏幕录制"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "此节点仅允许查看风扇，尚未授权控制。"
 msgstr "此节点仅允许查看风扇，尚未授权控制。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "此节点尚未授权 Runner 服务控制"
 msgstr "此节点尚未授权 Runner 服务控制"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "此节点的 Runner 插件未启用"
 msgstr "此节点的 Runner 插件未启用"
 
@@ -2329,15 +2562,19 @@ msgstr "没有匹配的节点，调整名称或类型筛选后重试。"
 msgid "没有匹配的进程"
 msgstr "没有匹配的进程"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "没有可用节点"
+msgstr "没有可用节点"
+
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "没有节点启用 mini-proxy 插件"
 msgstr "没有节点启用 mini-proxy 插件"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "波浪线：系统默认（转速由系统决定）"
 msgstr "波浪线：系统默认（转速由系统决定）"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "活跃 / 总数"
 msgstr "活跃 / 总数"
 
@@ -2350,23 +2587,23 @@ msgstr "活跃进程"
 msgid "浅色"
 msgstr "浅色"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "测速与 v2rayN 相同：经代理请求 generate_204 两次，间隔 100 毫秒，取较快的一次；没完成就是 -1。切换失败会回滚。"
 msgstr "测速与 v2rayN 相同：经代理请求 generate_204 两次，间隔 100 毫秒，取较快的一次；没完成就是 -1。切换失败会回滚。"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "测速中"
 msgstr "测速中"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "测速检查"
 msgstr "测速检查"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "浏览器无法保存草稿，请先导出文件。"
 msgstr "浏览器无法保存草稿，请先导出文件。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "消息"
 msgstr "消息"
 
@@ -2386,35 +2623,35 @@ msgstr "添加目录规则"
 msgid "添加规则"
 msgstr "添加规则"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度"
 msgstr "温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度传感器"
 msgstr "温度传感器"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度保护已触发"
 msgstr "温度保护已触发"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。"
 msgstr "温度必须递增、转速不能递减，保护档须使用最高转速，其他阈值不得超过保护温度。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度走势"
 msgstr "温度走势"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温度阈值"
 msgstr "温度阈值"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温控服务未运行"
 msgstr "温控服务未运行"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "温控读取失败"
 msgstr "温控读取失败"
 
@@ -2426,7 +2663,7 @@ msgstr "温暖"
 msgid "热状态"
 msgstr "热状态"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "版本冲突"
 msgstr "版本冲突"
 
@@ -2443,16 +2680,18 @@ msgstr "物理机"
 msgid "物理机"
 msgstr "物理机"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
 #: src/web/overview.tsx
+#: src/web/permission-checks.tsx
 msgid "状态"
 msgstr "状态"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "状态待上报"
 msgstr "状态待上报"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "状态未知"
 msgstr "状态未知"
 
@@ -2460,16 +2699,20 @@ msgstr "状态未知"
 msgid "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
 msgstr "独立管理控制台能力与每台节点的采集插件，开关会持久保存。"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "环境与权限"
+msgstr "环境与权限"
+
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "环境失败"
 msgstr "环境失败"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "环境验收"
 msgstr "环境验收"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "用于曲线"
 msgstr "用于曲线"
 
@@ -2480,6 +2723,14 @@ msgstr "用户数据"
 #: src/web/storage.tsx
 msgid "用户目录"
 msgstr "用户目录"
+
+#: ../plugins/runners/console/src/permissions.tsx
+msgid "用户级 Runner 服务"
+msgstr "用户级 Runner 服务"
+
+#: ../plugins/proxy/console/src/permissions.tsx
+msgid "用户级代理服务"
+msgstr "用户级代理服务"
 
 #: src/web/storage.tsx
 msgid "用途"
@@ -2534,23 +2785,31 @@ msgstr "目录规则已保存，下次扫描生效。"
 msgid "目录路径"
 msgstr "目录路径"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "目标"
+msgstr "目标"
+
+#: src/web/permission-checks.tsx
+msgid "目标节点：{node}"
+msgstr "目标节点：{node}"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "目标转速"
 msgstr "目标转速"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "确认"
 msgstr "确认"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "确认中断"
 msgstr "确认中断"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "确认停止"
 msgstr "确认停止"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "确认启动"
 msgstr "确认启动"
 
@@ -2559,7 +2818,11 @@ msgstr "确认启动"
 msgid "磁盘余量低于水位线"
 msgstr "磁盘余量低于水位线"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "视频保留原生指针，不烘焙光效。鼠标轨道可另行编辑、改色或关闭效果。"
+msgstr "视频保留原生指针，不烘焙光效。鼠标轨道可另行编辑、改色或关闭效果。"
+
+#: ../plugins/proxy/console/src/workbench.tsx
 #: src/web/ui.tsx
 msgid "离线"
 msgstr "离线"
@@ -2568,25 +2831,25 @@ msgstr "离线"
 msgid "私有工作空间"
 msgstr "私有工作空间"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "程序或脚本"
 msgstr "程序或脚本"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "空间统计每分钟更新，进程状态独立实时更新"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "符合"
 msgstr "符合"
 
 #. placeholder {0}: String(i + 1)
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "第 {0} 档温度"
 msgstr "第 {0} 档温度"
 
 #. placeholder {0}: String(i + 1)
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "第 {0} 档转速"
 msgstr "第 {0} 档转速"
 
@@ -2594,11 +2857,15 @@ msgstr "第 {0} 档转速"
 msgid "等待 CPU 信息"
 msgstr "等待 CPU 信息"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: src/web/permission-checks.tsx
+msgid "等待本人确认"
+msgstr "等待本人确认"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "等待系统确认"
 msgstr "等待系统确认"
 
-#: src/plugins/runners/status.tsx
+#: ../plugins/runners/console/src/status.tsx
 msgid "等待节点空闲"
 msgstr "等待节点空闲"
 
@@ -2607,7 +2874,7 @@ msgstr "等待节点空闲"
 msgid "等待节点重新上报"
 msgstr "等待节点重新上报"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "等待连接"
 msgstr "等待连接"
 
@@ -2627,20 +2894,24 @@ msgstr "筛选节点类型"
 msgid "筛选规则路径"
 msgstr "筛选规则路径"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "管理员授权的写入诊断"
 msgstr "管理员授权的写入诊断"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "管理录制"
+msgstr "管理录制"
+
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "管理接单进程 ↗"
 msgstr "管理接单进程 ↗"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 #: src/web/App.tsx
 msgid "管理插件"
 msgstr "管理插件"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "管理桌面任务"
 msgstr "管理桌面任务"
 
@@ -2677,12 +2948,12 @@ msgstr "系统指标已过期，显示最后有效读数"
 msgid "系统根目录"
 msgstr "系统根目录"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 #: src/web/node.tsx
 msgid "系统自动"
 msgstr "系统自动"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "系统默认"
 msgstr "系统默认"
 
@@ -2690,7 +2961,7 @@ msgstr "系统默认"
 msgid "纵轴 0–100%"
 msgstr "纵轴 0–100%"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "统一管理接单进程，核对本地状态与 GitHub 连接。"
 msgstr "统一管理接单进程，核对本地状态与 GitHub 连接。"
 
@@ -2706,7 +2977,7 @@ msgstr "继承深度"
 msgid "继续编辑"
 msgstr "继续编辑"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "编辑曲线"
 msgstr "编辑曲线"
 
@@ -2731,25 +3002,25 @@ msgstr "群岛 · 节点工作台（{0}/{1}）"
 msgid "群岛-{0}-{1}.csv"
 msgstr "群岛-{0}-{1}.csv"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "群岛插件：屏幕录制"
+msgstr "群岛插件：屏幕录制"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "耗时"
 msgstr "耗时"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "聊天应用"
 msgstr "聊天应用"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "聊天操作"
 msgstr "聊天操作"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "脚本执行"
 msgstr "脚本执行"
-
-#: src/plugins/desktop-automation/workbench.tsx
-msgid "自动化"
-msgstr "自动化"
 
 #: src/web/storage-rules.tsx
 msgid "自定义"
@@ -2763,11 +3034,11 @@ msgstr "自定义字段优先于默认和插件规则；未指定的字段继承
 msgid "自定义曲线"
 msgstr "自定义曲线"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "自检会逐档改变风扇转速并核对实际读数，完成或取消后恢复温控。"
 msgstr "自检会逐档改变风扇转速并核对实际读数，完成或取消后恢复温控。"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 #: src/web/history.tsx
 msgid "节点"
 msgstr "节点"
@@ -2776,15 +3047,15 @@ msgstr "节点"
 msgid "节点 / 规格"
 msgstr "节点 / 规格"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。"
 msgstr "节点 Runner 插件未启用、尚未就绪或数据版本不兼容，请在插件管理中检查。"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点 Runners"
 msgstr "节点 Runners"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "节点上的绝对路径"
 msgstr "节点上的绝对路径"
 
@@ -2802,7 +3073,7 @@ msgstr "节点仍在线，等待采集器恢复；旧读数不参与集群汇总
 msgid "节点信息"
 msgstr "节点信息"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "节点出口"
 msgstr "节点出口"
 
@@ -2822,11 +3093,15 @@ msgstr "节点在线，指标已过期"
 msgid "节点导航"
 msgstr "节点导航"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "节点尚未启用录屏控制"
+msgstr "节点尚未启用录屏控制"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "节点尚未启用桌面控制"
 msgstr "节点尚未启用桌面控制"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "节点屏幕已锁定，请先解锁"
 msgstr "节点屏幕已锁定，请先解锁"
 
@@ -2834,7 +3109,11 @@ msgstr "节点屏幕已锁定，请先解锁"
 msgid "节点工作台"
 msgstr "节点工作台"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "节点或录屏插件未就绪"
+msgstr "节点或录屏插件未就绪"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "节点或桌面插件未就绪"
 msgstr "节点或桌面插件未就绪"
 
@@ -2846,27 +3125,27 @@ msgstr "节点按 CPU 采集的前 15 个进程；单进程可使用多个核心
 msgid "节点排序"
 msgstr "节点排序"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点接单互斥"
 msgstr "节点接单互斥"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点接单互斥不可用，请更新共用作业钩子"
 msgstr "节点接单互斥不可用，请更新共用作业钩子"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点接单互斥中，作业结束后自动恢复"
 msgstr "节点接单互斥中，作业结束后自动恢复"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点数据不可用"
 msgstr "节点数据不可用"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "节点数据过期，操作不可用"
 msgstr "节点数据过期，操作不可用"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "节点曲线已变化，草稿已保留。请比较后重新载入或导出草稿。"
 msgstr "节点曲线已变化，草稿已保留。请比较后重新载入或导出草稿。"
 
@@ -2878,15 +3157,15 @@ msgstr "节点未安装此插件"
 msgid "节点架构"
 msgstr "节点架构"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "节点桌面"
 msgstr "节点桌面"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "节点检查未通过，请查看详情"
 msgstr "节点检查未通过，请查看详情"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "节点检查通过"
 msgstr "节点检查通过"
 
@@ -2894,7 +3173,7 @@ msgstr "节点检查通过"
 msgid "节点概览"
 msgstr "节点概览"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "节点正在执行，刷新页面可继续查看。"
 msgstr "节点正在执行，刷新页面可继续查看。"
 
@@ -2902,6 +3181,12 @@ msgstr "节点正在执行，刷新页面可继续查看。"
 #: src/web/ui.tsx
 msgid "节点离线"
 msgstr "节点离线"
+
+#: ../plugins/fan-control/console/src/permissions.tsx
+#: ../plugins/proxy/console/src/permissions.tsx
+#: ../plugins/runners/console/src/permissions.tsx
+msgid "节点能力检测失败，请重试。"
+msgstr "节点能力检测失败，请重试。"
 
 #. js-lingui-explicit-id
 #: src/messages.ts
@@ -2929,13 +3214,13 @@ msgstr "节点间的同尺度比较 · 最近 10 分钟"
 msgid "芯片功耗"
 msgstr "芯片功耗"
 
-#. js-lingui-explicit-id
-#: src/domain.ts
+#: ../plugins/fan-control/console/src/workbench.tsx
+#: src/web/overview.tsx
 msgid "虚拟机"
 msgstr "虚拟机"
 
-#: src/plugins/fan-control/workbench.tsx
-#: src/web/overview.tsx
+#. js-lingui-explicit-id
+#: src/domain.ts
 msgid "虚拟机"
 msgstr "虚拟机"
 
@@ -2943,7 +3228,7 @@ msgstr "虚拟机"
 msgid "虚拟机无硬件传感器"
 msgstr "虚拟机无硬件传感器"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "虚拟机无硬件风扇"
 msgstr "虚拟机无硬件风扇"
 
@@ -2951,7 +3236,7 @@ msgstr "虚拟机无硬件风扇"
 msgid "虚拟机由宿主机负责散热，节点详情按实际能力展示传感器。"
 msgstr "虚拟机由宿主机负责散热，节点详情按实际能力展示传感器。"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "虚线：已应用"
 msgstr "虚线：已应用"
 
@@ -2967,11 +3252,11 @@ msgstr "规则已与节点同步"
 msgid "访问令牌"
 msgstr "访问令牌"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "诊断日志"
 msgstr "诊断日志"
 
-#: src/plugins/mini-proxy/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
 msgid "该节点未开启代理控制"
 msgstr "该节点未开启代理控制"
 
@@ -2979,15 +3264,33 @@ msgstr "该节点未开启代理控制"
 msgid "语言：{languageLabel}"
 msgstr "语言：{languageLabel}"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: src/web/permission-checks.tsx
+msgid "说明"
+msgstr "说明"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "请先在节点安装桌面工具包"
 msgstr "请先在节点安装桌面工具包"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "请先在节点部署伴随应用安装包"
+msgstr "请先在节点部署伴随应用安装包"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "请刷新并选择窗口"
+msgstr "请刷新并选择窗口"
+
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
 msgstr "请刷新节点状态，查看本地进程及接单互斥设置后再重试。"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/fan-control/console/src/permissions.tsx
+#: ../plugins/proxy/console/src/permissions.tsx
+#: ../plugins/runners/console/src/permissions.tsx
+msgid "请在目标节点使用此插件入口；完成安装或配置后重新检查。"
+msgstr "请在目标节点使用此插件入口；完成安装或配置后重新检查。"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "请检查目标、消息、脚本路径和参数格式。"
 msgstr "请检查目标、消息、脚本路径和参数格式。"
 
@@ -2995,6 +3298,10 @@ msgstr "请检查目标、消息、脚本路径和参数格式。"
 #: src/web/api.ts
 msgid "请求失败（{0}）"
 msgstr "请求失败（{0}）"
+
+#: src/web/permission-checks.tsx
+msgid "请求授权"
+msgstr "请求授权"
 
 #: src/web/api.ts
 msgid "请求未完成，请重试"
@@ -3012,32 +3319,32 @@ msgstr "请输入访问令牌"
 msgid "请重新加载。节点上的任务不受影响。"
 msgstr "请重新加载。节点上的任务不受影响。"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "读取 SMC 键"
 msgstr "读取 SMC 键"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "读取 SMC 键详情"
 msgstr "读取 SMC 键详情"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "读取最近回复"
 msgstr "读取最近回复"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "读取键列表"
 msgstr "读取键列表"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "读取键详情"
 msgstr "读取键详情"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "调整保护温度：拖动或使用左右方向键"
 msgstr "调整保护温度：拖动或使用左右方向键"
 
 #. placeholder {0}: String(i + 1)
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "调整第 {0} 档：拖动或使用方向键"
 msgstr "调整第 {0} 档：拖动或使用方向键"
 
@@ -3061,13 +3368,17 @@ msgstr "身份"
 msgid "轮询 / 重连"
 msgstr "轮询 / 重连"
 
-#: src/plugins/desktop-automation/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "辅助功能"
 msgstr "辅助功能"
 
 #: src/web/App.tsx
 msgid "输入工作台访问令牌，查看节点并执行运维操作。"
 msgstr "输入工作台访问令牌，查看节点并执行运维操作。"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "输入监控（鼠标轨道）"
+msgstr "输入监控（鼠标轨道）"
 
 #: src/web/App.tsx
 msgid "输入访问令牌"
@@ -3078,8 +3389,8 @@ msgstr "输入访问令牌"
 msgid "运行 {0}"
 msgstr "运行 {0}"
 
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "运行中"
 msgstr "运行中"
 
@@ -3091,7 +3402,7 @@ msgstr "运行时间"
 msgid "运行概况"
 msgstr "运行概况"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "运行风扇自检"
 msgstr "运行风扇自检"
 
@@ -3113,7 +3424,7 @@ msgstr "进程"
 msgid "进程名称或 PID"
 msgstr "进程名称或 PID"
 
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
 msgid "连接中"
 msgstr "连接中"
 
@@ -3129,16 +3440,22 @@ msgstr "连接诊断"
 msgid "退出工作台"
 msgstr "退出工作台"
 
+#. placeholder {0}: displayName(h)
 #. placeholder {0}: displayName(item)
-#: src/plugins/desktop-automation/workbench.tsx
-#: src/plugins/fan-control/workbench.tsx
-#: src/plugins/mini-proxy/workbench.tsx
-#: src/plugins/runners/workbench.tsx
+#: ../plugins/automation/console/src/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
+#: ../plugins/proxy/console/src/workbench.tsx
+#: ../plugins/runners/console/src/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "选择 {0}"
 msgstr "选择 {0}"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "选择已有备份"
+msgstr "选择已有备份"
+
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "通过"
 msgstr "通过"
 
@@ -3154,7 +3471,7 @@ msgstr "部分传感器已过期，显示最后有效读数"
 msgid "部分目录不可读取 · "
 msgstr "部分目录不可读取 · "
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "采样周期（秒）"
 msgstr "采样周期（秒）"
 
@@ -3191,15 +3508,19 @@ msgstr "重新扫描"
 msgid "重新扫描展开目录"
 msgstr "重新扫描展开目录"
 
-#: src/plugins/fan-control/workbench.tsx
+#: src/web/permission-checks.tsx
+msgid "重新检查"
+msgstr "重新检查"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "重新载入服务"
 msgstr "重新载入服务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "重新载入温控服务"
 msgstr "重新载入温控服务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "重新载入节点曲线"
 msgstr "重新载入节点曲线"
 
@@ -3219,39 +3540,39 @@ msgstr "重试扫描"
 msgid "重试连接"
 msgstr "重试连接"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "阴影：达到保护温度时使用最高转速"
 msgstr "阴影：达到保护温度时使用最高转速"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "降档滞回（°C）"
 msgstr "降档滞回（°C）"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "降档等待"
 msgstr "降档等待"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "降档等待（秒）"
 msgstr "降档等待（秒）"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "降温平滑系数"
 msgstr "降温平滑系数"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "降速限制（RPM/秒，0 为不限）"
 msgstr "降速限制（RPM/秒，0 为不限）"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "限时固定转速"
 msgstr "限时固定转速"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "限时控制与服务"
 msgstr "限时控制与服务"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "限时控制到期、取消、传感器异常或触发温度保护时，节点会恢复之前的温控模式。"
 msgstr "限时控制到期、取消、传感器异常或触发温度保护时，节点会恢复之前的温控模式。"
 
@@ -3280,53 +3601,73 @@ msgstr "集群运行正常"
 msgid "需要关注"
 msgstr "需要关注"
 
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "静止尾段秒数"
+msgstr "静止尾段秒数"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "静默检查不会申请权限。只有明确授权操作才在所选节点打开系统界面；普通录屏不需要输入监控。"
+msgstr "静默检查不会申请权限。只有明确授权操作才在所选节点打开系统界面；普通录屏不需要输入监控。"
+
 #: src/web/plugin-settings.tsx
 msgid "页面、概览扩展、远端集成和控制操作"
 msgstr "页面、概览扩展、远端集成和控制操作"
 
 #. js-lingui-explicit-id
-#: src/plugins/runners/domain.ts
+#: ../plugins/runners/console/src/domain.ts
 msgid "项目检查失败"
 msgstr "项目检查失败"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "预期当前值"
 msgstr "预期当前值"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "预览录像"
+msgstr "预览录像"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇"
 msgstr "风扇"
 
-#: src/plugins/fan-control/web.tsx
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/web.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇控制"
 msgstr "风扇控制"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇曲线"
 msgstr "风扇曲线"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇温度"
 msgstr "风扇温度"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/permissions.tsx
+msgid "风扇特权服务"
+msgstr "风扇特权服务"
+
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇自检"
 msgstr "风扇自检"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 msgid "风扇走势"
 msgstr "风扇走势"
 
-#: src/plugins/fan-control/workbench.tsx
+#: ../plugins/fan-control/console/src/workbench.tsx
 #: src/web/node.tsx
 msgid "风扇转速"
 msgstr "风扇转速"
 
-#: src/plugins/fan-control/curve.tsx
+#: ../plugins/fan-control/console/src/curve.tsx
 msgid "风扇阶梯曲线：温度与目标转速"
 msgstr "风扇阶梯曲线：温度与目标转速"
 
 #: src/web/storage-rules.tsx
 msgid "默认"
 msgstr "默认"
+
+#: ../plugins/screen-recording/console/src/workbench.tsx
+msgid "鼠标轨道"
+msgstr "鼠标轨道"

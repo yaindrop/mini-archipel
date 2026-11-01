@@ -1,5 +1,6 @@
 mod collectors;
 mod config;
+#[path = "../../plugins/fan-control/agent/rpc.rs"]
 mod fan_control;
 mod plugins;
 

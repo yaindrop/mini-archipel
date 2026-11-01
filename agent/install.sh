@@ -40,6 +40,18 @@ if [[ -x "$DEST" ]]; then
   [[ -n "$REQUIREMENT" ]] || { echo 'error: cannot verify the installed signing identity'; rm -f "$DEST.next"; exit 1; }
   /usr/bin/codesign --verify --strict -R "=$REQUIREMENT" "$DEST.next" || { echo 'error: signing identity changed; preserve the existing identity'; rm -f "$DEST.next"; exit 1; }
 fi
+# Stage only this repository's optional installer payload; do not start its services.
+FAN_SOURCE="../plugins/fan-control"
+FAN_DEST="$HOME/.local/share/mini-archipel/plugins/fan-control"
+FAN_STAGE="$FAN_DEST.next-$$"
+[[ -f "$FAN_SOURCE/install.command" ]] || { echo 'error: plugin installer source missing'; exit 1; }
+[[ ! -e "$FAN_STAGE" ]] || { echo 'error: plugin payload staging path exists'; exit 1; }
+mkdir -p "$FAN_STAGE"
+for entry in src config deploy control.py build.sh install-plugin.sh install.command; do
+  cp -R "$FAN_SOURCE/$entry" "$FAN_STAGE/$entry"
+done
+if [[ -e "$FAN_DEST" ]]; then mv "$FAN_DEST" "$FAN_DEST.previous-$(date +%Y%m%d-%H%M%S)"; fi
+mv "$FAN_STAGE" "$FAN_DEST"
 install -m 755 allow-firewall.sh "$HOME/.local/libexec/mini-archipel-firewall.sh"
 BIND=$("$DEST.next" check-config "$CONF")
 EXPECTED=$("$DEST.next" --version)

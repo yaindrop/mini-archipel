@@ -4,7 +4,10 @@ export default defineConfig({
   plugins: [lingui({ macroTransform: true })],
   test: {
     setupFiles: ["tests/i18n-setup.ts"],
-    include: ["tests/**/*.test.{ts,tsx}"],
+    include: [
+      "tests/**/*.test.{ts,tsx}",
+      "../plugins/*/console/tests/**/*.test.{ts,tsx}",
+    ],
     environment: "node",
     coverage: {
       provider: "v8",
@@ -17,10 +20,10 @@ export default defineConfig({
         "src/archipel.ts",
         "src/app.ts",
         "src/plugins/runtime.ts",
-        "src/plugins/runners/domain.ts",
-        "src/plugins/runners/server.ts",
-        "src/plugins/fan-control/domain.ts",
-        "src/plugins/fan-control/server.ts",
+        "../plugins/runners/console/src/domain.ts",
+        "../plugins/runners/console/src/server.ts",
+        "../plugins/fan-control/console/src/domain.ts",
+        "../plugins/fan-control/console/src/server.ts",
       ],
       thresholds: { statements: 80, branches: 75, functions: 80, lines: 80 },
     },

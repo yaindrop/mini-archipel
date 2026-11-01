@@ -16,6 +16,7 @@ fn validate(config: &config::Config, definitions: &[Arc<dyn Plugin>]) -> Result<
 
 /// Offline bootstrap only. Runtime changes use the authenticated plugin settings endpoint.
 pub fn configure(path: &str, id: &str, enabled: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let id = catalog::canonical_id(id);
     let definitions = catalog::installed();
     let mut config = config::load(path)?;
     if !definitions.iter().any(|plugin| plugin.id() == id) {

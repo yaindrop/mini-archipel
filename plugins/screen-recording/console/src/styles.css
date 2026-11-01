@@ -1,0 +1,43 @@
+.recorder-workspace {
+  display: grid;
+  gap: 20px;
+}
+.recorder-columns {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+.recorder-columns > * {
+  min-width: 0;
+}
+.recorder-target {
+  width: 100%;
+}
+.recorder-target > .ant-select {
+  flex: 1;
+  min-width: 0;
+}
+.recorder-timing {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.recorder-preview {
+  width: 100%;
+  max-height: 440px;
+  margin-top: 16px;
+  background: #111;
+}
+.recorder-stop,
+.recorder-feedback {
+  margin-top: 16px;
+}
+.recorder-backup {
+  min-width: 180px;
+}
+@media (max-width: 900px) {
+  .recorder-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

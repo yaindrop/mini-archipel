@@ -1,0 +1,17 @@
+{
+  "workspaces": {
+    ".": {
+      "entry": [
+        "eslint.config.mjs",
+        "plugins/screen-recording/examples/hyperframes/compile.mjs"
+      ]
+    },
+    "console": {
+      "entry": [
+        "lingui.config.ts",
+        "scripts/verify-*.ts",
+        "src/store-worker.ts"
+      ]
+    }
+  }
+}

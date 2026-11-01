@@ -1,3 +1,5 @@
+Runner专属安装器、租约、housekeeping和job hooks已归入 [`plugins/runners/scripts`](../../plugins/runners/scripts/)，下文同名脚本从该目录调用；机器已安装的稳定路径保持兼容。
+
 # CI 群岛共享脚本
 
 `ci-archipel.json` 是仓库和节点清单。每节点每仓库独立注册，安装在

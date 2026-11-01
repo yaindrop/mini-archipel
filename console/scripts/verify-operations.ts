@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { SnapshotSchema } from "../src/contracts.ts";
-import { AgentDataSchema } from "../src/plugins/runners/contracts.ts";
+import { AgentDataSchema } from "../../plugins/runners/console/src/contracts.ts";
 import { EnvelopeSchema } from "../src/plugins/contracts.ts";
 
 await test(

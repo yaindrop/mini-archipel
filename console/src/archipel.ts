@@ -126,11 +126,15 @@ export class ArchipelMonitor {
   readonly config: ConsoleConfig;
   private readonly store: Store;
   private readonly transport: Transport;
+  private readonly pluginAliases: ReadonlyMap<string, string>;
+  private readonly wirePluginIds = new Map<string, Map<string, string>>();
   constructor(
     config: ConsoleConfig,
     store: Store,
     transport: Transport = curlTransport,
+    pluginAliases: ReadonlyMap<string, string> = new Map(),
   ) {
+    this.pluginAliases = pluginAliases;
     this.config = config;
     this.store = store;
     this.transport = transport;
@@ -271,6 +275,19 @@ export class ArchipelMonitor {
         ),
         host.snapshot,
       );
+      const wireIds = new Map<string, string>();
+      for (const [legacy, canonical] of this.pluginAliases) {
+        const envelope = snapshot.plugins[legacy];
+        if (envelope === undefined) continue;
+        if (snapshot.plugins[canonical] !== undefined)
+          throw new Error("Node returned conflicting plugin identities");
+        snapshot.plugins[canonical] = envelope;
+        snapshot.plugins = Object.fromEntries(
+          Object.entries(snapshot.plugins).filter(([id]) => id !== legacy),
+        );
+        wireIds.set(canonical, legacy);
+      }
+      this.wirePluginIds.set(name, wireIds);
       const ts = Date.now();
       if (this.abort.signal.aborted) return;
       const samples = sampleValues(snapshot).flatMap(([key, value]) => {
@@ -362,6 +379,10 @@ export class ArchipelMonitor {
   ): Promise<unknown> {
     const config = this.config.hosts.find((h) => h.name === name);
     if (!config) throw new UpstreamError(404, /*i18n*/ "节点不存在");
+    const parts = path.split("/");
+    if (parts[0] === "plugins" && parts[1])
+      parts[1] = this.wirePluginIds.get(name)?.get(parts[1]) ?? parts[1];
+    path = parts.join("/");
     return this.transport(
       `${config.url}/${path}`,
       config.token,

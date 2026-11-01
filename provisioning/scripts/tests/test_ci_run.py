@@ -553,6 +553,7 @@ class LifecycleTests(unittest.TestCase):
             [
                 "provisioning",
                 "fan-control",
+                "native-companions",
                 "console",
                 "agent",
             ],

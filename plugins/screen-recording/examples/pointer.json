@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "width": 1920,
+  "height": 1080,
+  "coordinateSpace": "video-pixels-top-left",
+  "timebase": "media-seconds",
+  "source": "external-authorized",
+  "mappingEvidence": "Illustrative data only; replace with actual authorized input and verified mapping before import.",
+  "events": [
+    {"t": 1.0, "kind": "down", "x": 400, "y": 300, "button": "left", "inside": true},
+    {"t": 1.2, "kind": "move", "x": 500, "y": 320, "button": "left", "inside": true},
+    {"t": 1.4, "kind": "up", "x": 500, "y": 320, "button": "left", "inside": true}
+  ]
+}

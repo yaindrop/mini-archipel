@@ -6,7 +6,14 @@ export default defineConfig({
   catalogs: [
     {
       path: "src/locales/{locale}/messages",
-      include: ["src"],
+      include: [
+        "src",
+        "../plugins/automation/console/src",
+        "../plugins/screen-recording/console/src",
+        "../plugins/fan-control/console/src",
+        "../plugins/proxy/console/src",
+        "../plugins/runners/console/src",
+      ],
       exclude: ["src/locales"],
     },
   ],

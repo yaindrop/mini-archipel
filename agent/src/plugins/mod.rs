@@ -1,6 +1,5 @@
 pub mod catalog;
 pub mod cli;
-mod runner_operations;
 
 use crate::collectors::disk_rules::{self, PluginRule, RulesUpdate, RulesView};
 use crate::collectors::Shared;
@@ -258,6 +257,7 @@ impl Manager {
     }
 
     pub async fn set_enabled(&self, id: &str, enabled: bool) -> Result<(), Failure> {
+        let id = catalog::canonical_id(id);
         if !self.definitions.contains_key(id) {
             return Err((StatusCode::NOT_FOUND, "plugin not installed".into()));
         }
@@ -300,6 +300,7 @@ impl Manager {
     }
 
     pub async fn action(&self, id: &str, action: String, body: Value) -> Result<Value, Failure> {
+        let id = catalog::canonical_id(id);
         let plugin = self
             .definitions
             .get(id)

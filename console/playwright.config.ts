@@ -1,7 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 import { scaledTestTimeout } from "./scripts/ci-timeout";
 export default defineConfig({
-  testDir: "./tests/browser",
+  testDir: "..",
+  testMatch: [
+    "console/tests/browser/**/*.spec.ts",
+    "plugins/*/console/tests/browser/**/*.spec.ts",
+  ],
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),

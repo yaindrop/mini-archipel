@@ -21,6 +21,7 @@ export interface PluginInstance {
 }
 export interface PluginDefinition {
   id: string;
+  legacyIds?: readonly string[];
   label: string;
   description: string;
   version: string;
@@ -46,6 +47,21 @@ export class PluginManager {
     definitions: PluginDefinition[],
     persist: (config: ConsoleConfig) => void = () => undefined,
   ) {
+    config = { ...config, plugins: { ...config.plugins } };
+    for (const definition of definitions) {
+      for (const legacy of definition.legacyIds ?? []) {
+        const setting = config.plugins[legacy];
+        if (!setting) continue;
+        if (config.plugins[definition.id])
+          throw new Error(
+            `Duplicate legacy and canonical plugin configuration: ${definition.id}`,
+          );
+        config.plugins[definition.id] = setting;
+        config.plugins = Object.fromEntries(
+          Object.entries(config.plugins).filter(([id]) => id !== legacy),
+        );
+      }
+    }
     this.config = config;
     this.context = context;
     this.persist = persist;
@@ -68,6 +84,12 @@ export class PluginManager {
     for (const id of Object.keys(config.plugins))
       if (!this.definitions.has(id))
         throw new Error(`Plugin not installed: ${id}`);
+  }
+  private canonical(id: string): string {
+    return (
+      [...this.definitions.values()].find((d) => d.legacyIds?.includes(id))
+        ?.id ?? id
+    );
   }
   views(): Record<string, PluginView> {
     return Object.fromEntries(
@@ -125,6 +147,7 @@ export class PluginManager {
     return result;
   }
   setEnabled(id: string, enabled: boolean): Promise<void> {
+    id = this.canonical(id);
     return this.serial(id, async () => {
       this.changing.add(id);
       try {
@@ -178,6 +201,7 @@ export class PluginManager {
     });
   }
   async action(id: string, action: string, body: unknown): Promise<unknown> {
+    id = this.canonical(id);
     if (!this.definitions.has(id))
       throw new UpstreamError(404, /*i18n*/ "插件未安装");
     const instance = this.instances.get(id);
@@ -203,6 +227,7 @@ export class PluginManager {
     id: string,
     enabled: boolean,
   ): Promise<unknown> {
+    id = this.canonical(id);
     if (!this.definitions.has(id))
       throw new UpstreamError(404, /*i18n*/ "插件未安装");
     const result = await this.context.command(

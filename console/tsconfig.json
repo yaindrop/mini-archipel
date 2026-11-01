@@ -20,5 +20,12 @@
     "skipLibCheck": true,
     "types": ["node", "vite/client", "@testing-library/jest-dom"]
   },
-  "include": ["src", "tests", "scripts", "*.ts"]
+  "include": [
+    "src",
+    "tests",
+    "scripts",
+    "*.ts",
+    "../plugins/*/console/**/*.ts",
+    "../plugins/*/console/**/*.tsx"
+  ]
 }

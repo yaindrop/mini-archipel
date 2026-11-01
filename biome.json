@@ -1,0 +1,32 @@
+{
+  "$schema": "./console/node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": ["console/src/web/**", "plugins/*/console/src/**"]
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "assist": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "a11y": {
+        "recommended": true
+      },
+      "correctness": {
+        "noUnknownProperty": "error",
+        "noUnknownUnit": "error",
+        "noInvalidPositionAtImportRule": "error",
+        "noInvalidGridAreas": "error",
+        "noMissingVarFunction": "error"
+      },
+      "suspicious": {
+        "noDuplicateProperties": "error",
+        "noDuplicateFontNames": "error"
+      }
+    }
+  }
+}
