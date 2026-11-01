@@ -15,6 +15,10 @@ with tempfile.TemporaryDirectory(prefix="automation-build-check-") as directory:
     info = plistlib.loads((app / "Contents/Info.plist").read_bytes())
     assert info["CFBundleIdentifier"] == module.BUNDLE_ID
     assert info["CFBundleName"] == info["CFBundleDisplayName"] == app.stem
+    protocol = app / "Contents/Resources/input-protocol.json"
+    assert protocol.read_bytes() == (root / "runtime/input-protocol.json").read_bytes()
+    schema = json.loads(protocol.read_bytes())
+    assert schema["properties"]["operation"]["const"] == "input"
     for language, expected in module.NAMES.items():
         result = subprocess.check_output(["/usr/bin/plutil", "-convert", "json", "-o", "-", str(app / f"Contents/Resources/{language}.lproj/InfoPlist.strings")])
         strings = json.loads(result)

@@ -49,6 +49,9 @@ fn authorize(options: &Options, action: &str, body: &Value) -> Result<(), Failur
         "get",
         "cancel",
         "coordinate",
+        "input-info",
+        "input-log",
+        "input-stop",
     ]
     .contains(&action)
     {
@@ -61,17 +64,33 @@ fn authorize(options: &Options, action: &str, body: &Value) -> Result<(), Failur
     {
         return Err((StatusCode::BAD_REQUEST, "invalid desktop request ID".into()));
     }
-    if ["status", "diagnostics"].contains(&action) && !object.is_empty() {
+    if action == "input-log"
+        && (!valid_id(&body["request_id"])
+            || object
+                .keys()
+                .any(|key| !["request_id", "offset"].contains(&key.as_str()))
+            || body
+                .get("offset")
+                .is_some_and(|v| v.as_u64().is_none_or(|offset| offset > 100000)))
+    {
+        return Err((StatusCode::BAD_REQUEST, "invalid input log request".into()));
+    }
+    if ["status", "diagnostics", "input-info"].contains(&action) && !object.is_empty() {
         return Err((StatusCode::BAD_REQUEST, "unexpected fields".into()));
     }
     if action == "coordinate" && (object.len() != 1 || !body["paused"].is_boolean()) {
         return Err((StatusCode::BAD_REQUEST, "paused must be a boolean".into()));
     }
+    if action == "input-stop" && (object.len() != 1 || !body["stopped"].is_boolean()) {
+        return Err((StatusCode::BAD_REQUEST, "stopped must be boolean".into()));
+    }
     if action == "submit" && !valid_id(&body["request_id"]) {
         return Err((StatusCode::BAD_REQUEST, "invalid desktop request ID".into()));
     }
-    let readonly = ["status", "diagnostics", "get"].contains(&action)
-        || (action == "submit" && body["operation"] == "doctor");
+    let readonly = ["status", "diagnostics", "get", "input-info", "input-log"].contains(&action)
+        || (action == "submit"
+            && (body["operation"] == "doctor"
+                || (body["operation"] == "input" && body["mode"] == "preflight")));
     if !readonly && !options.allow_control {
         return Err((
             StatusCode::FORBIDDEN,
@@ -93,14 +112,21 @@ async fn rpc(options: &Options, action: &str, body: &Value) -> Result<Value, Fai
         .kill_on_drop(true)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    if ["get", "cancel"].contains(&action) {
+    if ["get", "cancel", "input-log"].contains(&action) {
         command.arg(body["request_id"].as_str().unwrap_or_default());
     }
-    command.stdin(if ["submit", "coordinate"].contains(&action) {
-        Stdio::piped()
-    } else {
-        Stdio::null()
-    });
+    if action == "input-log" {
+        command
+            .arg("--offset")
+            .arg(body["offset"].as_u64().unwrap_or(0).to_string());
+    }
+    command.stdin(
+        if ["submit", "coordinate", "input-stop"].contains(&action) {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        },
+    );
     let operation = async {
         let mut child = command.spawn().map_err(|_| {
             (
@@ -245,6 +271,51 @@ mod tests {
                 authorize(&opts, "get", &json!({"request_id":id})).is_err(),
                 "{id}"
             );
+        }
+    }
+    #[test]
+    fn gates_native_input_separately_from_arbitrary_scripts() {
+        let mut opts = Options::default();
+        for action in ["input-info", "input-log"] {
+            let body = if action == "input-log" {
+                json!({"request_id":"input-1","offset":256})
+            } else {
+                json!({})
+            };
+            assert!(authorize(&opts, action, &body).is_ok());
+        }
+        let mut input = json!({"request_id":"input-1","operation":"input","mode":"preflight"});
+        assert!(authorize(&opts, "submit", &input).is_ok());
+        input["mode"] = json!("execute");
+        assert_eq!(
+            authorize(&opts, "submit", &input).unwrap_err().0,
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            authorize(&opts, "input-stop", &json!({"stopped":true}))
+                .unwrap_err()
+                .0,
+            StatusCode::FORBIDDEN
+        );
+        opts.allow_control = true;
+        assert!(authorize(&opts, "submit", &input).is_ok());
+        assert!(authorize(&opts, "input-stop", &json!({"stopped":false})).is_ok());
+        assert!(authorize(
+            &opts,
+            "submit",
+            &json!({"request_id":"script-1","operation":"script"})
+        )
+        .is_err());
+        for body in [
+            json!({"request_id":"../private"}),
+            json!({"request_id":"input-1","offset":-1}),
+            json!({"request_id":"input-1","offset":100001}),
+            json!({"request_id":"input-1","path":"/private"}),
+        ] {
+            assert!(authorize(&opts, "input-log", &body).is_err());
+        }
+        for body in [json!({"stopped":1}), json!({"stopped":true,"extra":true})] {
+            assert!(authorize(&opts, "input-stop", &body).is_err());
         }
     }
     #[test]

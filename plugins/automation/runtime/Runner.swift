@@ -31,7 +31,8 @@ func jsonValue(_ value: NSAppleEventDescriptor) -> Any {
 final class Runner: NSObject, NSApplicationDelegate {
     var requestURL: URL?
     var child: Process?
-    var terminationSource: DispatchSourceSignal?
+    var inputSession: NativeInputSession?
+    var terminationSources: [DispatchSourceSignal] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let args = CommandLine.arguments
@@ -47,14 +48,17 @@ final class Runner: NSObject, NSApplicationDelegate {
         requestURL = URL(fileURLWithPath: args[2])
         // A separate app instance owns each request, so cancellation cannot stop
         // another caller's AppleScript execution.
-        signal(SIGTERM, SIG_IGN)
-        let source = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .global())
-        source.setEventHandler { [weak self] in
-            if let child = self?.child, child.isRunning { child.terminate() }
-            Darwin.exit(130)
+        for number in [SIGTERM, SIGINT, SIGHUP] {
+            signal(number, SIG_IGN)
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .global())
+            source.setEventHandler { [weak self] in
+                if let input = self?.inputSession { input.stop("termination_signal:\(number)"); return }
+                if let child = self?.child, child.isRunning { child.terminate() }
+                Darwin.exit(130)
+            }
+            source.resume()
+            terminationSources.append(source)
         }
-        source.resume()
-        terminationSource = source
         DispatchQueue.main.async { self.execute() }
     }
 
@@ -131,6 +135,18 @@ final class Runner: NSObject, NSApplicationDelegate {
                     "stdout": String(decoding: try Data(contentsOf: stdoutURL), as: UTF8.self),
                     "stderr": String(decoding: try Data(contentsOf: stderrURL), as: UTF8.self)
                 ])
+            case "input-info":
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let value = nativeInputInfo()
+                    DispatchQueue.main.async { self.finish(value) }
+                }
+            case "input":
+                guard let path = request.path else { throw CocoaError(.fileNoSuchFile) }
+                let session = NativeInputSession(); inputSession = session
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let result = session.run(jobURL: URL(fileURLWithPath: path))
+                    DispatchQueue.main.async { self.finish(result) }
+                }
             case "authorize":
                 let permission = request.arguments.first ?? "all"
                 guard ["all", "accessibility", "automation"].contains(permission) else { throw CocoaError(.validationMissingMandatoryProperty) }
@@ -170,19 +186,23 @@ final class Runner: NSObject, NSApplicationDelegate {
     }
 }
 
-if CommandLine.arguments.dropFirst().first == "--identity" {
-    let value: [String: Any] = ["ok": true, "app_name": companionName,
-        "app_path": Bundle.main.bundlePath,
-        "bundle_id": Bundle.main.bundleIdentifier ?? "",
-        "file_display_name": FileManager.default.displayName(atPath: Bundle.main.bundlePath)]
-    let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
-    FileHandle.standardOutput.write(data)
-    FileHandle.standardOutput.write(Data([10]))
-    exit(0)
-}
+@main enum RunnerMain {
+    static func main() throws {
+        if CommandLine.arguments.dropFirst().first == "--identity" {
+            let value: [String: Any] = ["ok": true, "app_name": companionName,
+                "app_path": Bundle.main.bundlePath,
+                "bundle_id": Bundle.main.bundleIdentifier ?? "",
+                "file_display_name": FileManager.default.displayName(atPath: Bundle.main.bundlePath)]
+            let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
+            FileHandle.standardOutput.write(data)
+            FileHandle.standardOutput.write(Data([10]))
+            exit(0)
+        }
 
-let app = NSApplication.shared
-let delegate = Runner()
-app.setActivationPolicy(.accessory)
-app.delegate = delegate
-app.run()
+        let app = NSApplication.shared
+        let delegate = Runner()
+        app.setActivationPolicy(.accessory)
+        app.delegate = delegate
+        withExtendedLifetime(delegate) { app.run() }
+    }
+}

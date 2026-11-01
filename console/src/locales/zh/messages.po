@@ -277,6 +277,11 @@ msgid "节点尚未启用脚本执行"
 msgstr "节点尚未启用脚本执行"
 
 #. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点工具包尚不支持原生输入，请升级后重试"
+msgstr "节点工具包尚不支持原生输入，请升级后重试"
+
+#. js-lingui-explicit-id
 #: src/app.ts
 msgid "不允许跨站操作"
 msgstr "不允许跨站操作"
@@ -895,6 +900,10 @@ msgid "仅允许节点管理员列出的风扇键；写入前会核对当前值�
 msgstr "仅允许节点管理员列出的风扇键；写入前会核对当前值，任务结束后恢复温控。"
 
 #: ../plugins/automation/console/src/workbench.tsx
+msgid "仅预检输入"
+msgstr "仅预检输入"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "仍需授权"
 msgstr "仍需授权"
 
@@ -993,6 +1002,10 @@ msgstr "保护温度"
 msgid "保留最后一次读数。恢复控制仍可从节点本地执行。"
 msgstr "保留最后一次读数。恢复控制仍可从节点本地执行。"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "停止原生输入"
+msgstr "停止原生输入"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
 msgstr "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
@@ -1000,6 +1013,10 @@ msgstr "停止后，该 runner 将停止接单，重启节点也不会自动恢�
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "停止后仍需等待收尾。关闭插件不会停止已接受的录制；超时请先查状态，不要用新编号重复启动。"
 msgstr "停止后仍需等待收尾。关闭插件不会停止已接受的录制；超时请先查状态，不要用新编号重复启动。"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "停止后恢复只允许新请求，不重放旧任务。修改目标或动作后请新建请求；同 ID 变参会冲突。"
+msgstr "停止后恢复只允许新请求，不重放旧任务。修改目标或动作后请新建请求；同 ID 变参会冲突。"
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "停止并保存"
@@ -1024,6 +1041,14 @@ msgstr "停止等待"
 #: ../plugins/proxy/console/src/workbench.tsx
 msgid "允许控制"
 msgstr "允许控制"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "允许新的原生输入"
+msgstr "允许新的原生输入"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "先刷新并选择真实窗口。刷新不会激活应用或请求权限；激活是独立操作。每次只提交一个动作，完成后请核对目标应用的实际响应。"
+msgstr "先刷新并选择真实窗口。刷新不会激活应用或请求权限；激活是独立操作。每次只提交一个动作，完成后请核对目标应用的实际响应。"
 
 #: src/web/storage.tsx
 msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
@@ -1191,6 +1216,10 @@ msgstr "删除 {0}"
 msgid "删除第 {0} 档"
 msgstr "删除第 {0} 档"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "刷新应用与窗口"
+msgstr "刷新应用与窗口"
+
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "刷新状态"
 msgstr "刷新状态"
@@ -1215,6 +1244,10 @@ msgstr "升级伴随应用"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "升速限制（RPM/秒，0 为不限）"
 msgstr "升速限制（RPM/秒，0 为不限）"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "单个动作（JSON）"
+msgstr "单个动作（JSON）"
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "单独保存真实鼠标轨道"
@@ -1268,6 +1301,10 @@ msgstr "发送消息"
 msgid "取消"
 msgstr "取消"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "取消不能撤回已发生的操作。超时或中断后，请先用原请求 ID 查询结果，原生输入不会自动重放。"
+msgstr "取消不能撤回已发生的操作。超时或中断后，请先用原请求 ID 查询结果，原生输入不会自动重放。"
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "取消中"
 msgstr "取消中"
@@ -1288,10 +1325,6 @@ msgstr "取消并交还系统"
 #: src/web/storage.tsx
 msgid "取消扫描"
 msgstr "取消扫描"
-
-#: ../plugins/automation/console/src/workbench.tsx
-msgid "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
-msgstr "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
 
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "受控风扇"
@@ -1331,6 +1364,11 @@ msgstr "可用内存 {0}"
 #: src/domain.ts
 msgid "可用内存不足 1 GiB"
 msgstr "可用内存不足 1 GiB"
+
+#. placeholder {0}: info.data.actions.join(", ")
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "可用动作：{0}。像素必须选显示器；拖动 points 的 t 从 0 严格递增。键入与滚动仍须在目标应用核验。"
+msgstr "可用动作：{0}。像素必须选显示器；拖动 points 的 t 从 0 严格递增。键入与滚动仍须在目标应用核验。"
 
 #: src/web/node.tsx
 #: src/web/overview.tsx
@@ -1449,6 +1487,14 @@ msgstr "在节点安装风扇控制插件后，即可读取曲线和管理温控
 msgid "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
 msgstr "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "坐标单位"
+msgstr "坐标单位"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "坐标空间"
+msgstr "坐标空间"
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 msgstr "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
@@ -1537,6 +1583,10 @@ msgstr "实测校准"
 #: ../plugins/fan-control/console/src/curve.tsx
 msgid "实线：草稿"
 msgstr "实线：草稿"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "实际像素"
+msgstr "实际像素"
 
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "实际转速"
@@ -1630,6 +1680,10 @@ msgstr "屏幕"
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "屏幕录制"
 msgstr "屏幕录制"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "屏幕点"
+msgstr "屏幕点"
 
 #: src/web/node.tsx
 msgid "展示节点上报的核心顺序，不推测核心类型。"
@@ -1949,6 +2003,10 @@ msgstr "执行 SMC 写入诊断"
 msgid "执行写入诊断"
 msgstr "执行写入诊断"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "执行单个输入"
+msgstr "执行单个输入"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "执行操作前，工作台和节点都会重新检查作业状态。"
 msgstr "执行操作前，工作台和节点都会重新检查作业状态。"
@@ -2188,6 +2246,10 @@ msgstr "新建录制"
 msgid "新建请求"
 msgstr "新建请求"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "新建输入请求"
+msgstr "新建输入请求"
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 msgstr "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
@@ -2219,6 +2281,14 @@ msgstr "时长"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "是"
 msgstr "是"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "显式激活窗口"
+msgstr "显式激活窗口"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "显示器"
+msgstr "显示器"
 
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "暂不可用"
@@ -2789,6 +2859,10 @@ msgstr "目录路径"
 msgid "目标"
 msgstr "目标"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "目标应用与窗口"
+msgstr "目标应用与窗口"
+
 #: src/web/permission-checks.tsx
 msgid "目标节点：{node}"
 msgstr "目标节点：{node}"
@@ -2839,6 +2913,10 @@ msgstr "程序或脚本"
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "空间统计每分钟更新，进程状态独立实时更新"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "窗口"
+msgstr "窗口"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "符合"
 msgstr "符合"
@@ -2860,6 +2938,10 @@ msgstr "等待 CPU 信息"
 #: src/web/permission-checks.tsx
 msgid "等待本人确认"
 msgstr "等待本人确认"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "等待本次结果"
+msgstr "等待本次结果"
 
 #: ../plugins/automation/console/src/workbench.tsx
 msgid "等待系统确认"
@@ -3109,6 +3191,10 @@ msgstr "节点屏幕已锁定，请先解锁"
 msgid "节点工作台"
 msgstr "节点工作台"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "节点工具包尚不支持原生输入，请升级后重试"
+msgstr "节点工具包尚不支持原生输入，请升级后重试"
+
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "节点或录屏插件未就绪"
 msgstr "节点或录屏插件未就绪"
@@ -3294,6 +3380,10 @@ msgstr "请在目标节点使用此插件入口；完成安装或配置后重新
 msgid "请检查目标、消息、脚本路径和参数格式。"
 msgstr "请检查目标、消息、脚本路径和参数格式。"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "请检查窗口、动作 JSON、坐标单位和超时预算。"
+msgstr "请检查窗口、动作 JSON、坐标单位和超时预算。"
+
 #. placeholder {0}: String(response.status)
 #: src/web/api.ts
 msgid "请求失败（{0}）"
@@ -3352,6 +3442,10 @@ msgstr "调整第 {0} 档：拖动或使用方向键"
 msgid "资料库"
 msgstr "资料库"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "超时秒数"
+msgstr "超时秒数"
+
 #: src/web/storage-rules.tsx
 msgid "路径与来源"
 msgstr "路径与来源"
@@ -3371,6 +3465,12 @@ msgstr "轮询 / 重连"
 #: ../plugins/automation/console/src/workbench.tsx
 msgid "辅助功能"
 msgstr "辅助功能"
+
+#. placeholder {0}: String(info.data.permissions.accessibility)
+#. placeholder {1}: String(info.data.permissions.post_events)
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "辅助功能：{0}；事件发送：{1}"
+msgstr "辅助功能：{0}；事件发送：{1}"
 
 #: src/web/App.tsx
 msgid "输入工作台访问令牌，查看节点并执行运维操作。"
@@ -3453,6 +3553,10 @@ msgstr "选择 {0}"
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "选择已有备份"
 msgstr "选择已有备份"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "通用原生输入"
+msgstr "通用原生输入"
 
 #. js-lingui-explicit-id
 #: ../plugins/runners/console/src/domain.ts
@@ -3621,6 +3725,14 @@ msgstr "项目检查失败"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "预期当前值"
 msgstr "预期当前值"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "预期控件 AXRole（可选）"
+msgstr "预期控件 AXRole（可选）"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "预期控件文字（可选，仅指针动作）"
+msgstr "预期控件文字（可选，仅指针动作）"
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "预览录像"

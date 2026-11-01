@@ -28,8 +28,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", required=True, help="Console base URL, never an Agent token URL")
     parser.add_argument("--host", required=True, help="Configured node ID")
-    parser.add_argument("action", choices=["capabilities", "status", "submit", "get", "wait", "cancel", "pause", "resume", "diagnostics"])
+    parser.add_argument("action", choices=["capabilities", "status", "submit", "get", "wait", "cancel", "pause", "resume", "diagnostics", "input-info", "input-log", "stop-input", "resume-input"])
     parser.add_argument("request_id", nargs="?")
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--timeout", type=int, default=120)
     args = parser.parse_args()
     parsed = urlparse(args.url)
@@ -47,10 +48,15 @@ def main():
         if len(raw) > 300000:
             parser.error("Request too large")
         body["request"] = json.loads(raw)
-    if action in {"get", "wait", "cancel"}:
+    if action in {"get", "wait", "cancel", "input-log"}:
         if not args.request_id:
             parser.error("A request ID is required")
         body["request_id"] = args.request_id
+    if action == "input-log":
+        body["offset"] = args.offset
+    if action in {"stop-input", "resume-input"}:
+        body["stopped"] = action == "stop-input"
+        action = "input-stop"
     if action in {"pause", "resume"}:
         body["paused"] = action == "pause"
         action = "coordinate"

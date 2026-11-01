@@ -1,3 +1,8 @@
+import {
+  InputInfoSchema,
+  InputRequestSchema,
+  InputStopSchema,
+} from "./input-contracts.ts";
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +15,7 @@ import {
   Flex,
   Form,
   Input,
+  InputNumber,
   Select,
   Space,
   Table,
@@ -152,6 +158,37 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
         StateReplySchema,
       ),
     onSuccess: () => {
+      void refreshArchipel(client);
+    },
+    onError: (error) => {
+      void toast.error(message(error));
+    },
+  });
+  const inputStop = useMutation({
+    mutationFn: (stopped: boolean) =>
+      api.pluginAction(
+        "automation",
+        "input-stop",
+        { host: host.name, stopped },
+        InputStopSchema,
+      ),
+    onSuccess: () => {
+      void refreshArchipel(client);
+    },
+    onError: (error) => {
+      void toast.error(message(error));
+    },
+  });
+  const wait = useMutation({
+    mutationFn: (id: string) =>
+      api.pluginAction(
+        "automation",
+        "wait",
+        { host: host.name, request_id: id, timeout_ms: 1000 },
+        JobReplySchema,
+      ),
+    onSuccess: (reply) => {
+      client.setQueryData(["desktop-job", host.name, reply.job.id], reply);
       void refreshArchipel(client);
     },
     onError: (error) => {
@@ -354,6 +391,21 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
         )}
         <PermissionChecks node={displayName(host)} items={permissionItems} />
         <Flex gap="small" wrap>
+          {toolkit?.capabilities.includes("input") && (
+            <Button
+              aria-label={
+                toolkit.input_stopped ? t`允许新的原生输入` : t`停止原生输入`
+              }
+              danger={!toolkit.input_stopped}
+              disabled={!ready || !state.control_allowed}
+              loading={inputStop.isPending}
+              onClick={() => {
+                inputStop.mutate(!toolkit.input_stopped);
+              }}
+            >
+              {toolkit.input_stopped ? t`允许新的原生输入` : t`停止原生输入`}
+            </Button>
+          )}
           <Button
             disabled={!ready || !state.control_allowed}
             loading={coordinate.isPending}
@@ -375,6 +427,25 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
         </Flex>
         <Typography.Paragraph type="secondary">{t`授权窗口出现在节点机器上。请在那里完成密码、Touch ID 或允许操作；工具会复验，不保存密码。暂停接单后，等待当前任务结束或取消后再接管桌面。`}</Typography.Paragraph>
       </Section>
+      {ready && toolkit && !toolkit.capabilities.includes("input") && (
+        <Alert
+          type="info"
+          title={t`节点工具包尚不支持原生输入，请升级后重试`}
+        />
+      )}
+      {toolkit?.capabilities.includes("input") && (
+        <NativeInputForm
+          host={host.name}
+          ready={ready}
+          canSubmit={canSubmit}
+          control={Boolean(state?.control_allowed)}
+          stopped={Boolean(toolkit.input_stopped)}
+          pending={submit.isPending}
+          onSubmit={(value) => {
+            submit.mutate(value);
+          }}
+        />
+      )}
       <div className="desktop-columns">
         <Section title={t`提交任务`}>
           {state && !state.control_allowed && (
@@ -440,6 +511,15 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
                 <Typography.Text copyable>{job.data.job.id}</Typography.Text>
                 {active(job.data.job) && (
                   <Button
+                    disabled={!current}
+                    loading={wait.isPending}
+                    onClick={() => {
+                      wait.mutate(job.data.job.id);
+                    }}
+                  >{t`等待本次结果`}</Button>
+                )}
+                {active(job.data.job) && (
+                  <Button
                     danger
                     disabled={!state?.control_allowed || !current}
                     loading={cancel.isPending}
@@ -458,7 +538,7 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
                   </Button>
                 )}
               </Flex>
-              <Typography.Paragraph type="secondary">{t`取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。`}</Typography.Paragraph>
+              <Typography.Paragraph type="secondary">{t`取消不能撤回已发生的操作。超时或中断后，请先用原请求 ID 查询结果，原生输入不会自动重放。`}</Typography.Paragraph>
               <section aria-label={t`任务结果`}>
                 <pre className="desktop-result">
                   {JSON.stringify(job.data.job, null, 2)}
@@ -469,6 +549,236 @@ function NodeWorkspace({ host, now }: { host: Host; now: number }) {
         </Section>
       </div>
     </div>
+  );
+}
+
+function NativeInputForm({
+  host,
+  ready,
+  canSubmit,
+  control,
+  stopped,
+  pending,
+  onSubmit,
+}: {
+  host: string;
+  ready: boolean;
+  canSubmit: boolean;
+  control: boolean;
+  stopped: boolean;
+  pending: boolean;
+  onSubmit: (request: JobRequest) => void;
+}) {
+  const { t } = useLingui();
+  const [selection, setSelection] = useState<string>();
+  const [action, setAction] = useState(
+    '{"kind":"move","x":0,"y":0,"move_seconds":1}',
+  );
+  const [space, setSpace] = useState<"window" | "screen">("window");
+  const [unit, setUnit] = useState<"points" | "pixels">("points");
+  const [display, setDisplay] = useState<number>();
+  const [timeout, setTimeoutValue] = useState(15);
+  const [id, setId] = useState(() => crypto.randomUUID());
+  const [error, setError] = useState("");
+  const [hitText, setHitText] = useState(""),
+    [hitRole, setHitRole] = useState("");
+  const info = useMutation({
+    mutationFn: () =>
+      api.pluginAction("automation", "input-info", { host }, InputInfoSchema),
+    onSuccess: () => {
+      setSelection(undefined);
+      setError("");
+    },
+  });
+  const target = info.data?.windows.find(
+    (window) =>
+      `${String(window.pid)}:${String(window.window_id)}` === selection,
+  );
+  const send = (mode: "preflight" | "execute", activate = false) => {
+    try {
+      const request = InputRequestSchema.parse({
+        request_id: `${id}${activate ? "-activate" : mode === "preflight" ? "-preflight" : ""}`,
+        operation: "input",
+        mode,
+        timeout,
+        target: target
+          ? {
+              ...target,
+              ...(!activate && hitText ? { hit_text: hitText } : {}),
+              ...(!activate && hitRole ? { hit_role: hitRole } : {}),
+            }
+          : undefined,
+        coordinates: {
+          space,
+          unit,
+          ...(unit === "pixels" ? { display_id: display } : {}),
+        },
+        action: activate
+          ? { kind: "activate" }
+          : (JSON.parse(action) as unknown),
+      });
+      setError("");
+      onSubmit(request);
+    } catch {
+      setError(t`请检查窗口、动作 JSON、坐标单位和超时预算。`);
+    }
+  };
+  return (
+    <Section title={t`通用原生输入`}>
+      <Typography.Paragraph type="secondary">{t`先刷新并选择真实窗口。刷新不会激活应用或请求权限；激活是独立操作。每次只提交一个动作，完成后请核对目标应用的实际响应。`}</Typography.Paragraph>
+      <Button
+        disabled={!ready}
+        loading={info.isPending}
+        onClick={() => {
+          info.mutate();
+        }}
+      >{t`刷新应用与窗口`}</Button>
+      {info.error && <Alert type="error" title={message(info.error)} />}
+      {info.data && (
+        <>
+          <Typography.Paragraph>{t`辅助功能：${String(info.data.permissions.accessibility)}；事件发送：${String(info.data.permissions.post_events)}`}</Typography.Paragraph>
+          {info.data.reason && <Alert type="info" title={info.data.reason} />}
+          <Form layout="vertical">
+            <Form.Item label={t`目标应用与窗口`}>
+              <Select
+                aria-label={t`目标应用与窗口`}
+                value={selection}
+                options={info.data.windows.map((window) => ({
+                  value: `${String(window.pid)}:${String(window.window_id)}`,
+                  label: `${info.data.applications.find((app) => app.pid === window.pid)?.name ?? window.bundle_id} · PID ${String(window.pid)} · ${String(window.window_id)}`,
+                }))}
+                onChange={setSelection}
+              />
+            </Form.Item>
+            {target && (
+              <Typography.Paragraph>
+                {target.bundle_id} · {JSON.stringify(target.frame)} ·{" "}
+                {new Date(target.observed_at_ms).toLocaleString()}
+              </Typography.Paragraph>
+            )}
+            <Space wrap>
+              <Form.Item label={t`坐标空间`}>
+                <Select
+                  aria-label={t`坐标空间`}
+                  value={space}
+                  options={[
+                    { value: "window", label: t`窗口` },
+                    { value: "screen", label: t`屏幕` },
+                  ]}
+                  onChange={setSpace}
+                />
+              </Form.Item>
+              <Form.Item label={t`坐标单位`}>
+                <Select
+                  aria-label={t`坐标单位`}
+                  value={unit}
+                  options={[
+                    { value: "points", label: t`屏幕点` },
+                    { value: "pixels", label: t`实际像素` },
+                  ]}
+                  onChange={setUnit}
+                />
+              </Form.Item>
+              {unit === "pixels" && (
+                <Form.Item label={t`显示器`}>
+                  <Select
+                    aria-label={t`显示器`}
+                    value={display}
+                    options={info.data.displays.map((item) => ({
+                      value: item.id,
+                      label: `${String(item.id)} · ${String(item.pixel_width)} × ${String(item.pixel_height)}`,
+                    }))}
+                    onChange={setDisplay}
+                  />
+                </Form.Item>
+              )}
+              <Form.Item label={t`超时秒数`}>
+                <InputNumber
+                  aria-label={t`超时秒数`}
+                  min={1}
+                  max={120}
+                  value={timeout}
+                  onChange={(value) => {
+                    setTimeoutValue(value ?? 15);
+                  }}
+                />
+              </Form.Item>
+            </Space>
+            <Form.Item label={t`预期控件文字（可选，仅指针动作）`}>
+              <Input
+                aria-label={t`预期控件文字（可选，仅指针动作）`}
+                maxLength={1000}
+                value={hitText}
+                onChange={(event) => {
+                  setHitText(event.target.value);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label={t`预期控件 AXRole（可选）`}>
+              <Input
+                aria-label={t`预期控件 AXRole（可选）`}
+                maxLength={100}
+                value={hitRole}
+                onChange={(event) => {
+                  setHitRole(event.target.value);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label={t`单个动作（JSON）`}>
+              <Input.TextArea
+                aria-label={t`单个动作（JSON）`}
+                rows={5}
+                value={action}
+                onChange={(event) => {
+                  setAction(event.target.value);
+                }}
+              />
+            </Form.Item>
+            <Typography.Paragraph type="secondary">{t`可用动作：${info.data.actions.join(", ")}。像素必须选显示器；拖动 points 的 t 从 0 严格递增。键入与滚动仍须在目标应用核验。`}</Typography.Paragraph>
+            <Typography.Paragraph copyable>{id}</Typography.Paragraph>
+            {error && <Alert type="error" title={error} />}
+            <Space wrap>
+              <Button
+                aria-label={t`仅预检输入`}
+                disabled={!target || !canSubmit || stopped || pending}
+                loading={pending}
+                onClick={() => {
+                  send("preflight");
+                }}
+              >{t`仅预检输入`}</Button>
+              <Button
+                aria-label={t`显式激活窗口`}
+                disabled={
+                  !target || !canSubmit || !control || stopped || pending
+                }
+                loading={pending}
+                onClick={() => {
+                  send("execute", true);
+                }}
+              >{t`显式激活窗口`}</Button>
+              <Button
+                type="primary"
+                aria-label={t`执行单个输入`}
+                disabled={
+                  !target || !canSubmit || !control || stopped || pending
+                }
+                loading={pending}
+                onClick={() => {
+                  send("execute");
+                }}
+              >{t`执行单个输入`}</Button>
+              <Button
+                onClick={() => {
+                  setId(crypto.randomUUID());
+                  setError("");
+                }}
+              >{t`新建输入请求`}</Button>
+            </Space>
+          </Form>
+        </>
+      )}
+      <Typography.Paragraph type="secondary">{t`停止后恢复只允许新请求，不重放旧任务。修改目标或动作后请新建请求；同 ID 变参会冲突。`}</Typography.Paragraph>
+    </Section>
   );
 }
 

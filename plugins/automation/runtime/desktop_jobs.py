@@ -15,6 +15,7 @@ import tempfile
 import time
 from contextlib import nullcontext
 import chat_requests
+from input_contract import validate_input
 
 SOURCE = Path(__file__).resolve().parent
 ROOT = Path.home() / ".local/share/mini-archipel/desktop-automation"
@@ -70,13 +71,19 @@ def validate(request):
     operation = request.get("operation")
     fields = {"doctor": set(), "permissions": {"permission"},
               "chat": {"app", "mode", "target", "message", "original_request_id"},
-              "script": {"mode", "path", "arguments"}}
+              "script": {"mode", "path", "arguments"},
+              "input": {"mode", "target", "coordinates", "action"}}
     if not isinstance(operation, str) or operation not in fields or set(request) - fields[operation] - {"request_id", "operation", "timeout"}:
         raise Failure("Unknown operation or fields")
     job_path(request.get("request_id"))
     timeout = request.get("timeout", 120)
     if type(timeout) is not int or not 1 <= timeout <= 900:
         raise Failure("timeout must be 1–900 seconds")
+    if operation == "input":
+        try:
+            validate_input(request)
+        except ValueError as error:
+            raise Failure(str(error)) from None
     if operation == "permissions" and request.get("permission") not in ("accessibility", "automation"):
         raise Failure("Unsupported permission")
     if operation == "chat":
@@ -144,6 +151,10 @@ def occupied(path):
         return True
 
 
+def native_input_installed():
+    return (Path.home() / "Applications/Mini Archipel Plugin - Automation.app/Contents/Resources/input-protocol.json").is_file()
+
+
 def status():
     jobs = []
     if ROOT.is_dir():
@@ -167,8 +178,8 @@ def status():
     return {"version": 1, "installed": RUNNER.is_file() and (Path.home() / "Applications/Mini Archipel Plugin - Automation.app").is_dir(),
             "apps": apps,
             "permissions": permissions, "jobs": jobs, "paused": (ROOT / ".paused").exists(),
-            "desktop_busy": any(occupied(path) for path in [ROOT / ".desktop-worker.lock", ROOT / ".install.lock", chat_requests.GUI_LOCK, chat_requests.NATIVE_LOCK]),
-            "capabilities": ["doctor", "permissions", "chat", "script", "get", "cancel", "coordinate", "diagnostics"]}
+            "input_stopped": (ROOT / "INPUT_STOP").exists(), "desktop_busy": any(occupied(path) for path in [ROOT / ".desktop-worker.lock", ROOT / ".install.lock", chat_requests.GUI_LOCK, chat_requests.NATIVE_LOCK]),
+            "capabilities": ["doctor", "permissions", "chat", "script", "get", "cancel", "coordinate", "diagnostics"] + (["input", "input-info", "input-log", "input-stop"] if native_input_installed() else [])}
 
 
 def coordinate(paused):
@@ -210,13 +221,17 @@ def diagnostics():
 
 def submit(request):
     request = validate(request)
+    if request["operation"] == "input" and not native_input_installed():
+        raise Failure("Native input requires the upgraded Automation companion; install its matching signed App", 503)
     path = job_path(request["request_id"])
-    with lock(path.with_suffix(".submit")):
+    with lock(path.with_suffix(".submit")), lock(ROOT / ".admission.lock"):
         if path.exists():
             job = get(request["request_id"])
             if job["request"] != request:
                 raise Failure("Request ID already belongs to different content", 409)
             return {"ok": True, "reused": True, "job": public_job(job)}
+        if request["operation"] == "input" and request["mode"] == "execute" and (ROOT / "INPUT_STOP").exists():
+            raise Failure("Native input STOP is active; resume explicitly before a new request", 409)
         if occupied(ROOT / ".install.lock"):
             raise Failure("Toolkit installation in progress; nothing submitted", 409)
         if (ROOT / ".paused").exists():
@@ -251,6 +266,8 @@ def command(request):
         return [str(RUNNER), "exec", str(SOURCE / "permissions")], None
     if op == "permissions":
         return [str(RUNNER), "authorize", "--permission", request["permission"]], None
+    if op == "input":
+        return [str(RUNNER), "input", str(job_path(request["request_id"]))], None
     if op == "script":
         return [str(RUNNER), request["mode"], request["path"], *request.get("arguments", [])], None
     argv = [str(SOURCE / (request["app"] + "-chat")), request["mode"]]
@@ -282,6 +299,14 @@ def execute(argv, message, job, deadline):
                 elif os.fstat(output_file.fileno()).st_size + os.fstat(error_file.fileno()).st_size > LIMIT:
                     stopped = "output_limit"
                 if stopped:
+                    if job["operation"] == "input":
+                        # Let the App observe the durable marker and release before any signal.
+                        path.with_suffix(".cancel").touch(mode=0o600, exist_ok=True)
+                        try:
+                            process.wait(timeout=2)
+                            break
+                        except subprocess.TimeoutExpired:
+                            pass
                     os.killpg(process.pid, signal.SIGINT)
                     try:
                         process.wait(timeout=5)
@@ -293,7 +318,7 @@ def execute(argv, message, job, deadline):
             if process.poll() is None:
                 process.kill()
             process.wait()
-        if stopped:
+        if stopped and job["operation"] != "input":
             return {"ok": False, "status": stopped, "error": "Waiting stopped; this does not undo effects or cancel an App's model turn"}
         output_file.seek(0)
         raw = output_file.read(LIMIT + 1)
@@ -303,6 +328,8 @@ def execute(argv, message, job, deadline):
             result = json.loads(raw)
             if not isinstance(result, dict):
                 raise ValueError("Expected object")
+            if job["operation"] == "input" and (stopped or path.with_suffix(".cancel").exists()):
+                result.update(ok=False,status=stopped or "cancelled",error=result.get("error") or "Input stopped; already posted effects are not undone")
             return result
         except ValueError:
             error_file.seek(0)
@@ -337,7 +364,7 @@ def worker(job_id):
                         raise Failure("Desktop admission paused before dispatch; nothing sent", 409)
                     job.update(status="running", updated_at=time.time())
                     save(path, job)
-                deadline = time.monotonic() + request.get("timeout", 120)
+                deadline = time.monotonic() + request.get("timeout", 15 if request["operation"] == "input" else 120)
                 if path.with_suffix(".cancel").exists():
                     job.update(status="cancelled")
                     return
@@ -388,15 +415,84 @@ def worker(job_id):
             save(path, job)
 
 
+
+def input_stop(stopped):
+    if type(stopped) is not bool:
+        raise Failure("stopped must be boolean")
+    ROOT.mkdir(parents=True, mode=0o700, exist_ok=True)
+    path = ROOT / "INPUT_STOP"
+    with lock(ROOT / ".admission.lock"):
+        if stopped:
+            save(path, {"stopped_at": time.time()})
+            # Cancellation is latched per request; immediate resume cannot revive it.
+            for candidate in ROOT.glob("*.json"):
+                if candidate.name.startswith("."):
+                    continue
+                try:
+                    job = get(candidate.stem)
+                    if job["operation"] == "input" and job["status"] in ACTIVE:
+                        cancel(job["id"])
+                except (OSError, ValueError, KeyError):
+                    continue
+        else:
+            path.unlink(missing_ok=True)
+    return {"ok": True, "stopped": stopped}
+
+
+def input_info():
+    if not native_input_installed():
+        raise Failure("Native input requires the upgraded Automation companion", 503)
+    process = subprocess.run([str(RUNNER), "input-info"], capture_output=True, text=True, timeout=15)
+    value = json.loads(process.stdout)
+    if not isinstance(value, dict):
+        raise Failure("Invalid native input information", 502)
+    return value
+
+
+def input_log(job_id, offset=0):
+    import stat
+    if type(offset) is not int or not 0 <= offset <= 100000:
+        raise Failure("Invalid input log offset")
+    job = get(job_id)
+    if job["operation"] != "input":
+        raise Failure("Not a native input request")
+    path = ROOT / "input" / job_id / "events.jsonl"
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    except FileNotFoundError:
+        raise Failure("Input log is not finalized; inspect the original request", 409) from None
+    with os.fdopen(fd, "rb") as stream:
+        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+            raise Failure("Input log is not a regular file")
+        data = stream.read(8 * 1024 * 1024 + 1)
+    if len(data) > 8 * 1024 * 1024:
+        raise Failure("Input log exceeds 8 MiB")
+    events = [json.loads(line) for line in data.splitlines() if line]
+    if offset > len(events):
+        raise Failure("Input log offset exceeds event count")
+    page = events[offset:offset + 256]
+    return {"ok": True, "request_id": job_id, "events": page, "offset": offset, "next_offset": offset + len(page), "total_events": len(events)}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["status", "submit", "get", "wait", "cancel", "worker", "coordinate", "diagnostics"])
+    parser.add_argument("action", choices=["status", "submit", "get", "wait", "cancel", "worker", "coordinate", "diagnostics", "input-info", "input-stop", "input-log"])
     parser.add_argument("job_id", nargs="?")
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--timeout", type=int, default=120)
     args = parser.parse_args()
     try:
         if args.action == "status":
             result = {"ok": True, "data": status()}
+        elif args.action == "input-info":
+            result = input_info()
+        elif args.action == "input-stop":
+            request = json.loads(sys.stdin.read(1000))
+            if not isinstance(request, dict) or set(request) != {"stopped"}:
+                raise Failure("Expected only stopped")
+            result = input_stop(request["stopped"])
+        elif args.action == "input-log":
+            result = input_log(args.job_id, args.offset)
         elif args.action == "diagnostics":
             result = diagnostics()
         elif args.action == "coordinate":

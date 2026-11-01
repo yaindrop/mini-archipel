@@ -130,7 +130,7 @@
           "version": "26.12"
         }
       ],
-      "check": "python3 -m unittest discover -s plugins/automation/runtime -v && xcrun swiftc -typecheck -swift-version 5 plugins/automation/runtime/Runner.swift && xcrun swiftc -typecheck -swift-version 5 plugins/automation/runtime/permissions.swift && python3 plugins/automation/tests/build_check.py && plugins/screen-recording/scripts/test.sh && ASR_BUILD_DIR=build/ci plugins/screen-recording/scripts/build.sh",
+      "check": "python3 -m unittest discover -s plugins/automation/runtime -v && xcrun swiftc -typecheck -parse-as-library -swift-version 5 plugins/automation/runtime/Runner.swift plugins/automation/runtime/input/*.swift && xcrun swiftc -typecheck -swift-version 5 plugins/automation/runtime/permissions.swift && plugins/automation/tests/input.sh && python3 plugins/automation/tests/build_check.py && plugins/screen-recording/scripts/test.sh && ASR_BUILD_DIR=build/ci plugins/screen-recording/scripts/build.sh",
       "toolchain": {
         "node": "26.12"
       }

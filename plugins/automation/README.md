@@ -41,10 +41,16 @@ CLI保持可用：
 
 GUI/API沿用现有鉴权、插件开关和 `allow_control`；任意脚本还需 `allow_scripts`。节点后台API `submit` 使用稳定 `request_id`，同ID同内容复用，不同内容冲突；授权请求为 `{"request_id":"permissions-1","operation":"permissions","permission":"accessibility","timeout":180}`（自动化权限改为 `automation`），检查为 `operation:"doctor"`。通过 `get` 查看原请求，不用新ID盲重试。取消等待不能撤回已经发生的应用操作。
 
+## 通用原生输入
+
+伴随App 1.2直接承接平滑移动、单/双/中/右击、有界按住、定时拖拽、像素滚动、组合键与Unicode文本；只读发现窗口，显式动作切换App，复用任务查询/取消及STOP。协议、范围、CLI/API和结果核验见 [INPUT.md](INPUT.md)。
+
 ## 验证
 
 ```sh
 python3 -m unittest discover -s plugins/automation/runtime -p 'test_*.py'
+bash plugins/automation/tests/input.sh
+python3 plugins/automation/tests/build_check.py
 ```
 
 单测不申请权限、不操作真实聊天。真实验收还须核中英文Finder/系统权限页、正常安装与回退、逐项显式请求/静默检查/实际能力复验，以及经新App执行无害脚本。任何聊天发送测试都需独立明确授权，不以权限测试替代。

@@ -26,15 +26,15 @@ def build_app(app):
         architectures = []
         for arch in ["arm64", "x86_64"]:
             binary = Path(temporary) / ("runner-" + arch)
-            subprocess.run(["/usr/bin/xcrun", "swiftc", "-swift-version", "5", "-O", "-target", arch + "-apple-macos15.0",
+            subprocess.run(["/usr/bin/xcrun", "swiftc", "-swift-version", "5", "-parse-as-library", "-O", "-target", arch + "-apple-macos15.0",
                 "-framework", "AppKit", "-framework", "ApplicationServices", "-framework", "Carbon",
-                str(source / "Runner.swift"), "-o", str(binary)], check=True)
+                *[str(p) for p in [source / "Runner.swift", *sorted((source / "input").glob("*.swift"))]], "-o", str(binary)], check=True)
             architectures.append(str(binary))
         subprocess.run(["/usr/bin/lipo", "-create", *architectures, "-output", str(executable)], check=True)
         info = {"CFBundleIdentifier": BUNDLE_ID, "CFBundleName": app.stem, "CFBundleDisplayName": app.stem,
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "zh-Hans"],
-            "CFBundleExecutable": executable.name, "CFBundlePackageType": "APPL", "CFBundleVersion": "2",
-            "CFBundleShortVersionString": "1.1.0", "LSMinimumSystemVersion": "15.0", "LSUIElement": True,
+            "CFBundleExecutable": executable.name, "CFBundlePackageType": "APPL", "CFBundleVersion": "3",
+            "CFBundleShortVersionString": "1.2.0", "LSMinimumSystemVersion": "15.0", "LSUIElement": True,
             "NSAppleEventsUsageDescription": "Run your requested scripts and check access to the selected applications."}
         (staged / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
         for language, name in NAMES.items():
@@ -43,6 +43,7 @@ def build_app(app):
             description = "执行您指定的脚本并检查对所选应用的控制权限。" if language == "zh-Hans" else info["NSAppleEventsUsageDescription"]
             strings = {"CFBundleName": name, "CFBundleDisplayName": name, "NSAppleEventsUsageDescription": description}
             (folder / "InfoPlist.strings").write_text("\n".join(json.dumps(k) + " = " + json.dumps(v, ensure_ascii=False) + ";" for k, v in strings.items()) + "\n")
+        (staged / "Contents/Resources/input-protocol.json").write_bytes((source / "input-protocol.json").read_bytes())
         command = ["/usr/bin/codesign", "--force", "--sign", os.environ.get("SIGN_IDENTITY", "-"), "--identifier", BUNDLE_ID, "--timestamp=none"]
         if os.environ.get("SIGN_KEYCHAIN"):
             command += ["--keychain", os.environ["SIGN_KEYCHAIN"]]

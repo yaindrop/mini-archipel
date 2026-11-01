@@ -1,0 +1,882 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$"
+    },
+    "operation": {
+      "type": "string",
+      "const": "input"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "preflight",
+        "execute"
+      ]
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 120
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+        },
+        "pid": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "window_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "frame": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 100000
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "additionalProperties": false
+        },
+        "observed_at_ms": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000000000000000
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "hit_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "hit_role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "bundle_id",
+        "pid",
+        "window_id",
+        "frame",
+        "observed_at_ms"
+      ],
+      "additionalProperties": false
+    },
+    "coordinates": {
+      "type": "object",
+      "properties": {
+        "space": {
+          "type": "string",
+          "enum": [
+            "screen",
+            "window"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "points",
+            "pixels"
+          ]
+        },
+        "display_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "space",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "activate"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "move"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "click"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "doubleClick"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "middleClick"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "rightClick"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "mouseHold"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "drag"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "button": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "middle"
+              ]
+            },
+            "points": {
+              "minItems": 2,
+              "maxItems": 1000,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "t": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60
+                  },
+                  "x": {
+                    "type": "number",
+                    "minimum": -100000,
+                    "maximum": 100000
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": -100000,
+                    "maximum": 100000
+                  }
+                },
+                "required": [
+                  "t",
+                  "x",
+                  "y"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "kind",
+            "points"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "scroll"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "move_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "settle_seconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "x": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "delta_x": {
+              "type": "integer",
+              "minimum": -10000,
+              "maximum": 10000
+            },
+            "delta_y": {
+              "type": "integer",
+              "minimum": -10000,
+              "maximum": 10000
+            },
+            "duration": {
+              "type": "number",
+              "minimum": 0.05,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind",
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "key"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "key": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h",
+                "i",
+                "j",
+                "k",
+                "l",
+                "m",
+                "n",
+                "o",
+                "p",
+                "q",
+                "r",
+                "s",
+                "t",
+                "u",
+                "v",
+                "w",
+                "x",
+                "y",
+                "z",
+                "Return",
+                "Tab",
+                "space",
+                "delete",
+                "Escape",
+                "Left",
+                "Right",
+                "Up",
+                "Down",
+                "Home",
+                "End",
+                "PageUp",
+                "PageDown",
+                "ForwardDelete",
+                "equal",
+                "minus",
+                "rightBracket",
+                "leftBracket",
+                "quote",
+                "semicolon",
+                "backslash",
+                "comma",
+                "slash",
+                "period",
+                "grave",
+                "F1",
+                "F2",
+                "F3",
+                "F4",
+                "F5",
+                "F6",
+                "F7",
+                "F8",
+                "F9",
+                "F10",
+                "F11",
+                "F12"
+              ]
+            },
+            "key_code": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            },
+            "hold_seconds": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 60
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "text"
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "smoothstep",
+                "smootherstep"
+              ]
+            },
+            "modifiers": {
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "command",
+                  "shift",
+                  "option",
+                  "control"
+                ]
+              }
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16000
+            },
+            "text_chunk_units": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "required": [
+            "kind",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": [
+    "request_id",
+    "operation",
+    "mode",
+    "target",
+    "coordinates",
+    "action"
+  ],
+  "additionalProperties": false
+}

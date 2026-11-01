@@ -10,6 +10,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 
 
 def main():
@@ -23,6 +24,9 @@ def main():
     command.add_argument("arguments", nargs=argparse.REMAINDER)
     authorize = commands.add_parser("authorize", help="Request only the selected native permission")
     authorize.add_argument("--permission", choices=["all", "accessibility", "automation"], default="all")
+    input_command = commands.add_parser("input", help="Execute one validated durable input job under this App identity")
+    input_command.add_argument("job")
+    commands.add_parser("input-info", help="Discover native actions, permissions and the actual focused target without posting")
     args = parser.parse_args()
     root = Path.home() / ".local/share/mini-archipel/desktop-automation"
     root.mkdir(parents=True, mode=0o700, exist_ok=True)
@@ -31,31 +35,42 @@ def main():
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
         except BlockingIOError:
             raise OSError("Automation installation is active; retry after it completes") from None
+        if args.mode == "input":
+            def interrupted(_number, _frame):
+                raise KeyboardInterrupt
+            for number in (signal.SIGTERM, signal.SIGHUP):
+                signal.signal(number, interrupted)
         return launch(args)
 
 
 def launch(args):
     app = Path.home() / "Applications/Mini Archipel Plugin - Automation.app"
     if not app.is_dir():
-        parser.error(f"Application not installed: {app}")
+        raise OSError(f"Application not installed: {app}")
     request = {"mode": args.mode, "path": None, "arguments": [], "cwd": os.getcwd()}
-    if args.mode == "authorize":
+    if args.mode == "input":
+        request.update(path=str(Path(args.job).expanduser().resolve(strict=True)))
+    elif args.mode == "input-info":
+        pass
+    elif args.mode == "authorize":
         request["arguments"] = [args.permission]
     elif args.mode == "run":
         path = Path(args.script).expanduser().resolve(strict=True)
         if not path.is_file() or path.suffix.lower() not in {".applescript", ".scpt"}:
-            parser.error("run requires a .applescript or .scpt file")
+            raise ValueError("run requires a .applescript or .scpt file")
         request.update(mode="applescript", path=str(path), arguments=args.arguments)
     elif args.mode == "exec":
         path = shutil.which(os.path.expanduser(args.program))
         if not path:
-            parser.error(f"Executable not found: {args.program}")
+            raise OSError(f"Executable not found: {args.program}")
         request.update(mode="command", path=str(Path(path).resolve()), arguments=args.arguments)
     with tempfile.TemporaryDirectory(prefix="agent-script-runner-") as temporary:
         directory = Path(temporary)
         request_file = directory / "request.json"
         request_file.write_text(json.dumps(request, ensure_ascii=False))
         os.chmod(request_file, 0o600)
+        launched = None
+        cancelled = False
         try:
             # LaunchServices establishes the App's identity; direct execution of
             # its Mach-O binary would retain the SSH caller's TCC attribution.
@@ -65,19 +80,31 @@ def launch(args):
                 capture_output=True, text=True,
             )
         except KeyboardInterrupt:
+            cancelled = True
+            if args.mode == "input":
+                # Latch before signalling: even a delayed App launch must not post.
+                Path(request["path"]).with_suffix(".cancel").touch(mode=0o600, exist_ok=True)
             pid_file = directory / "pid"
             if pid_file.exists():
                 try:
                     os.kill(int(pid_file.read_text()), signal.SIGTERM)
                 except (ProcessLookupError, ValueError):
                     pass
-            return 130
+            if args.mode != "input":
+                return 130
+            deadline = time.monotonic() + 2
+            while not (directory / "result.json").exists() and time.monotonic() < deadline:
+                time.sleep(.02)
         result_file = directory / "result.json"
         if result_file.exists():
             result = json.loads(result_file.read_text())
         else:
             result = {"ok": False, "exit_code": 1,
-                      "error": launched.stderr.strip() or "App exited without a result; confirm a desktop user is logged in"}
+                      "error": (launched.stderr.strip() if launched else "") or "App exited without a result; confirm a desktop user is logged in"}
+        if cancelled:
+            result.update(ok=False, exit_code=130, status="cancelled")
+            if "owned_input_at_exit" not in result:
+                result["release_unconfirmed"] = True
         print(json.dumps(result, ensure_ascii=False))
         status = int(result.get("exit_code", 1))
         return status if 0 <= status <= 125 else 1

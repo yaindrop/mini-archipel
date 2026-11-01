@@ -40,6 +40,35 @@ export function desktopBrowserFixture() {
       const toolkit = state(name).toolkit;
       if (!toolkit || !body || typeof body !== "object")
         throw Error("fixture missing");
+      if (action === "input-info")
+        return {
+          ok: true,
+          protocol_version: 1,
+          actions: ["activate", "move", "click", "drag", "text"],
+          permissions: { accessibility: true, post_events: true },
+          target: null,
+          applications: [
+            {
+              pid: 42,
+              bundle_id: "com.example.editor",
+              name: "Example Editor",
+            },
+          ],
+          windows: [
+            {
+              pid: 42,
+              bundle_id: "com.example.editor",
+              window_id: 7,
+              frame: { x: 0, y: 0, width: 800, height: 600 },
+              observed_at_ms: Date.now(),
+            },
+          ],
+          displays: [],
+        };
+      if (action === "input-stop" && "stopped" in body) {
+        toolkit.input_stopped = body.stopped === true;
+        return { ok: true, stopped: toolkit.input_stopped };
+      }
       if (action === "status") return { ok: true, data: toolkit };
       if (action === "diagnostics")
         return {
@@ -102,7 +131,10 @@ export function desktopBrowserFixture() {
             }
             toolkit.desktop_busy = false;
           },
-          request.operation === "script"
+          request.operation === "script" ||
+            (request.operation === "input" &&
+              request.mode === "execute" &&
+              request.action.kind !== "activate")
             ? 10000
             : request.operation === "permissions"
               ? 1800

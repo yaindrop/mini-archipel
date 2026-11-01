@@ -274,8 +274,11 @@ export function createApp(
       id: string;
       action: string;
     };
-  }>("/api/plugins/:id/actions/:action", async (request) =>
-    plugins.action(request.params.id, request.params.action, request.body),
+  }>(
+    "/api/plugins/:id/actions/:action",
+    { bodyLimit: 300000 },
+    async (request) =>
+      plugins.action(request.params.id, request.params.action, request.body),
   );
   app.get<{ Params: { host: string } }>(
     "/api/hosts/:host/disk-rules",

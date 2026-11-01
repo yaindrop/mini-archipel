@@ -1,3 +1,4 @@
+import { InputRequestSchema } from "./input-contracts.ts";
 import { z } from "zod";
 
 const RequestId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$/);
@@ -7,6 +8,7 @@ const common = {
 };
 export const JobRequestSchema = z
   .discriminatedUnion("operation", [
+    InputRequestSchema,
     z.strictObject({ ...common, operation: z.literal("doctor") }),
     z.strictObject({
       ...common,
@@ -59,7 +61,7 @@ export type JobRequest = z.infer<typeof JobRequestSchema>;
 const JobSchema = z.object({
   id: RequestId,
   permission: z.enum(["accessibility", "automation"]).optional(),
-  operation: z.enum(["doctor", "permissions", "chat", "script"]),
+  operation: z.enum(["doctor", "permissions", "chat", "script", "input"]),
   status: z.enum([
     "queued",
     "running",
@@ -95,6 +97,7 @@ const ToolkitSchema = z.object({
     .nullable(),
   jobs: z.array(JobSchema),
   paused: z.boolean(),
+  input_stopped: z.boolean().optional(),
   desktop_busy: z.boolean(),
   capabilities: z.array(z.string()),
 });
@@ -109,6 +112,23 @@ export const DataSchema = z.object({
 export type DesktopData = z.infer<typeof DataSchema>;
 export const ActionSchema = z.discriminatedUnion("action", [
   z.strictObject({
+    action: z.literal("wait"),
+    host: z.string().min(1),
+    request_id: RequestId,
+    timeout_ms: z.number().int().min(1).max(10000).optional(),
+  }),
+  z.strictObject({
+    action: z.literal("input-log"),
+    host: z.string().min(1),
+    request_id: RequestId,
+    offset: z.number().int().min(0).max(100000).optional(),
+  }),
+  z.strictObject({
+    action: z.literal("input-stop"),
+    host: z.string().min(1),
+    stopped: z.boolean(),
+  }),
+  z.strictObject({
     action: z.literal("submit"),
     host: z.string().min(1),
     request: JobRequestSchema,
@@ -119,7 +139,7 @@ export const ActionSchema = z.discriminatedUnion("action", [
     request_id: RequestId,
   }),
   z.strictObject({
-    action: z.enum(["status", "diagnostics"]),
+    action: z.enum(["status", "diagnostics", "input-info"]),
     host: z.string().min(1),
   }),
   z.strictObject({

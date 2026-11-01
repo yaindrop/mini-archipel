@@ -26,6 +26,7 @@ export function desktopFixture(): DesktopData {
       paused: false,
       desktop_busy: false,
       capabilities: [
+        "input",
         "doctor",
         "permissions",
         "chat",

@@ -277,6 +277,11 @@ msgid "节点尚未启用脚本执行"
 msgstr "Script execution is not enabled on this node"
 
 #. js-lingui-explicit-id
+#: ../plugins/automation/console/src/server.ts
+msgid "节点工具包尚不支持原生输入，请升级后重试"
+msgstr "This node toolkit does not support native input yet. Upgrade and try again."
+
+#. js-lingui-explicit-id
 #: src/app.ts
 msgid "不允许跨站操作"
 msgstr "Cross-site operations are not allowed"
@@ -895,6 +900,10 @@ msgid "仅允许节点管理员列出的风扇键；写入前会核对当前值�
 msgstr "Only fan keys permitted by the node administrator can be written. Current values are checked first, and temperature control is restored afterwards."
 
 #: ../plugins/automation/console/src/workbench.tsx
+msgid "仅预检输入"
+msgstr "Preflight input only"
+
+#: ../plugins/automation/console/src/workbench.tsx
 msgid "仍需授权"
 msgstr "Permission still required"
 
@@ -993,6 +1002,10 @@ msgstr "Thermal limit"
 msgid "保留最后一次读数。恢复控制仍可从节点本地执行。"
 msgstr "The last readings are retained. Control can still be restored locally on the node."
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "停止原生输入"
+msgstr "Stop native input"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "停止后，该 runner 将停止接单，重启节点也不会自动恢复。现有工作区和注册信息会保留。"
 msgstr "This runner will stop accepting jobs and remain stopped after a node restart. Its workspace and registration will be retained."
@@ -1000,6 +1013,10 @@ msgstr "This runner will stop accepting jobs and remain stopped after a node res
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "停止后仍需等待收尾。关闭插件不会停止已接受的录制；超时请先查状态，不要用新编号重复启动。"
 msgstr "Finalization continues after stopping. Disabling the plugin does not stop an accepted recording. If a request times out, check its status before starting another recording."
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "停止后恢复只允许新请求，不重放旧任务。修改目标或动作后请新建请求；同 ID 变参会冲突。"
+msgstr "Resuming only allows new requests; previous jobs are never replayed. Create a new request after changing the target or action. Changed parameters conflict with an existing ID."
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "停止并保存"
@@ -1024,6 +1041,14 @@ msgstr "Stop waiting"
 #: ../plugins/proxy/console/src/workbench.tsx
 msgid "允许控制"
 msgstr "Control allowed"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "允许新的原生输入"
+msgstr "Allow new native input"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "先刷新并选择真实窗口。刷新不会激活应用或请求权限；激活是独立操作。每次只提交一个动作，完成后请核对目标应用的实际响应。"
+msgstr "Refresh and select an observed window. Refreshing does not activate apps or request permission; activation is separate. Submit one action at a time and verify the response in the target app."
 
 #: src/web/storage.tsx
 msgid "先看卷容量，再沿目录定位占用。清晰区分物理容量与目录统计。"
@@ -1191,6 +1216,10 @@ msgstr "Delete {0}"
 msgid "删除第 {0} 档"
 msgstr "Remove step {0}"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "刷新应用与窗口"
+msgstr "Refresh apps and windows"
+
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "刷新状态"
 msgstr "Refresh status"
@@ -1215,6 +1244,10 @@ msgstr "Upgrade companion app"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "升速限制（RPM/秒，0 为不限）"
 msgstr "Acceleration limit (RPM/s, 0 = unlimited)"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "单个动作（JSON）"
+msgstr "Single action (JSON)"
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "单独保存真实鼠标轨道"
@@ -1268,6 +1301,10 @@ msgstr "Send message"
 msgid "取消"
 msgstr "Cancel"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "取消不能撤回已发生的操作。超时或中断后，请先用原请求 ID 查询结果，原生输入不会自动重放。"
+msgstr "Cancellation cannot undo actions that already occurred. After a timeout or interruption, query the original request ID first. Native input is never automatically replayed."
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "取消中"
 msgstr "Cancelling"
@@ -1288,10 +1325,6 @@ msgstr "Cancel and return to system"
 #: src/web/storage.tsx
 msgid "取消扫描"
 msgstr "Cancel scan"
-
-#: ../plugins/automation/console/src/workbench.tsx
-msgid "取消等待不能撤回已发送的消息。超时或中断后，请用原请求 ID 恢复核实。"
-msgstr "Stopping a wait cannot recall sent messages. After a timeout or interruption, recover using the original request ID."
 
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "受控风扇"
@@ -1331,6 +1364,11 @@ msgstr "{0} memory available"
 #: src/domain.ts
 msgid "可用内存不足 1 GiB"
 msgstr "Less than 1 GiB of memory available"
+
+#. placeholder {0}: info.data.actions.join(", ")
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "可用动作：{0}。像素必须选显示器；拖动 points 的 t 从 0 严格递增。键入与滚动仍须在目标应用核验。"
+msgstr "Available actions: {0}. Pixels require a display. Drag point times must start at 0 and increase strictly. Verify typing and scrolling in the target app."
 
 #: src/web/node.tsx
 #: src/web/overview.tsx
@@ -1449,6 +1487,14 @@ msgstr "Install the fan control helper on the node to view its curve and manage 
 msgid "在节点本机运行脚本、操作聊天应用，查看授权与后台任务。"
 msgstr "Run scripts and control chat apps on the node. Review permissions and background jobs."
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "坐标单位"
+msgstr "Coordinate units"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "坐标空间"
+msgstr "Coordinate space"
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "基础档交还系统；温度跨过阈值立即升档，降档遵循滞回和等待时间。"
 msgstr "The base step returns control to the system. Rising temperatures advance immediately; falling temperatures follow hysteresis and dwell times."
@@ -1537,6 +1583,10 @@ msgstr "Measured calibration"
 #: ../plugins/fan-control/console/src/curve.tsx
 msgid "实线：草稿"
 msgstr "Solid: draft"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "实际像素"
+msgstr "Display pixels"
 
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "实际转速"
@@ -1630,6 +1680,10 @@ msgstr "Screen"
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "屏幕录制"
 msgstr "Screen recording"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "屏幕点"
+msgstr "Screen points"
 
 #: src/web/node.tsx
 msgid "展示节点上报的核心顺序，不推测核心类型。"
@@ -1949,6 +2003,10 @@ msgstr "Run SMC write diagnostic"
 msgid "执行写入诊断"
 msgstr "Run write diagnostic"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "执行单个输入"
+msgstr "Execute single input"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "执行操作前，工作台和节点都会重新检查作业状态。"
 msgstr "Both the workbench and the node recheck job status before applying a change."
@@ -2188,6 +2246,10 @@ msgstr "New recording"
 msgid "新建请求"
 msgstr "New request"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "新建输入请求"
+msgstr "New input request"
+
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "新版本确认载入后才视为生效。若校验或载入失败，节点会恢复原配置。"
 msgstr "The daemon must confirm loading the new revision. Validation or reload failure restores the previous configuration."
@@ -2219,6 +2281,14 @@ msgstr "Duration"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "是"
 msgstr "Yes"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "显式激活窗口"
+msgstr "Explicitly activate window"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "显示器"
+msgstr "Display"
 
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "暂不可用"
@@ -2789,6 +2859,10 @@ msgstr "Directory path"
 msgid "目标"
 msgstr "Target"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "目标应用与窗口"
+msgstr "Target app and window"
+
 #: src/web/permission-checks.tsx
 msgid "目标节点：{node}"
 msgstr "Target node: {node}"
@@ -2839,6 +2913,10 @@ msgstr "Program or script"
 msgid "空间统计每分钟更新，进程状态独立实时更新"
 msgstr "Storage usage updates every minute; process status updates independently in real time."
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "窗口"
+msgstr "Window"
+
 #: ../plugins/runners/console/src/workbench.tsx
 msgid "符合"
 msgstr "Matches"
@@ -2860,6 +2938,10 @@ msgstr "Waiting for CPU data"
 #: src/web/permission-checks.tsx
 msgid "等待本人确认"
 msgstr "Waiting for your confirmation"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "等待本次结果"
+msgstr "Wait for this result"
 
 #: ../plugins/automation/console/src/workbench.tsx
 msgid "等待系统确认"
@@ -3109,6 +3191,10 @@ msgstr "Unlock the node screen first"
 msgid "节点工作台"
 msgstr "Node workbench"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "节点工具包尚不支持原生输入，请升级后重试"
+msgstr "This node toolkit does not support native input yet. Upgrade and try again."
+
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "节点或录屏插件未就绪"
 msgstr "The node or recording plugin is not ready"
@@ -3294,6 +3380,10 @@ msgstr "Use this plugin entry point on the target node. Check again after instal
 msgid "请检查目标、消息、脚本路径和参数格式。"
 msgstr "Check the target, message, script path and argument format."
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "请检查窗口、动作 JSON、坐标单位和超时预算。"
+msgstr "Check the window, action JSON, coordinate units and timeout budget."
+
 #. placeholder {0}: String(response.status)
 #: src/web/api.ts
 msgid "请求失败（{0}）"
@@ -3352,6 +3442,10 @@ msgstr "Adjust step {0}: drag or use the arrow keys"
 msgid "资料库"
 msgstr "Library"
 
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "超时秒数"
+msgstr "Timeout in seconds"
+
 #: src/web/storage-rules.tsx
 msgid "路径与来源"
 msgstr "Path and source"
@@ -3371,6 +3465,12 @@ msgstr "Polling / reconnecting"
 #: ../plugins/automation/console/src/workbench.tsx
 msgid "辅助功能"
 msgstr "Accessibility"
+
+#. placeholder {0}: String(info.data.permissions.accessibility)
+#. placeholder {1}: String(info.data.permissions.post_events)
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "辅助功能：{0}；事件发送：{1}"
+msgstr "Accessibility: {0}; event posting: {1}"
 
 #: src/web/App.tsx
 msgid "输入工作台访问令牌，查看节点并执行运维操作。"
@@ -3453,6 +3553,10 @@ msgstr "Select {0}"
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "选择已有备份"
 msgstr "Select an existing backup"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "通用原生输入"
+msgstr "Native input"
 
 #. js-lingui-explicit-id
 #: ../plugins/runners/console/src/domain.ts
@@ -3621,6 +3725,14 @@ msgstr "Project check failed"
 #: ../plugins/fan-control/console/src/workbench.tsx
 msgid "预期当前值"
 msgstr "Expected current value"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "预期控件 AXRole（可选）"
+msgstr "Expected control AXRole (optional)"
+
+#: ../plugins/automation/console/src/workbench.tsx
+msgid "预期控件文字（可选，仅指针动作）"
+msgstr "Expected control text (optional, pointer actions only)"
 
 #: ../plugins/screen-recording/console/src/workbench.tsx
 msgid "预览录像"
