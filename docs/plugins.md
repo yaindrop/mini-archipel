@@ -4,6 +4,8 @@
 
 Console使用仓根pnpm workspace，各插件Console包声明正常第三方依赖；从console目录执行原有脚本仍会解析到根lockfile。类型/静态/翻译/单元/浏览器扫描覆盖plugins目录。录屏Swift/App/CLI完整位于screen-recording，原外部仓库停止作为权威实现与独立发布源。
 
+仓根不保留 `desktop-automation/`、`fan-control/`、`mini-proxy/` 旧目录或符号链接；构建与测试缓存写入各插件目录，历史证据保存在明确的归档位置。
+
 ## 权限
 
 各插件自行声明所需权限与实际检测，请求由明确用户操作发起；普通轮询不弹窗。共用权限表显示目标节点、状态、最近检查和失败原因。用户态proxy/runners无需额外TCC，不把token当系统授权；fan-control检查实际特权服务，缺失时提供管理员安装/修复入口；automation检查AX与System Events AppleEvents；screen-recording检查真实屏幕帧和可选输入tap。系统本人确认仍由节点操作者完成。

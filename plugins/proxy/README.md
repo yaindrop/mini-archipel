@@ -102,8 +102,8 @@ CLI 成功输出 `latency_ms N`，供 Agent 读取网络采样值，失败返回
 从仓库根目录运行（测试不会操作真实代理或 LaunchAgent）：
 
 ```sh
-python3 -m unittest discover -s mini-proxy/tests -v
-/usr/bin/python3 -m unittest discover -s mini-proxy/tests -v
+python3 -m unittest discover -s plugins/proxy/tests -v
+/usr/bin/python3 -m unittest discover -s plugins/proxy/tests -v
 provisioning/.venv/bin/ruff check plugins/proxy
 provisioning/.venv/bin/ruff format --check plugins/proxy
 ```

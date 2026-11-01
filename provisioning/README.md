@@ -33,7 +33,7 @@ Tart 豁免的边界与宿主机要求见[安全基线](docs/04-updates-and-secu
 专属的旧路径、旧服务名或旧调度标签。未完成的实施和验证必须列为待办，
 不能通过增加例外或降低验收条件消掉。
 
-配套模块：[fan-control](../fan-control/README.md)
+配套模块：[fan-control](../plugins/fan-control/README.md)
 ——本仓库维护、第 9 章部署的自适应风扇控制守护进程。
 
 ## 阶段总览
