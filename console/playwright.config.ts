@@ -1,10 +1,14 @@
+import { resolve } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import { scaledTestTimeout } from "./scripts/ci-timeout";
 export default defineConfig({
   testDir: "..",
   testMatch: [
-    "console/tests/browser/**/*.spec.ts",
-    "plugins/*/console/tests/browser/**/*.spec.ts",
+    resolve(import.meta.dirname, "tests/browser/**/*.spec.ts"),
+    resolve(
+      import.meta.dirname,
+      "../plugins/*/console/tests/browser/**/*.spec.ts",
+    ),
   ],
   fullyParallel: false,
   workers: 1,
