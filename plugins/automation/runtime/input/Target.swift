@@ -14,6 +14,13 @@ func inputSameFrame(_ a: CGRect,_ b: CGRect) -> Bool { abs(a.minX-b.minX)<1 && a
 func inputWindowInfo(_ id: UInt32) -> [String:Any]? {
     (CGWindowListCopyWindowInfo([.optionIncludingWindow],id) as? [[String:Any]])?.first
 }
+func inputIncludeFocusedWindow(_ listed: [AXUIElement], _ focused: CFTypeRef?) -> [AXUIElement] {
+    var result: [AXUIElement] = []
+    var candidates = listed
+    if let focused, CFGetTypeID(focused) == AXUIElementGetTypeID() { candidates.append(focused as! AXUIElement) }
+    for element in candidates where !result.contains(where:{ CFEqual($0,element) }) { result.append(element) }
+    return result
+}
 func inputMatchesHit(role: String, labels: [String], expectedRole: String?, expectedText: String?) -> Bool {
     (expectedRole == nil || role == expectedRole) && (expectedText == nil || labels.joined(separator:" ").contains(expectedText!))
 }
@@ -49,10 +56,11 @@ final class NativeInputTarget: InputActionTarget {
         guard let app = NSRunningApplication(processIdentifier:request.target.pid), app.bundleIdentifier == request.target.bundle_id else { throw InputFailure("target_changed","Application PID/bundle identity differs") }
         application = app; launched = app.launchDate
         axApplication = AXUIElementCreateApplication(app.processIdentifier); AXUIElementSetMessagingTimeout(axApplication,0.025)
-        let windows = inputAttr(axApplication,kAXWindowsAttribute) as? [AXUIElement] ?? []
+        let windows = inputIncludeFocusedWindow(inputAttr(axApplication,kAXWindowsAttribute) as? [AXUIElement] ?? [],inputAttr(axApplication,kAXFocusedWindowAttribute))
         var matches: [AXUIElement] = []
         for element in windows {
             try inputRequire(!stop(),"Input stopped while resolving the observed window",code:"input_stopped")
+            AXUIElementSetMessagingTimeout(element,0.025)
             guard let observed = try? inputAXFrame(element), inputSameFrame(observed,observedFrame) else { continue }
             if request.target.title == nil || inputAttr(element,kAXTitleAttribute) as? String == request.target.title { matches.append(element) }
         }

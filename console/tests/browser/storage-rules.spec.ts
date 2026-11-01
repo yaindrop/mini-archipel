@@ -158,10 +158,14 @@ test("directory rules: failed saves keep the draft and reload discards it", asyn
     .getByRole("button", { name: "关闭", exact: true })
     .last()
     .click();
-  await expect(
-    page.getByRole("dialog", { name: "放弃未保存的目录规则？", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "继续编辑", exact: true }).click();
+  const discard = page.getByRole("dialog", {
+    name: "放弃未保存的目录规则？",
+    exact: true,
+  });
+  await expect(discard).toBeVisible();
+  await expect(discard).not.toHaveClass(/ant-zoom-(appear|enter)/);
+  await discard.getByRole("button", { name: "继续编辑", exact: true }).click();
+  await expect(discard).toBeHidden();
   await drawer
     .getByRole("button", { name: "重新载入规则", exact: true })
     .click();

@@ -155,6 +155,13 @@ func act(_ v: [String:Any]) throws -> InputAction { try JSONDecoder().decode(Inp
             try expectFailure("activation_rejected") { _ = try inputActivateTarget(timeout:1,stop:{ false },verify:{ false },activate:{ false },raise:{ .success },io:f.control.io) }
             try expectFailure("input_stopped") { _ = try inputActivateTarget(timeout:1,stop:{ true },verify:{ true },activate:{ true },raise:{ .success },io:f.control.io) }
         }
+        try test("focused native window need not be listed in AXWindows") {
+            let listed = AXUIElementCreateApplication(42), focused = AXUIElementCreateApplication(43)
+            let candidates = inputIncludeFocusedWindow([listed],focused)
+            try requireTest(candidates.count == 2 && CFEqual(candidates[1],focused),"focused child missing from AXWindows was discarded")
+            try requireTest(inputIncludeFocusedWindow([listed],listed).count == 1,"focused window duplicated listed identity")
+            try requireTest(inputIncludeFocusedWindow([],focused).count == 1,"focused native window requires AXWindows membership")
+        }
         print("PASS \(passed) independent negative groups; fake IO only, OS post disabled")
     }
 }
