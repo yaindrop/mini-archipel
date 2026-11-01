@@ -1325,6 +1325,10 @@ msgstr "Fixed speed"
 msgid "圆点：守护进程当前状态"
 msgstr "Dot: current daemon state"
 
+#: src/web/ui.tsx
+msgid "在线"
+msgstr "Online"
+
 #: src/web/overview.tsx
 msgid "在线节点"
 msgstr "Online nodes"
@@ -1969,7 +1973,6 @@ msgid "数据已过期"
 msgstr "Data stale"
 
 #: src/web/storage.tsx
-#: src/web/ui.tsx
 msgid "数据过期"
 msgstr "Stale"
 
@@ -2557,6 +2560,7 @@ msgid "磁盘余量低于水位线"
 msgstr "Low available storage"
 
 #: src/plugins/mini-proxy/workbench.tsx
+#: src/web/ui.tsx
 msgid "离线"
 msgstr "Offline"
 

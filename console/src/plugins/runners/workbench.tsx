@@ -616,17 +616,11 @@ export function Runners({
           setSearch(next, { replace: true });
         }}
         label={(item) => t`选择 ${displayName(item)}`}
-        summary={(item) => {
+        primary={(item) => {
           const counts = runnerCounts(item);
-          return (
-            <>
-              <span>
-                {counts.active}/{counts.total}
-              </span>
-              <small>{t`活跃 / 总数`}</small>
-            </>
-          );
+          return `${String(counts.active)}/${String(counts.total)}`;
         }}
+        secondary={() => t`活跃 / 总数`}
       />
       {host ? (
         <>

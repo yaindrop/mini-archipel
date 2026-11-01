@@ -291,14 +291,16 @@ export function MiniProxy({
             <Tag color="processing">{t`测速中`}</Tag>
           ) : null
         }
-        summary={(item) => {
+        primary={(item) => {
           const data = proxyData(item);
           const delay =
             data?.current_node != null
               ? nodeDelay(data.health[data.current_node])
               : null;
-          const shown =
-            delay != null && delay >= 0 ? `${String(delay)} ms` : "—";
+          return delay != null && delay >= 0 ? `${String(delay)} ms` : "—";
+        }}
+        secondary={(item) => {
+          const data = proxyData(item);
           const availability =
             data?.availability === "ready"
               ? t`出口正常`
@@ -307,16 +309,9 @@ export function MiniProxy({
                 : data?.availability === "degraded"
                   ? t`出口受阻`
                   : t`状态待上报`;
-          return (
-            <>
-              <span>{shown}</span>
-              <small>
-                {data?.current_node
-                  ? `${data.current_node} · ${availability}`
-                  : availability}
-              </small>
-            </>
-          );
+          return data?.current_node
+            ? `${data.current_node} · ${availability}`
+            : availability;
         }}
       />
       <Section

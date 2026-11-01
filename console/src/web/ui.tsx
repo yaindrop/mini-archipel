@@ -1,7 +1,7 @@
 import { useLingui as useLinguiMacro } from "@lingui/react/macro";
 import { useLingui } from "@lingui/react";
 import type { ReactNode } from "react";
-import { Badge, Button, Card, Flex, Statistic, Tag, Typography } from "antd";
+import { Badge, Button, Card, Flex, Statistic, Typography } from "antd";
 import { Layers, Server } from "lucide-react";
 import type { Host } from "../contracts.ts";
 import {
@@ -62,7 +62,8 @@ export function NodePager({
   selected,
   onSelect,
   label,
-  summary,
+  primary,
+  secondary,
   mark,
 }: {
   hosts: Host[];
@@ -70,22 +71,20 @@ export function NodePager({
   selected: string | undefined;
   onSelect: (name: string) => void;
   label: (host: Host) => string;
-  summary: (host: Host) => ReactNode;
+  primary: (host: Host) => ReactNode;
+  secondary: (host: Host) => ReactNode;
   mark?: (host: Host) => ReactNode;
 }) {
   const { t } = useLinguiMacro();
   return (
     <div className="storage-volume-grid">
-      {hosts.map((host) => {
+      {hosts.map((host, index) => {
         const active = host.name === selected;
+        const offline = stale(host, now);
         return (
           <Card
             key={host.name}
-            className={`volume-card ${active ? "selected" : ""}`}
-            title={<span className="volume-name">{displayName(host)}</span>}
-            extra={
-              stale(host, now) ? <Tag color="error">{t`数据过期`}</Tag> : null
-            }
+            className={`volume-card plugin-node-card ${active ? "selected" : ""}`}
           >
             <Button
               type="text"
@@ -96,8 +95,32 @@ export function NodePager({
                 onSelect(host.name);
               }}
             />
-            {mark ? <div className="volume-mark">{mark(host)}</div> : null}
-            <div className="node-pager-summary">{summary(host)}</div>
+            <div className="plugin-node-head">
+              <span className="plugin-node-id">
+                <span
+                  className={`node-icon node-color-${String(index % 4)}`}
+                  aria-hidden="true"
+                >
+                  {isVirtual(host) ? (
+                    <Layers size={18} />
+                  ) : (
+                    <Server size={18} />
+                  )}
+                </span>
+                <strong className="volume-name">{displayName(host)}</strong>
+              </span>
+              <span className="plugin-node-status">
+                {mark?.(host)}
+                <Badge
+                  status={offline ? "error" : "success"}
+                  text={offline ? t`离线` : t`在线`}
+                />
+              </span>
+            </div>
+            <div className="node-pager-summary">
+              <span>{primary(host)}</span>
+              <small>{secondary(host)}</small>
+            </div>
           </Card>
         );
       })}

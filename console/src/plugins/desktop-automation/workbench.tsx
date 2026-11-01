@@ -70,16 +70,17 @@ export function DesktopAutomation({ archipel, now }: WorkspaceProps) {
           setSearch(next, { replace: true });
         }}
         label={(item) => t`选择 ${displayName(item)}`}
-        summary={(item) => {
+        primary={(item) => {
           const toolkit = desktopData(item)?.toolkit;
-          const text = !toolkit
-            ? t`工具包未就绪`
-            : toolkit.desktop_busy
-              ? t`任务正在使用桌面`
-              : toolkit.paused
-                ? t`已暂停接单`
-                : t`可接收任务`;
-          return <span>{text}</span>;
+          if (!toolkit) return "—";
+          return String(toolkit.jobs.filter((job) => active(job)).length);
+        }}
+        secondary={(item) => {
+          const toolkit = desktopData(item)?.toolkit;
+          if (!toolkit) return t`工具包未就绪`;
+          if (toolkit.desktop_busy) return t`任务正在使用桌面`;
+          if (toolkit.paused) return t`已暂停接单`;
+          return t`可接收任务`;
         }}
       />
       {host ? (

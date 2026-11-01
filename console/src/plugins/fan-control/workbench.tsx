@@ -141,27 +141,17 @@ export function FanControl({
           setSearch({ host: name }, { replace: true });
         }}
         label={(item) => t`选择 ${displayName(item)}`}
-        summary={(item) => {
+        primary={(item) => {
           const reading = readyState(item)?.telemetry?.reading;
-          if (item.kind === "virtual")
-            return (
-              <>
-                <span>—</span>
-                <small>{t`虚拟机`}</small>
-              </>
-            );
-          return (
-            <>
-              <span>
-                {reading?.have_temp ? `${reading.peak.toFixed(1)} °C` : "—"}
-              </span>
-              <small>
-                {reading
-                  ? `${String(Math.round(reading.rpm))} RPM`
-                  : t`等待连接`}
-              </small>
-            </>
-          );
+          if (item.kind === "virtual" || !reading?.have_temp) return "—";
+          return `${reading.peak.toFixed(1)} °C`;
+        }}
+        secondary={(item) => {
+          const reading = readyState(item)?.telemetry?.reading;
+          if (item.kind === "virtual") return t`虚拟机`;
+          return reading
+            ? `${String(Math.round(reading.rpm))} RPM`
+            : t`等待连接`;
         }}
       />
       {host ? (

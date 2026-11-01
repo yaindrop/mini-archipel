@@ -106,16 +106,10 @@ describe("mini-proxy check-all", () => {
     await user.click(button());
     expect(button()).toHaveClass("ant-btn-loading");
     expect(screen.getByText("测速中")).toBeVisible();
-    await user.click(
-      screen.getByRole("button", { name: "选择 yd-mini-2", exact: true }),
-    );
-    expect(
-      screen.getByRole("heading", { name: "yd-mini-2", exact: true }),
-    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: /^选择 yd-mini-2$/ }));
+    expect(screen.getByRole("heading", { name: /^yd-mini-2$/ })).toBeVisible();
     expect(button()).not.toHaveClass("ant-btn-loading");
-    await user.click(
-      screen.getByRole("button", { name: "选择 yd-mini", exact: true }),
-    );
+    await user.click(screen.getByRole("button", { name: /^选择 yd-mini$/ }));
     expect(button()).toHaveClass("ant-btn-loading");
     pending.get("yd-mini")?.({ ok: true });
   });
