@@ -70,7 +70,8 @@ python3 plugins/proxy/migrate-service.py --rollback
 迁移前保存原 plist、管理代码、加载和禁用状态到权限 `600` 的
 `~/.local/mini-proxy/service-label-migration.json`。异常会自动恢复，进程被强制中断后可用
 `--rollback` 恢复，重试迁移也先恢复未完成事务。原服务未加载时，迁移及回滚均保持未加载。
-禁用状态先采用 `launchctl print-disabled` 的显式覆盖，缺省时采用 plist 的 `Disabled`
+禁用状态先采用 `launchctl print-disabled` 的显式覆盖，支持 `true/false` 和
+`disabled/enabled` 两种输出；缺省时采用 plist 的 `Disabled`
 （未设置时取 false）。恢复记录保存两个标签的有效状态，回滚用显式 enable/disable 恢复。
 原新标签没有 plist 和覆盖项时，其有效值为 false，回滚写入显式 enable；原已有的 true/false
 覆盖按原值恢复。launchctl 未提供逐标签清除覆盖项的公开命令，因此缺省项会归一为显式值。

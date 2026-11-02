@@ -41,6 +41,7 @@ class ServiceMigration(unittest.TestCase):
         self.original = {p: p.read_bytes() for p in self.home.rglob("*") if p.is_file()}
         self.loaded = {backend.LEGACY_LABEL: 42}
         self.disabled = {backend.LEGACY_LABEL: False, backend.LABEL: True}
+        self.override_words = ("true", "false")
         self.events = []
         stack = ExitStack()
         self.addCleanup(stack.close)
@@ -65,7 +66,8 @@ class ServiceMigration(unittest.TestCase):
         self.assertEqual(args[0], "/bin/launchctl")
         if args[1] == "print-disabled":
             entries = [
-                f'"{label}" => {str(value).lower()}' for label, value in self.disabled.items()
+                f'"{label}" => {self.override_words[0 if value else 1]}'
+                for label, value in self.disabled.items()
             ]
             return subprocess.CompletedProcess(args, 0, "{\n" + "\n".join(entries) + "\n}")
         self.assertIn(args[1], ("enable", "disable"))
@@ -128,8 +130,14 @@ class ServiceMigration(unittest.TestCase):
 
     def test_plist_defaults_and_explicit_overrides_survive_migration_and_rollback(self):
         self.loaded.clear()
-        for default, old_override, new_override in itertools.product((True, False, None), repeat=3):
-            with self.subTest(default=default, old=old_override, new=new_override):
+        for words, default, old_override, new_override in itertools.product(
+            (("true", "false"), ("disabled", "enabled")),
+            (True, False, None),
+            (True, False, None),
+            (True, False, None),
+        ):
+            with self.subTest(words=words, default=default, old=old_override, new=new_override):
+                self.override_words = words
                 migration.journal_path(self.old).unlink(missing_ok=True)
                 self.new.plist.unlink(missing_ok=True)
                 backend.atomic_write(

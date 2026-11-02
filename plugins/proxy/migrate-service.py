@@ -62,9 +62,12 @@ def disabled(paths):
         check=True,
         timeout=5,
     )
-    match = re.search(r'"' + re.escape(paths.label) + r'"\s*=>\s*(true|false)', result.stdout)
+    match = re.search(
+        r'"' + re.escape(paths.label) + r'"\s*=>\s*(true|false|enabled|disabled)\b',
+        result.stdout,
+    )
     if match:
-        return match[1] == "true"
+        return match[1] in ("true", "disabled")
     if not paths.plist.exists():
         return False
     default = plistlib.loads(paths.plist.read_bytes()).get("Disabled", False)
