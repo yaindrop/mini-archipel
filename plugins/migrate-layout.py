@@ -358,7 +358,7 @@ def plan(t):
     if t.plugin != "screen-recording" and exists(state):
         raise Failure("Canonical state already exists without a journal")
     if t.plugin == "proxy":
-        known = {"bin", "backend.py", "nodes.json", "release.json", "rollback.json", ".operation.lock", "service-label-migration.json", "__pycache__"}
+        known = {"bin", "backend.py", "nodes.json", "release.json", "rollback.json", "deployment.json", ".operation.lock", "service-label-migration.json", "__pycache__"}
         if set(p.name for p in legacy.iterdir()) - known:
             raise Failure("Unknown proxy root contents; classify before migration")
         p = backend.Paths(h)
@@ -371,7 +371,7 @@ def plan(t):
         for name in ("bin", "backend.py", "__pycache__"):
             t.move(legacy/name, program/name, mutable=name == "__pycache__")
         t.move(p.launcher, program/"mini-proxy-select")
-        for name in ("nodes.json", "release.json", "rollback.json", ".operation.lock", "service-label-migration.json"):
+        for name in ("nodes.json", "release.json", "rollback.json", "deployment.json", ".operation.lock", "service-label-migration.json"):
             t.move(legacy/name, state/name, mutable=name != "service-label-migration.json", hard=name == ".operation.lock")
         for name in ("config.json", "config.json.previous"):
             t.move(p.config.parent/name, state/name, mutable=True)

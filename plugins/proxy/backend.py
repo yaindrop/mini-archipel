@@ -100,7 +100,7 @@ def write_target(path):
             state = home / ".local/share/mini-archipel/proxy"
             mapping = {
                 home / ".local/mini-proxy" / name: state / name
-                for name in ("nodes.json", "release.json", "rollback.json", "service-label-migration.json")
+                for name in ("nodes.json", "release.json", "rollback.json", "deployment.json", "service-label-migration.json")
             }
             mapping.update({home / ".config/mini-proxy" / name: state / name
                             for name in ("config.json", "config.json.previous")})

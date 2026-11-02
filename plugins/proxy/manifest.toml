@@ -88,3 +88,10 @@ kind = "backup"
 owner = "plugin"
 migration = "move"
 legacy_paths = ["~/.config/mini-proxy/config.json.previous"]
+
+[paths.deployment]
+path = "~/.local/share/mini-archipel/proxy/deployment.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/deployment.json"]

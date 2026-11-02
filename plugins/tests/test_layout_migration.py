@@ -26,7 +26,7 @@ class Layout(unittest.TestCase):
         h = self.home()
         if plugin == 'proxy':
             root=h/'.local/mini-proxy'
-            for n in ('bin/xray','backend.py','nodes.json','.operation.lock','service-label-migration.json'):
+            for n in ('bin/xray','backend.py','nodes.json','deployment.json','.operation.lock','service-label-migration.json'):
                 self.put(root/n)
             self.put(h/'.config/mini-proxy/config.json')
             self.put(h/'.local/bin/mini-proxy-select')
@@ -84,6 +84,41 @@ class Layout(unittest.TestCase):
                 if plugin=='proxy':
                     self.assertEqual((h/'.config/mini-proxy/config.json').read_bytes(),b'new state')
                 t.run()
+
+    def test_deployment_record_moves_and_rollback_keeps_latest_metadata(self):
+        h=self.fixture('proxy')
+        old=self.put(h/'.local/mini-proxy/deployment.json',b'{"fixture":"initial"}\n')
+        old.chmod(0o600)
+        t=self.transaction(h,'proxy')
+        target=h/'.local/share/mini-archipel/proxy/deployment.json'
+        moves=[a for a in t.actions if a.get('src')==str(old)]
+        self.assertEqual(len(moves),1)
+        self.assertTrue(moves[0]['mutable'])
+        t.run()
+        self.assertTrue(old.is_symlink())
+        self.assertEqual(os.readlink(old),str(target))
+        self.assertEqual(target.stat().st_mode & 0o777,0o600)
+        self.assertEqual(target.read_bytes(),b'{"fixture":"initial"}\n')
+        m.backend.atomic_write(old,b'{"fixture":"updated"}\n')
+        self.assertTrue(old.is_symlink())
+        t=m.Transaction(h,'proxy').load();t.run(reverse=True)
+        self.assertFalse(old.is_symlink())
+        self.assertEqual(old.read_bytes(),b'{"fixture":"updated"}\n')
+        self.assertFalse(target.exists())
+
+    def test_deployment_registration_does_not_allow_unknown_files_or_aliases(self):
+        h=self.fixture('proxy')
+        unknown=self.put(h/'.local/mini-proxy/unowned.json')
+        with self.assertRaises(m.Failure):m.plan(m.Transaction(h,'proxy'))
+        self.assertEqual(unknown.read_bytes(),b'original')
+        unknown.unlink()
+        old=h/'.local/mini-proxy/deployment.json'
+        old.unlink();outside=self.put(h/'outside.json')
+        old.symlink_to(outside)
+        with self.assertRaises(m.Failure):m.plan(m.Transaction(h,'proxy'))
+        with self.assertRaises(m.Failure):m.backend.atomic_write(old,b'bad')
+        self.assertTrue(old.is_symlink())
+        self.assertEqual(outside.read_bytes(),b'original')
 
     def test_every_filesystem_crash_gap_resume_and_reverse(self):
         for plugin in m.PLUGINS:
