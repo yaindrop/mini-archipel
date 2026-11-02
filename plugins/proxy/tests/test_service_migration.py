@@ -1,4 +1,5 @@
 import importlib.util
+import itertools
 import json
 import plistlib
 import subprocess
@@ -44,16 +45,7 @@ class ServiceMigration(unittest.TestCase):
         stack = ExitStack()
         self.addCleanup(stack.close)
         self.window = stack.enter_context(patch.object(migration, "maintenance_window"))
-        stack.enter_context(
-            patch.object(migration, "disabled", side_effect=lambda p: self.disabled[p.label])
-        )
-        stack.enter_context(
-            patch.object(
-                migration,
-                "set_disabled",
-                side_effect=lambda p, v: self.disabled.update({p.label: v}),
-            )
-        )
+        stack.enter_context(patch.object(migration.subprocess, "run", side_effect=self.launchctl))
         stack.enter_context(
             patch.object(backend, "service_info", side_effect=lambda p: self.loaded.get(p.label))
         )
@@ -68,6 +60,17 @@ class ServiceMigration(unittest.TestCase):
         self.start = stack.enter_context(
             patch.object(install, "start_service", side_effect=self.start_service)
         )
+
+    def launchctl(self, args, **kwargs):
+        self.assertEqual(args[0], "/bin/launchctl")
+        if args[1] == "print-disabled":
+            entries = [
+                f'"{label}" => {str(value).lower()}' for label, value in self.disabled.items()
+            ]
+            return subprocess.CompletedProcess(args, 0, "{\n" + "\n".join(entries) + "\n}")
+        self.assertIn(args[1], ("enable", "disable"))
+        self.disabled[args[2].rsplit("/", 1)[1]] = args[1] == "disable"
+        return subprocess.CompletedProcess(args, 0)
 
     def stop_service(self, paths):
         self.events.append(("stop", paths.label))
@@ -122,6 +125,54 @@ class ServiceMigration(unittest.TestCase):
         migration.migrate(self.home, rollback=True)
         self.assert_original(loaded=False)
         self.start.assert_not_called()
+
+    def test_plist_defaults_and_explicit_overrides_survive_migration_and_rollback(self):
+        self.loaded.clear()
+        for default, old_override, new_override in itertools.product((True, False, None), repeat=3):
+            with self.subTest(default=default, old=old_override, new=new_override):
+                migration.journal_path(self.old).unlink(missing_ok=True)
+                self.new.plist.unlink(missing_ok=True)
+                backend.atomic_write(
+                    self.old.root / "backend.py", self.original[self.old.root / "backend.py"]
+                )
+                plist = plistlib.loads(install.service_plist(self.old))
+                if default is not None:
+                    plist["Disabled"] = default
+                original = plistlib.dumps(plist)
+                backend.atomic_write(self.old.plist, original)
+                self.disabled = {
+                    label: value
+                    for label, value in (
+                        (backend.LEGACY_LABEL, old_override),
+                        (backend.LABEL, new_override),
+                    )
+                    if value is not None
+                }
+                effective = old_override if old_override is not None else bool(default)
+                migration.migrate(self.home)
+                self.assertEqual(migration.disabled(self.new), effective)
+                self.assertFalse(self.loaded)
+                state = json.loads(migration.journal_path(self.old).read_text())
+                self.assertEqual(state["old_disabled"], effective)
+                self.assertEqual(state["new_disabled"], bool(new_override))
+                migration.migrate(self.home, rollback=True)
+                self.assertEqual(self.old.plist.read_bytes(), original)
+                self.assertEqual(migration.disabled(self.old), effective)
+                # An absent new-label override is restored as explicitly enabled.
+                self.assertEqual(self.disabled[backend.LABEL], bool(new_override))
+                self.assertFalse(self.new.plist.exists())
+                self.assertFalse(self.loaded)
+        self.start.assert_not_called()
+
+    def test_invalid_plist_disabled_default_fails_before_service_changes(self):
+        self.disabled.pop(backend.LEGACY_LABEL)
+        plist = plistlib.loads(self.old.plist.read_bytes())
+        plist["Disabled"] = "true"
+        backend.atomic_write(self.old.plist, plistlib.dumps(plist))
+        with self.assertRaisesRegex(backend.Failure, "Disabled default must be a boolean"):
+            migration.migrate(self.home)
+        self.stop.assert_not_called()
+        self.assertFalse(migration.journal_path(self.old).exists())
 
     def test_both_plists_or_both_loaded_jobs_are_conflicts(self):
         for on_disk in (True, False):

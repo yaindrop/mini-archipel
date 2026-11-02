@@ -63,10 +63,18 @@ def disabled(paths):
         timeout=5,
     )
     match = re.search(r'"' + re.escape(paths.label) + r'"\s*=>\s*(true|false)', result.stdout)
-    return bool(match and match[1] == "true")
+    if match:
+        return match[1] == "true"
+    if not paths.plist.exists():
+        return False
+    default = plistlib.loads(paths.plist.read_bytes()).get("Disabled", False)
+    if type(default) is not bool:
+        raise backend.Failure("Service Disabled default must be a boolean")
+    return default
 
 
 def set_disabled(paths, value):
+    # Restore the effective state; launchctl has no supported per-label override reset.
     subprocess.run(
         ["/bin/launchctl", "disable" if value else "enable", paths.service],
         capture_output=True,
