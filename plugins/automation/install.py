@@ -13,6 +13,13 @@ import subprocess
 import sys
 import tempfile
 
+# Release payloads carry the reader beside the installer; source uses plugins/.
+for _directory in Path(__file__).resolve().parents:
+    if (_directory / "manifest_reader.py").is_file():
+        sys.path.insert(0, str(_directory))
+        break
+import manifest_reader as manifests
+
 APP_FILE = "Mini Archipel Plugin - Automation.app"
 BUNDLE_ID = "local.yaindrop.agent-script-runner"
 
@@ -79,14 +86,33 @@ def register_app():
                 subprocess.run([str(register), "-f", str(app)], check=True, capture_output=True)
 
 
-def reject_migrated_layout():
-    home = Path.home()
-    if any(p.is_symlink() or p.exists() for p in [home / ".local/libexec/mini-archipel/automation", home / ".local/share/mini-archipel/automation"]) or (home / ".local/libexec/mini-archipel-desktop").is_symlink():
-        raise SystemExit("Directory layout migrated; roll back layout before this legacy installer (manifest installer pending)")
+def layout():
+    m = manifests.for_script(__file__, "automation")
+    if m.value("bundle_id") != BUNDLE_ID or m.path("paths.app.path") != Path.home() / "Applications" / APP_FILE:
+        raise ValueError("Companion identity or fixed App path changed")
+    target = m.installed("program")
+    canonical = target == m.path("paths.program.path")
+    root = m.installed("state") if canonical else Path.home() / ".local/share/mini-archipel/desktop-automation"
+    previous = m.installed("previous") if canonical else target.with_name(target.name + ".previous")
+    marker = root / "companion-backup.json" if canonical else target / "companion-backup.json"
+    return m, target, previous, root, marker
+
+
+def preserve_native_protocol(target, source):
+    # Previous releases may resolve the lexical jobURL the unchanged native App requires.
+    data = (source / "agent-script-runner").read_bytes()
+    for path in (target / "agent-script-runner", Path.home() / "agent-script-runner"):
+        if path.is_file() and not path.is_symlink():
+            path.write_bytes(data)
+            path.chmod(0o700)
+    manifest = target / "manifest.json"
+    if manifest.is_file():
+        record = json.loads(manifest.read_text())
+        record["sha256"]["agent-script-runner"] = hashlib.sha256(data).hexdigest()
+        manifest.write_text(json.dumps(record, indent=2))
 
 
 def install_locked():
-    reject_migrated_layout()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rollback", action="store_true", help="Restore the previous helper release and its companion backup")
     parser.add_argument("--upgrade-app", action="store_true", help="Explicitly replace an existing localized companion, preserving a rollback copy")
@@ -95,9 +121,8 @@ def install_locked():
     if sys.platform != "darwin":
         raise SystemExit("Desktop automation requires macOS")
     source = Path(__file__).resolve().parent / "runtime"
-    target = Path.home() / ".local/libexec/mini-archipel-desktop"
-    previous = target.with_name(target.name + ".previous")
-    root = Path.home() / ".local/share/mini-archipel/desktop-automation"
+    m, target, previous, root, marker = layout()
+    canonical = target == m.path("paths.program.path")
     app = companion_paths()["current.app"]
     runner = companion_paths()["runner"]
     if target.exists():
@@ -109,10 +134,13 @@ def install_locked():
             verify_app(existing)
     assert_companion_idle()
     target.parent.mkdir(parents=True, exist_ok=True)
+    previous.parent.mkdir(parents=True, exist_ok=True)
+    if canonical:
+        manifests.alias(Path.home() / ".local/share/mini-archipel/desktop-automation", root)
     if args.rollback:
         if not previous.is_dir():
             raise SystemExit("No previous helper release is available")
-        manifest = target / "companion-backup.json"
+        manifest = marker
         restore = Path(json.loads(manifest.read_text())["directory"]) if manifest.is_file() else None
         if restore:
             allowed = (root / "companion-backups").resolve()
@@ -130,6 +158,8 @@ def install_locked():
             try:
                 if restore:
                     restore_companion(restore)
+                if canonical:
+                    preserve_native_protocol(target, source)
                 register_app()
                 subprocess.run([str(target / "desktop-automation"), "status"], check=True, capture_output=True)
             except Exception:
@@ -138,7 +168,7 @@ def install_locked():
                 displaced.rename(target)
                 raise
             displaced.rename(previous)
-            (target / "companion-backup.json").write_text(json.dumps({"directory": str(current)}))
+            marker.write_text(json.dumps({"directory": str(current)}))
         invalidate_permission_cache(root)
         print(json.dumps({"ok": True, "rolled_back": True, "toolkit": str(target), "backup": str(current)}))
         return
@@ -147,6 +177,7 @@ def install_locked():
     with tempfile.TemporaryDirectory(prefix=".desktop-install-", dir=target.parent) as temporary:
         staged = Path(temporary) / "toolkit"
         shutil.copytree(source, staged, ignore=shutil.ignore_patterns("__pycache__", "test_*"))
+        manifests.bundle(staged, m)
         for name in ["codex-ui", "zcode-ui", "permissions"]:
             shared = [str(staged / "input" / file) for file in ["Payload.swift", "InputControl.swift", "InputState.swift", "ChatKeyboard.swift"]] if name != "permissions" else []
             subprocess.run(["/usr/bin/xcrun", "swiftc", "-swift-version", "5", *(["-parse-as-library"] if shared else []), "-target", platform.machine() + "-apple-macos15.0", str(staged / (name + ".swift")), *shared, "-o", str(staged / name)], check=True)
@@ -160,8 +191,11 @@ def install_locked():
                 subprocess.run([sys.executable, str(staged / "build.py"), "--output", str(candidate)], check=True)
             verify_app(candidate)
         backup = snapshot_companion(root / "companion-backups")
-        (staged / "companion-backup.json").write_text(json.dumps({"directory": str(backup)}))
-        manifest = {"version": "1.2.4", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file()}}
+        if canonical:
+            (staged / "companion-backup.json").symlink_to(marker)
+        else:
+            (staged / "companion-backup.json").write_text(json.dumps({"directory": str(backup)}))
+        manifest = {"version": "1.2.4", "sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in staged.iterdir() if p.is_file() and not p.is_symlink()}}
         (staged / "manifest.json").write_text(json.dumps(manifest, indent=2))
         if previous.exists():
             shutil.rmtree(previous)
@@ -179,6 +213,10 @@ def install_locked():
             staged.rename(target)
             register_app()
             subprocess.run([str(target / "desktop-automation"), "status"], check=True, capture_output=True)
+            if canonical:
+                manifests.alias(Path.home() / ".local/libexec/mini-archipel-desktop", target)
+                manifests.alias(Path.home() / ".local/libexec/mini-archipel-desktop.previous", previous)
+                marker.write_text(json.dumps({"directory": str(backup)}))
         except Exception:
             restore_companion(backup)
             if target.exists():
@@ -192,8 +230,9 @@ def install_locked():
 
 
 def install():
-    reject_migrated_layout()
-    root = Path.home() / ".local/share/mini-archipel/desktop-automation"
+    if sys.argv[1:] == ["--check-manifest"]:
+        print(json.dumps(manifests.for_script(__file__, "automation").data)); return
+    _m, _target, _previous, root, _marker = layout()
     root.mkdir(parents=True, mode=0o700, exist_ok=True)
     descriptors = []
     try:

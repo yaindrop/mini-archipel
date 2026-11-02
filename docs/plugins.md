@@ -259,3 +259,40 @@ rollback 将**当前**状态 rename 回旧位置，保留迁移后业务记录�
 fd 与实际 CI mutex 的 st_dev/st_ino、类型和 owner，并在同一 open-file description 上重申
 非阻塞独占锁。外层始终持有 fd 至 Listener 状态恢复。直接 Python 调用可用
 `migrate(transaction, reverse=False, ci_fd=mutex.fileno())`。所有维护状态检查均在锁已取得后执行。
+
+### 第 4 步安装清单读取
+
+五个原安装入口现各读自己的 manifest.toml：proxy/install.py、automation/install.py、
+screen-recording/scripts/install.sh、fan-control/install-plugin.sh、runners/scripts/install-node-runners.py。
+均提供 `--check-manifest`，在平台/硬件操作及安装修改之前验证清单，可在任意 cwd 使用。
+Python 安装器先查随载荷 reader，再查源码 plugins/；shell 安装器也接受本目录随包 reader。
+打包时将 **plugins/manifest_reader.py 与本插件 manifest.toml 一同携带**，不依赖源码树或pip。
+proxy和Automation暂存程序携带二者；Agent的fan载荷复制及Runner的共享CI钩子暂存也携带二者。
+独立发布包还须保留各原安装器自身依赖（例如proxy的fetch.py/assets.lock.json、Automation runtime、录屏build和fan deploy），不合并安装器。
+
+安装读取器是明确受控的v1子集，兼容系统Python3.9：UTF-8；根键或
+`[paths.name]`/`[commands.name]`/`[services.name]`表；每行一项；双引号字符串、十进制整数、
+字符串数组使用JSON与TOML共同支持的字面量；仅空行/整行#注释。不接受内联注释、单引号、
+多行字符串、日期、浮点、布尔、内联表、数字分隔符或JSON独有转义；不静默降级或截断。
+未知键/重复声明/不支持语法、ID/schema错误、路径越界或非法owner/migration在修改前拒绝。
+Rust/Console仍使用完整TOML库；安装清单维护须留在上述受控子集，三个catalog登记方式不变。
+
+proxy保留旧真实布局兼容；已迁布局和新安装使用规范程序/状态/日志/备份，原子写和恢复
+针对真实对象，旧命令及拆分别名保留。旧backup marker中的绝对路径经原别名继续可达。
+Automation在规范程序目录与state/backups/previous间交换版本，state与锁不随程序替换；
+companion marker在规范state，程序保留指针。已有App只沿原显式升级/回滚流程替换，普通
+工具升级保留当前App，保持Bundle ID。录屏support仍为原真实目录；其安装器支持相同内容
+重复执行为无操作，不同内容仍须显式--upgrade；回滚备份限制在旧support/backups中。
+fan固定root路径/两个服务/socket不变，Agent只替换用户payload并保留旧别名及用户备份。
+Runner仍只处理已有官方Runner和明确共享CI钩子；manifest标external表示不得因改名搬动，
+不扩大原显式安装注册授权，也不替其他插件创建服务。
+
+本地检查：`python3 -m unittest discover -s plugins/tests`，另跑proxy、Automation原测试
+及Runner安装环境定向测试。原生平台动作在隔离测试中使用替身；真实节点安装、签名/权限、
+服务与回滚验收由运维在第3步四台验收后执行。
+
+旧proxy安装备份仍可经旧指针定位；在规范布局中，缺少canonical布局标记的历史安装快照会
+在停服务前拒绝，须先按第3步回滚布局再用更早安装快照，避免把不支持别名的旧backend装进新布局。
+Automation规范布局回滚保留当前原生jobURL launcher兼容层，并同步其runtime哈希；其他工具
+恢复previous版本，已有App仍按原备份事务恢复。第3步文中的临时安装器拒绝描述属于该阶段历史，
+由本节的安装清单接入与上述兼容边界替代。

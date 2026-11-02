@@ -2,6 +2,14 @@
 set -euo pipefail
 umask 077
 cd "$(dirname "$0")/.."
+reader="$PWD/manifest_reader.py"
+[[ -f "$reader" ]] || reader="$PWD/../manifest_reader.py"
+manifest_value() { /usr/bin/python3 "$reader" "$PWD/manifest.toml" screen-recording "$1"; }
+/usr/bin/python3 "$reader" "$PWD/manifest.toml" screen-recording >/dev/null
+if [[ "${1:-}" == --check-manifest ]]; then
+  /usr/bin/python3 "$reader" "$PWD/manifest.toml" screen-recording
+  exit 0
+fi
 mode="${1:-install}"
 if [[ "$mode" == --help ]]; then
   printf '%s\n' 'install.sh [--upgrade | --rollback BACKUP_DIRECTORY]' \
@@ -13,10 +21,12 @@ fi
 [[ $(id -u) != 0 ]] || { echo 'Install as the desktop user, not root.' >&2; exit 1; }
 build_root="${ASR_BUILD_DIR:-build}"
 source_app="$build_root/Mini Archipel Plugin - Screen Recorder.app"
-target_app="$HOME/Applications/Mini Archipel Plugin - Screen Recorder.app"
+target_app=$(manifest_value paths.app.path)
 legacy_app="$HOME/Applications/Agent Screen Recorder.app"
-cli="$HOME/.local/bin/agent-screen-recorder"
+cli=$(manifest_value commands.recorder.path)
 support="$HOME/Library/Application Support/Agent Screen Recorder"
+[[ "$(manifest_value paths.state.legacy_paths)" == '["~/Library/Application Support/Agent Screen Recorder"]' ]] || exit 1
+[[ "$(manifest_value bundle_id)" == org.agent-screen-recorder.app && "$target_app" == "$HOME/Applications/Mini Archipel Plugin - Screen Recorder.app" ]] || exit 1
 # Support migration is suspended: the installed App requires a real directory.
 [[ ! -L "$support" && ! -e "$HOME/.local/share/mini-archipel/screen-recording" && ! -L "$HOME/.local/share/mini-archipel/screen-recording" ]] || { echo 'Unsupported recorder state layout; restore the real legacy support directory first.' >&2; exit 1; }
 verify_app() {
@@ -26,6 +36,7 @@ verify_app() {
 if [[ "$mode" == --rollback ]]; then
   [[ $# == 2 ]] || { echo '--rollback requires a backup directory.' >&2; exit 1; }
   restore="$(cd "$2" && pwd -P)"
+  [[ "$restore" == "$support/backups/"* ]] || { echo "Backup is outside owned recorder backups" >&2; exit 1; }
   [[ -f "$restore/installer-backup-v1" ]] || { echo 'Not a recorder installer backup.' >&2; exit 1; }
   found=false
   for item in current.app legacy.app; do
@@ -40,6 +51,9 @@ for item in "$target_app" "$legacy_app"; do
   if [[ -e "$item" ]]; then verify_app "$item"; fi
  done
 if [[ "$mode" == install && ( -e "$target_app" || -e "$legacy_app" || -e "$cli" ) ]]; then
+  if [[ -d "$target_app" && -f "$cli" ]] && diff -qr "$source_app" "$target_app" >/dev/null && cmp -s "$build_root/agent-screen-recorder" "$cli"; then
+    echo 'Already installed; App and CLI unchanged.'; exit 0
+  fi
   echo 'Existing installation found. Use --upgrade to preserve it and migrate normally.' >&2
   exit 1
 fi

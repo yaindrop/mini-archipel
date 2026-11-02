@@ -2,6 +2,7 @@
 """Install the standalone backend; preserve unrelated proxies and system settings."""
 
 import argparse
+import copy
 import json
 import os
 import platform
@@ -12,23 +13,51 @@ import socket
 import subprocess
 import time
 import uuid
+import sys
 from pathlib import Path
 
 import backend
 from backend import service_info
 from fetch import LOCK, SOURCE, verify_assets
 
+# Release payloads carry the reader beside the installer; source uses plugins/.
+for _directory in Path(__file__).resolve().parents:
+    if (_directory / "manifest_reader.py").is_file():
+        sys.path.insert(0, str(_directory))
+        break
+import manifest_reader as manifests
+
+
+def configure(paths):
+    m = manifests.for_script(__file__, "proxy")
+    paths.manifest = m
+    canonical = paths.migrated or not paths.root.exists()
+    paths.program = m.path("paths.program.path", paths.home) if canonical else paths.root
+    paths.state = m.path("paths.state.path", paths.home) if canonical else paths.root
+    if canonical:
+        paths.migrated = True
+        paths.assets = paths.program / "bin"
+        paths.xray = paths.assets / "xray"
+        paths.nodes = m.path("paths.nodes.path", paths.home)
+        paths.config = m.path("paths.config.path", paths.home)
+        paths.lock = m.path("paths.lock.path", paths.home)
+        paths.logs = m.path("paths.logs.path", paths.home)
+        paths.backups = m.path("paths.backups.path", paths.home)
+    return m
+
 
 def managed(paths):
     return {
         **{"bin/" + name: paths.assets / name for name in LOCK["files"]},
-        "backend.py": paths.root / "backend.py",
+        "backend.py": (paths.program if paths.migrated else paths.root) / "backend.py",
+        "manifest.toml": (paths.program if paths.migrated else paths.root) / "manifest.toml",
+        "manifest_reader.py": (paths.program if paths.migrated else paths.root) / "manifest_reader.py",
         "nodes.json": paths.nodes,
         "config.json": paths.config,
-        "mini-proxy-select": paths.launcher,
+        "mini-proxy-select": paths.program / "mini-proxy-select" if paths.migrated else paths.launcher,
         "service.plist": paths.plist,
-        "release.json": paths.root / "release.json",
-        "rollback.json": paths.root / "rollback.json",
+        "release.json": (paths.state if paths.migrated else paths.root) / "release.json",
+        "rollback.json": (paths.state if paths.migrated else paths.root) / "rollback.json",
     }
 
 
@@ -84,7 +113,7 @@ def require_free_port(port=10808):
 
 
 def backup_root(paths):
-    return paths.home / ".local/share/mini-archipel/mini-proxy-backups"
+    return paths.backups
 
 
 def snapshot(paths, loaded):
@@ -98,7 +127,7 @@ def snapshot(paths, loaded):
             (directory / name).chmod(0o600)
             present.append(name)
     backend.atomic_write(
-        directory / "snapshot.json", backend.json_bytes({"present": present, "loaded": loaded})
+        directory / "snapshot.json", backend.json_bytes({"present": present, "loaded": loaded, "layout": "canonical" if paths.migrated else "legacy"})
     )
     return directory
 
@@ -119,6 +148,8 @@ def rollback_state(paths, directory):
         for name in state["present"]
     ):
         raise backend.Failure("Incomplete rollback snapshot")
+    if paths.migrated and state.get("layout") != "canonical":
+        raise backend.Failure("Backup predates canonical layout; roll back directory layout before this installation backup")
     if (
         "service.plist" in state["present"]
         and plistlib.loads((directory / "service.plist").read_bytes()).get("Label") != paths.label
@@ -140,7 +171,7 @@ def restore(paths, directory):
 
 
 def service_plist(paths):
-    log = paths.home / "Library/Logs/MiniProxy/xray.log"
+    log = paths.logs / "xray.log"
     return plistlib.dumps(
         {
             "Label": paths.label,
@@ -157,8 +188,7 @@ def service_plist(paths):
 
 
 def install(paths, assets, nodes_source=None, node=None, rollback=False):
-    if paths.migrated:
-        raise backend.Failure("Directory layout migrated; roll back layout before this legacy installer (manifest installer pending)")
+    configure(paths)
     for path in managed(paths).values():
         backend.reject_gui_path(path)
         if path.is_symlink():
@@ -173,7 +203,7 @@ def install(paths, assets, nodes_source=None, node=None, rollback=False):
         if not loaded:
             require_free_port()
         if rollback:
-            marker = json.loads((paths.root / "rollback.json").read_text())
+            marker = json.loads(managed(paths)["rollback.json"].read_text())
             if not isinstance(marker, dict) or not isinstance(marker.get("backup"), str):
                 raise backend.Failure("Invalid rollback marker")
             directory = Path(marker["backup"])
@@ -200,7 +230,7 @@ def install(paths, assets, nodes_source=None, node=None, rollback=False):
                     "Existing configuration has no node identity; supply --node"
                 ) from None
         candidate = backend.configure(nodes, node, previous)
-        staged_paths = backend.Paths(paths.home)
+        staged_paths = copy.copy(paths)
         staged_paths.assets = assets
         staged_paths.xray = assets / "xray"
         backend.check_candidate(staged_paths, candidate)
@@ -217,16 +247,21 @@ def install(paths, assets, nodes_source=None, node=None, rollback=False):
                     (assets / name).read_bytes(),
                     0o700 if name == "xray" else 0o600,
                 )
-            backend.atomic_write(paths.root / "backend.py", (SOURCE / "backend.py").read_bytes())
-            backend.atomic_write(paths.launcher, (SOURCE / "mini-proxy-select").read_bytes(), 0o700)
+            backend.atomic_write(managed(paths)["backend.py"], (SOURCE / "backend.py").read_bytes())
+            for name, source in [("manifest.toml", paths.manifest.source), ("manifest_reader.py", Path(manifests.__file__))]:
+                backend.atomic_write(managed(paths)[name], source.read_bytes())
+            backend.atomic_write(managed(paths)["mini-proxy-select"], (SOURCE / "mini-proxy-select").read_bytes(), 0o700)
             backend.atomic_write(paths.nodes, backend.json_bytes(nodes))
             backend.atomic_write(paths.config, backend.json_bytes(candidate))
-            (paths.home / "Library/Logs/MiniProxy").mkdir(parents=True, mode=0o700, exist_ok=True)
+            paths.logs.mkdir(parents=True, mode=0o700, exist_ok=True)
             backend.atomic_write(paths.plist, service_plist(paths))
+            if paths.migrated:
+                for old, target in [(paths.launcher, managed(paths)["mini-proxy-select"]), (paths.root / "bin", paths.assets), (paths.root / "backend.py", managed(paths)["backend.py"]), (paths.root / "nodes.json", paths.nodes), (paths.home / ".config/mini-proxy/config.json", paths.config)]:
+                    manifests.alias(old, target)
             start_service(paths)
-            backend.atomic_write(paths.root / "release.json", backend.json_bytes(LOCK))
+            backend.atomic_write(managed(paths)["release.json"], backend.json_bytes(LOCK))
             backend.atomic_write(
-                paths.root / "rollback.json", backend.json_bytes({"backup": str(saved)})
+                managed(paths)["rollback.json"], backend.json_bytes({"backup": str(saved)})
             )
         except BaseException as error:
             if stopped:
@@ -253,6 +288,8 @@ def install(paths, assets, nodes_source=None, node=None, rollback=False):
 
 
 def main():
+    if sys.argv[1:] == ["--check-manifest"]:
+        print(json.dumps(manifests.for_script(__file__, "proxy").data)); return
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assets", type=Path, default=SOURCE / ".cache/assets")
     parser.add_argument(

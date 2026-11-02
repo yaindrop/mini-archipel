@@ -3,13 +3,21 @@
 set -euo pipefail
 umask 077
 cd "$(dirname "$0")"
+FAN_SOURCE="../plugins/fan-control"
+FAN_READER="$FAN_SOURCE/manifest_reader.py"
+[[ -f "$FAN_READER" ]] || FAN_READER="$FAN_SOURCE/../manifest_reader.py"
+FAN_DEST=$(/usr/bin/python3 "$FAN_READER" "$FAN_SOURCE/manifest.toml" fan-control paths.program.path)
+FAN_BACKUPS=$(/usr/bin/python3 "$FAN_READER" "$FAN_SOURCE/manifest.toml" fan-control paths.backups.path)
+FAN_LEGACY="$HOME/.local/share/mini-archipel/plugins/fan-control"
+if [[ -L "$FAN_LEGACY" ]]; then
+  [[ "$(readlink "$FAN_LEGACY")" == "$FAN_DEST" && ! -L "$FAN_DEST" ]] || { echo 'error: unexpected fan payload alias'; exit 1; }
+elif [[ -e "$FAN_LEGACY" ]]; then
+  [[ ! -e "$FAN_DEST" ]] || { echo 'error: duplicate fan payloads'; exit 1; }
+  FAN_DEST="$FAN_LEGACY"
+fi
+[[ ! -L "$FAN_DEST" ]] || { echo 'error: canonical fan payload is a link'; exit 1; }
 BIN=${BIN:-target/release/mini-archipel-agent}
 [[ -x "$BIN" ]] || { echo 'error: build first or set BIN='; exit 1; }
-# Until the manifest installer lands, refuse before changing Agent or fan payload.
-if [[ -L "$HOME/.local/share/mini-archipel/plugins/fan-control" || -e "$HOME/.local/libexec/mini-archipel/fan-control" || -L "$HOME/.local/libexec/mini-archipel/fan-control" ]]; then
-  echo 'error: fan payload layout migrated; use the manifest installer or roll back layout first' >&2
-  exit 1
-fi
 LABEL=local.miniarchipel.agent
 DEST="$HOME/.local/libexec/mini-archipel-agent"
 CONF="$HOME/.config/mini-archipel/agent.toml"
@@ -46,17 +54,27 @@ if [[ -x "$DEST" ]]; then
   /usr/bin/codesign --verify --strict -R "=$REQUIREMENT" "$DEST.next" || { echo 'error: signing identity changed; preserve the existing identity'; rm -f "$DEST.next"; exit 1; }
 fi
 # Stage only this repository's optional installer payload; do not start its services.
-FAN_SOURCE="../plugins/fan-control"
-FAN_DEST="$HOME/.local/share/mini-archipel/plugins/fan-control"
 FAN_STAGE="$FAN_DEST.next-$$"
 [[ -f "$FAN_SOURCE/install.command" ]] || { echo 'error: plugin installer source missing'; exit 1; }
 [[ ! -e "$FAN_STAGE" ]] || { echo 'error: plugin payload staging path exists'; exit 1; }
 mkdir -p "$FAN_STAGE"
-for entry in src config deploy control.py build.sh install-plugin.sh install.command; do
+for entry in src config deploy control.py build.sh install-plugin.sh install.command manifest.toml; do
   cp -R "$FAN_SOURCE/$entry" "$FAN_STAGE/$entry"
 done
-if [[ -e "$FAN_DEST" ]]; then mv "$FAN_DEST" "$FAN_DEST.previous-$(date +%Y%m%d-%H%M%S)"; fi
-mv "$FAN_STAGE" "$FAN_DEST"
+cp "$FAN_READER" "$FAN_STAGE/manifest_reader.py"
+if [[ -e "$FAN_DEST" ]]; then
+  mkdir -p "$FAN_BACKUPS"
+  FAN_PREVIOUS="$FAN_BACKUPS/previous-$(date +%Y%m%d-%H%M%S)-$$"
+  mv "$FAN_DEST" "$FAN_PREVIOUS"
+fi
+if ! mv "$FAN_STAGE" "$FAN_DEST"; then
+  [[ -z "${FAN_PREVIOUS:-}" ]] || mv "$FAN_PREVIOUS" "$FAN_DEST"
+  exit 1
+fi
+if [[ "$FAN_DEST" != "$FAN_LEGACY" && ! -L "$FAN_LEGACY" ]]; then
+  mkdir -p "$(dirname "$FAN_LEGACY")"
+  ln -s "$FAN_DEST" "$FAN_LEGACY"
+fi
 install -m 755 allow-firewall.sh "$HOME/.local/libexec/mini-archipel-firewall.sh"
 BIND=$("$DEST.next" check-config "$CONF")
 EXPECTED=$("$DEST.next" --version)

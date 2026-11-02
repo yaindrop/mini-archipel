@@ -33,9 +33,11 @@ class Paths:
         self.root = self.home / ".local/mini-proxy"
         self.program = self.home / ".local/libexec/mini-archipel/proxy"
         self.state = self.home / ".local/share/mini-archipel/proxy"
-        self.migrated = (self.root / "bin").is_symlink()
+        self.migrated = (self.root / "bin").is_symlink() or self.program.is_dir()
         if self.migrated:
-            if os.readlink(self.root / "bin") != str(self.program / "bin"):
+            if (self.root / "bin").exists() and not (self.root / "bin").is_symlink():
+                raise Failure("Duplicate proxy program directories")
+            if (self.root / "bin").is_symlink() and os.readlink(self.root / "bin") != str(self.program / "bin"):
                 raise Failure("Unexpected proxy layout alias")
         elif self.program.exists() or self.state.exists():
             raise Failure("Incomplete proxy layout migration; recover its journal first")
@@ -73,7 +75,7 @@ def reject_gui_path(path):
 @contextmanager
 def operation_lock(paths):
     reject_gui_path(paths.root)
-    paths.root.mkdir(parents=True, mode=0o700, exist_ok=True)
+    paths.lock.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
     fd = os.open(paths.lock, os.O_CREAT | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
     with os.fdopen(fd, "a") as stream:
         if os.fstat(stream.fileno()).st_uid != os.getuid():

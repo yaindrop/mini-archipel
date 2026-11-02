@@ -4,6 +4,14 @@ set -euo pipefail
 umask 077
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 cd "$(dirname "$0")"
+reader="$PWD/manifest_reader.py"
+[[ -f "$reader" ]] || reader="$PWD/../manifest_reader.py"
+manifest_value() { /usr/bin/python3 "$reader" "$PWD/manifest.toml" fan-control "$1"; }
+/usr/bin/python3 "$reader" "$PWD/manifest.toml" fan-control >/dev/null
+if [[ "${1:-}" == --check-manifest ]]; then
+  /usr/bin/python3 "$reader" "$PWD/manifest.toml" fan-control
+  exit 0
+fi
 [[ $EUID == 0 ]] || { echo 'Run with sudo; no sudoers rule is installed.' >&2; exit 1; }
 [[ $(uname -s) == Darwin && $(uname -m) == arm64 ]] || exit 1
 [[ $(/usr/sbin/sysctl -n hw.model) == Mac18,5 ]] || { echo 'This adapter is verified only for Mac18,5.' >&2; exit 1; }
@@ -16,10 +24,13 @@ AGENT_GID=$(id -g "$AGENT_USER")
 [[ -x build/fanctl && -x /usr/bin/python3 ]] || { echo 'Build fanctl as the user first.' >&2; exit 1; }
 /usr/bin/python3 -I -c 'import ctypes,json,socketserver,threading; assert hasattr(ctypes.CDLL(None), "getpeereid")'
 /usr/bin/codesign --verify build/fanctl
-DEST=/Library/MiniArchipel/FanControl
-CONTROL=local.miniarchipel.fan-control
-CURVE=local.miniarchipel.fanctl
-BACKUP="/Library/Application Support/MiniArchipel/FanControl/backups/$(date +%Y%m%d-%H%M%S)"
+DEST=$(manifest_value paths.root_program.path)
+CONTROL=$(manifest_value services.control.label)
+CURVE=$(manifest_value services.curve.label)
+[[ "$DEST" == /Library/MiniArchipel/FanControl && "$CONTROL" == local.miniarchipel.fan-control && "$CURVE" == local.miniarchipel.fanctl ]] || { echo 'Fixed root boundary changed; refusing installation' >&2; exit 1; }
+[[ "$(manifest_value paths.socket.path)" == /var/run/mini-archipel/fan-control.sock ]] || exit 1
+[[ "$(manifest_value paths.root_backups.path)" == "/Library/Application Support/MiniArchipel/FanControl/backups" ]] || exit 1
+BACKUP="$(manifest_value paths.root_backups.path)/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP" "$DEST" /Library/Logs/MiniArchipel /Library/MiniArchipel/FanControl
 chmod 700 "$BACKUP" /Library/MiniArchipel/FanControl
 for file in fanctl control.py fanctl.conf; do

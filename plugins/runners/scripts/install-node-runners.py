@@ -2,6 +2,7 @@
 """Install repo-isolated Actions runners on one node; never interrupt a Worker."""
 
 import hashlib
+import fnmatch
 import json
 import os
 import plistlib
@@ -11,9 +12,19 @@ import sys
 import time
 from pathlib import Path
 
+# Release payloads carry the reader beside the installer; source uses plugins/.
+for _directory in Path(__file__).resolve().parents:
+    if (_directory / "manifest_reader.py").is_file():
+        sys.path.insert(0, str(_directory))
+        break
+import manifest_reader as manifests
+
 HOME = Path.home()
-ROOT = HOME / "runners"
+MANIFEST = manifests.for_script(__file__, "runners")
+ROOT = MANIFEST.path("paths.official.path")
 DEPLOY = Path(__file__).resolve().parent
+if sys.argv[1:] == ["--check-manifest"]:
+    print(json.dumps(MANIFEST.data)); raise SystemExit(0)
 PROFILE = json.loads(Path(sys.argv[1]).read_text())
 TOKEN_PATH = Path(sys.argv[2])
 ARCHIVE = Path(sys.argv[3])
@@ -59,6 +70,8 @@ def stopped(label):
 
 
 def stop(label):
+    if not fnmatch.fnmatchcase(label, MANIFEST.value("services.official.label_pattern")):
+        raise RuntimeError("Refusing to operate a non-official Runner service")
     if workers():
         raise RuntimeError(
             "A Worker started; leave services unchanged and retry when idle"
@@ -114,8 +127,9 @@ def main():
         COREPACK_ENABLE_AUTO_PIN="0",
         COREPACK_ENABLE_DOWNLOAD_PROMPT="0",
     )
-    hooks = HOME / ".local/libexec/mini-archipel/ci"
+    hooks = MANIFEST.path("paths.hooks.path", HOME)
     hooks.mkdir(parents=True, exist_ok=True)
+    manifests.bundle(hooks, MANIFEST)
     for name in [
         "ci-lease.py",
         "ci-housekeeping.py",
@@ -128,8 +142,7 @@ def main():
     common["ACTIONS_RUNNER_HOOK_JOB_COMPLETED"] = str(hooks / "job-completed.sh")
     environment = {**os.environ, **common, "PATH": path}
     backup = (
-        HOME
-        / ".local/share/mini-archipel/ci/backups"
+        MANIFEST.path("paths.backups.path", HOME)
         / time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     )
     backup.mkdir(parents=True)

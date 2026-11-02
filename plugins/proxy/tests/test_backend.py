@@ -352,6 +352,47 @@ class Installation(Fixture):
         install.install(self.paths, self.assets, rollback=True)
         self.assert_restored()
 
+    def test_canonical_upgrade_failure_and_rollback_keep_legacy_aliases(self):
+        p = self.paths
+        program = p.home / ".local/libexec/mini-archipel/proxy"
+        state = p.home / ".local/share/mini-archipel/proxy"
+        program.mkdir(parents=True); state.mkdir(parents=True)
+        for old, target in [(p.assets, program / "bin"), (p.root / "backend.py", program / "backend.py"), (p.launcher, program / "mini-proxy-select"), (p.nodes, state / "nodes.json"), (p.config, state / "config.json")]:
+            old.rename(target); old.symlink_to(target)
+        p = backend.Paths(p.home)
+        backend.atomic_write(p.plist, install.service_plist(p))
+        config = p.config.read_bytes()
+        self.start.side_effect = [backend.Failure("unhealthy"), None]
+        with self.assertRaisesRegex(backend.Failure, "previous files/service restored"):
+            install.install(p, self.assets)
+        self.assertEqual(p.config.read_bytes(), config)
+        self.assertTrue((p.root / "nodes.json").is_symlink())
+        self.assertTrue(p.launcher.is_symlink())
+        self.start.side_effect = None
+        install.install(p, self.assets)
+        smoke = subprocess.run([sys.executable, str(p.launcher), "--help"], cwd=self.temporary.name,
+                               env={**__import__("os").environ, "HOME": str(p.home)}, capture_output=True)
+        self.assertEqual(smoke.returncode, 0)
+        manifest = subprocess.run([sys.executable, str(p.program / "manifest_reader.py"), str(p.program / "manifest.toml"), "proxy"],
+                                  cwd=self.temporary.name, capture_output=True)
+        self.assertEqual(manifest.returncode, 0)
+        install.install(p, self.assets, rollback=True)
+        self.assertEqual(p.config.read_bytes(), config)
+        self.assertTrue((p.root / "bin").is_symlink())
+        self.assertTrue(p.launcher.is_symlink())
+
+    def test_canonical_rejects_legacy_snapshot_before_stopping_service(self):
+        fresh = backend.Paths(Path(self.temporary.name) / "canonical-user")
+        self.info.return_value = None
+        result = install.install(fresh, self.assets, self.paths.nodes, "new")
+        snapshot = Path(result["backup"]) / "snapshot.json"
+        record = json.loads(snapshot.read_text());record.pop("layout")
+        snapshot.write_text(json.dumps(record))
+        self.stop.reset_mock()
+        with self.assertRaisesRegex(backend.Failure, "roll back directory layout"):
+            install.install(fresh, self.assets, rollback=True)
+        self.stop.assert_not_called()
+
     def test_failed_upgrade_restores_binary_config_credentials_and_service(self):
         self.start.side_effect = [backend.Failure("unhealthy"), None]
         with self.assertRaisesRegex(backend.Failure, "previous files/service restored"):
