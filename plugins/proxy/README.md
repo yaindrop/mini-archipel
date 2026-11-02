@@ -35,7 +35,7 @@ python3 plugins/proxy/install.py --nodes /path/to/private-nodes.json --node exam
 在目标节点运行安装器；可将整个 `plugins/proxy/` 目录连同 `.cache/assets/` 一起复制过去，
 或通过 `--assets /path/to/verified-assets` 指定离线资源。不要用 root 运行。
 
-已有独立 `com.mini.proxy` 安装的升级与回滚：
+已有独立后端的升级与回滚（沿用已安装的服务标签）：
 
 ```sh
 python3 plugins/proxy/install.py
@@ -49,9 +49,32 @@ python3 plugins/proxy/install.py --rollback
 备份含凭据，目录权限 `700`，文件 `600`，保存在
 `~/.local/share/mini-archipel/mini-proxy-backups/`，按自己的保留策略清理旧备份。
 
-安装器只管理 `com.mini.proxy`。首次安装要求 10808 空闲；端口被其他代理占用时直接拒绝，
+安装器管理 `local.miniarchipel.proxy`，兼容已有 `com.mini.proxy` 安装，两个 plist 并存时拒绝操作。
+首次安装要求 10808 空闲；端口被其他代理占用时直接拒绝，
 不自动迁移。旧的 `com.flowbit.ci-proxy` 不属于该安装器；开启工作台插件也不会把它
 转换成 Mini Proxy 后端。工具不操作 v2ray/v2rayN，不修改系统代理、shell 环境或 Agent 配置。
+
+## 单独迁移服务标签
+
+`migrate-service.py` 将 `com.mini.proxy` 迁至 `local.miniarchipel.proxy`，保留 plist 的其他字段，
+并更新 CLI 后端以识别两种标签。Xray、geo 资源、节点库、配置和命令入口按字节及权限校验。
+先按节点约定停接并等待已有 CI 自然结束，将空闲 Listener 暂停，保留原暂停/停用状态。
+脚本在操作期间持有 CI 钩子与 Agent 共用的 `~/.local/state/mini-archipel/ci/mutex`，
+并持有代理操作锁，防止接单策略恢复 Listener 或并发切换出口。
+
+```sh
+python3 plugins/proxy/migrate-service.py
+python3 plugins/proxy/migrate-service.py --rollback
+```
+
+迁移前保存原 plist、管理代码、加载和禁用状态到权限 `600` 的
+`~/.local/mini-proxy/service-label-migration.json`。异常会自动恢复，进程被强制中断后可用
+`--rollback` 恢复，重试迁移也先恢复未完成事务。原服务未加载时，迁移及回滚均保持未加载。
+迁移后文件有外部改动时拒绝覆盖，需先检查记录和新改动。迁移完成后恢复原接单状态。
+正常安装的旧备份需先回滚标签再恢复，避免把旧标签 plist 写到新标签路径。
+
+Agent 权限检查兼容两种标签。Agent 二进制按持续签名身份单独部署及回退，标签回滚只恢复
+代理管理代码和服务，不覆盖 Agent。双标签兼容 Agent 可以保留到任一标签状态。
 
 ## 节点文件与服务
 
@@ -63,7 +86,7 @@ python3 plugins/proxy/install.py --rollback
 | `~/.config/mini-proxy/config.json`            | 运行配置，权限 600                             |
 | `~/.config/mini-proxy/config.json.previous`   | 上一次切换前的配置，权限 600                   |
 | `~/.local/bin/mini-proxy-select`              | Agent 和人工共用的命令入口                     |
-| `~/Library/LaunchAgents/com.mini.proxy.plist` | 用户登录后常驻服务                             |
+| `~/Library/LaunchAgents/local.miniarchipel.proxy.plist` | 用户登录后常驻服务，兼容旧标签路径 |
 | `~/Library/Logs/MiniProxy/xray.log`           | Xray 日志                                      |
 | `~/.local/mini-proxy/release.json`            | 已安装的资源版本与校验值                       |
 
@@ -117,7 +140,7 @@ provisioning/.venv/bin/ruff format --check plugins/proxy
 ## 节点权限与复验
 
 `agent/` 与 `console/` 分别是原生节点和工作台实现，安装器与 Xray 锁定资源同目录维护。
-工作台按节点静默检查安装文件及 `com.mini.proxy` 用户服务，显示时间、原因与安装入口。
+工作台按节点静默检查安装文件及新旧代理用户服务，显示时间、原因与安装入口。
 当前实现无需额外系统授权：没有 TUN、系统代理或 TCC 请求；`allow_control` 是配置开关。
 “查看授权说明”不会弹出系统授权或改变服务，安装后用“重新检查”复验。
 此权限检查不会读取或改动 v2ray/v2rayN 客户端。

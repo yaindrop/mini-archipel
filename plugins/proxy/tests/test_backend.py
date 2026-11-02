@@ -347,7 +347,7 @@ class Installation(Fixture):
         self.assertEqual(self.paths.nodes.stat().st_mode & 0o777, 0o600)
         self.assertEqual(Path(result["backup"]).stat().st_mode & 0o777, 0o700)
         plist = plistlib.loads(self.paths.plist.read_bytes())
-        self.assertEqual(plist["Label"], "com.mini.proxy")
+        self.assertEqual(plist["Label"], backend.LABEL)
         self.assertEqual(plist["ProgramArguments"][0], str(self.paths.xray))
         install.install(self.paths, self.assets, rollback=True)
         self.assert_restored()

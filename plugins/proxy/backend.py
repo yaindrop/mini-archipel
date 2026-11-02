@@ -19,7 +19,8 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
-LABEL = "com.mini.proxy"
+LABEL = "local.miniarchipel.proxy"
+LEGACY_LABEL = "com.mini.proxy"
 
 
 class Failure(ValueError):
@@ -27,7 +28,7 @@ class Failure(ValueError):
 
 
 class Paths:
-    def __init__(self, home):
+    def __init__(self, home, label=None):
         self.home = Path(home)
         self.root = self.home / ".local/mini-proxy"
         self.assets = self.root / "bin"
@@ -35,8 +36,19 @@ class Paths:
         self.nodes = self.root / "nodes.json"
         self.config = self.home / ".config/mini-proxy/config.json"
         self.launcher = self.home / ".local/bin/mini-proxy-select"
-        self.plist = self.home / "Library/LaunchAgents/com.mini.proxy.plist"
-        self.service = f"gui/{os.getuid()}/{LABEL}"
+        agents = self.home / "Library/LaunchAgents"
+        if label is None:
+            present = [
+                name for name in (LABEL, LEGACY_LABEL) if (agents / (name + ".plist")).exists()
+            ]
+            if len(present) > 1:
+                raise Failure("Conflicting mini-proxy service labels; inspect before operating")
+            label = present[0] if present else LABEL
+        if label not in (LABEL, LEGACY_LABEL):
+            raise Failure("Invalid mini-proxy service label")
+        self.label = label
+        self.plist = agents / (label + ".plist")
+        self.service = f"gui/{os.getuid()}/{label}"
 
 
 def reject_gui_path(path):
@@ -219,7 +231,7 @@ def verify_owner(paths):
     if not paths.plist.exists():
         raise Failure("mini-proxy service is not installed")
     data = plistlib.loads(paths.plist.read_bytes())
-    if data.get("Label") != LABEL or data.get("ProgramArguments") != [
+    if data.get("Label") != paths.label or data.get("ProgramArguments") != [
         str(paths.xray),
         "run",
         "-c",

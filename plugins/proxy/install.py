@@ -119,6 +119,11 @@ def rollback_state(paths, directory):
         for name in state["present"]
     ):
         raise backend.Failure("Incomplete rollback snapshot")
+    if (
+        "service.plist" in state["present"]
+        and plistlib.loads((directory / "service.plist").read_bytes()).get("Label") != paths.label
+    ):
+        raise backend.Failure("Rollback service label differs; roll back the label migration first")
     return state
 
 
@@ -138,7 +143,7 @@ def service_plist(paths):
     log = paths.home / "Library/Logs/MiniProxy/xray.log"
     return plistlib.dumps(
         {
-            "Label": backend.LABEL,
+            "Label": paths.label,
             "ProgramArguments": [str(paths.xray), "run", "-c", str(paths.config)],
             "EnvironmentVariables": {"XRAY_LOCATION_ASSET": str(paths.assets)},
             "RunAtLoad": True,

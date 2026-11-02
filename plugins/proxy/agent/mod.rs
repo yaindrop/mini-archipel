@@ -521,14 +521,21 @@ async fn permission_action(
             .ok()
             .and_then(|text| node_names(&text))
             .is_some();
-    let service = tokio::process::Command::new("/bin/launchctl")
-        .args([
-            "print",
-            &format!("gui/{}/com.mini.proxy", unsafe { libc::getuid() }),
-        ])
-        .output()
-        .await
-        .is_ok_and(|output| output.status.success());
+    let mut service = false;
+    for label in ["local.miniarchipel.proxy", "com.mini.proxy"] {
+        if tokio::process::Command::new("/bin/launchctl")
+            .args([
+                "print",
+                &format!("gui/{}/{label}", unsafe { libc::getuid() }),
+            ])
+            .output()
+            .await
+            .is_ok_and(|output| output.status.success())
+        {
+            service = true;
+            break;
+        }
+    }
     let status = "not-required";
     let message = format!("无需额外授权；仅使用用户级 LaunchAgent，不请求 TCC、TUN 或系统代理权限。安装文件：{}；用户服务：{}。缺失时在目标节点运行 python3 plugins/proxy/install.py；凭据与控制开关不是系统权限。", if installed {"已检测"} else {"未就绪"}, if service {"已加载"} else {"未加载"});
     let result = json!({"user-service":{"status":status,"checked_at":crate::plugins::now(),"requested_at":if request {Some(crate::plugins::now())} else {None},"message":message,"entrypoint":"plugins/proxy/README.md"}});
