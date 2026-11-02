@@ -214,3 +214,48 @@ pnpm audit
 发布先升级 Console，使其可接受无插件的节点，再升级四个 Agent。旧节点暂不提供插件能力时，基础采集仍工作。保留配置、数据库、程序和 LaunchAgent 备份；安装器检查新版本健康接口，失败时恢复上一程序。回滚整个版本时一并恢复对应配置。
 
 线上验收只切换监控插件并比对 Runner 进程，不发送真实 Runner 服务启停命令。完整机器重启恢复与 Agent 用户服务重启是不同的验收项。
+
+### 第 3 步目录迁移与恢复
+
+固定版本源码中的 `python3 plugins/migrate-layout.py <plugin> plan|apply|rollback`
+提供本次目录迁移，支持 proxy、automation、screen-recording、fan-control；Runner/共享 CI
+和风扇 root 资源保持原位。`plan` 只读列出路径动作，不显示配置或回执内容。未安装插件不会
+创建程序或状态。第 4 步接入 manifest 安装器之前，本工具使用本轮固定映射；manifest 仍是资源边界清单。
+
+运维先按维护流程停接 CI、等待已有 Worker 自然完成、暂停空闲 Listener、停止空闲 Agent，
+并正常退出对应空闲 App；本工具检查这些条件，不代办暂停、强停或业务 recover。
+Automation 必须没有 queued/running/waiting_user，所有现存 admission/install/worker/chat/native
+及请求锁均非阻塞取得；缺失的可选 worker/顶层聊天锁保持缺失，不启动业务初始化。
+缺失 admission/install 锁或不完整安装须先调查。运行时仍经旧状态目录别名访问；原生输入
+launcher 特别保留旧 jobURL 拼写，已有 App 字节和身份不变。
+
+私有 journal 位于 `~/.local/share/mini-archipel/migrations/layout-v1-<plugin>.json`，
+记录原对象身份、管理代码/plist 原字节、逐项进度及 proxy 原 loaded/有效 disabled。
+每次动作前持久化，rename/兼容链接之间的中断可由同一 apply 续行，或 rollback 逆向恢复；
+正在 reverse 的事务必须先完成 rollback。普通失败会尝试恢复原布局，冲突时保留 journal
+并停止，不覆盖外部改动。代理重启与检查失败同样尝试恢复。进程被终止则由运维在同样维护
+窗口重跑；成功/恢复后，运维恢复原 Agent/App/Runner 接单状态。journal 含私有路径及管理快照，
+不得上传仓库；本轮兼容链接及 journal 不清理。
+
+rollback 将**当前**状态 rename 回旧位置，保留迁移后业务记录。代理和 Automation 顶层锁
+采用同 inode 硬链接；目录内锁随目录移动。未知根内容、双真实目录、错误链接、跨设备、
+对象不属当前用户、管理文件外部改动均拒绝。新出现但未纳入迁移的文件导致目录无法清空时，
+停止并保留它，交负责人处理，不递归删除。先撤第 3 步布局及管理代码，再撤第 1 步服务标签，
+最后才可使用更早安装备份；原 service-label journal 原样搬移和恢复，绝不更新历史保护哈希。
+
+录屏 support/backups **仍在旧真实目录** `~/Library/Application Support/Agent Screen Recorder`。
+本机隔离 Foundation 探针 `swift plugins/tests/probe-screen-support.swift` 证实目录链接被
+现有 `prepareSupport` 判为 unsafe_state_directory，因此本步只搬 package，不创建 canonical
+状态目录。manifest 的 state/backups 表达目标和旧路径，不能据此声称已迁。后续 App 兼容方案
+另议；不放松安全检查，不重签 App。现场现有签名 CLI 的 exchange 检查仍由节点负责人完成。
+
+旧 proxy、Automation 安装器及会替换 fan 用户载荷的 Agent 安装器，在修改前拒绝已迁布局，
+第 4 步恢复完整安装/升级/回滚功能；录屏安装器继续使用未迁的真实 support，拒绝不支持的
+状态别名。现有命令、旧路径与备份指针继续保留。验证入口：
+`python3 -m unittest discover -s plugins/tests`，另跑 proxy 和 automation/runtime 原测试。
+
+维护驱动已经持 CI mutex 时，不要释放后调用 CLI。通过 `subprocess.run` 的
+`pass_fds=(mutex.fileno(),)` 继承同一个打开的 fd，并追加 `--ci-lock-fd <fd>`；工具核对
+fd 与实际 CI mutex 的 st_dev/st_ino、类型和 owner，并在同一 open-file description 上重申
+非阻塞独占锁。外层始终持有 fd 至 Listener 状态恢复。直接 Python 调用可用
+`migrate(transaction, reverse=False, ci_fd=mutex.fileno())`。所有维护状态检查均在锁已取得后执行。

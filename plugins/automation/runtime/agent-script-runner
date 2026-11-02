@@ -49,7 +49,17 @@ def launch(args):
         raise OSError(f"Application not installed: {app}")
     request = {"mode": args.mode, "path": None, "arguments": [], "cwd": os.getcwd()}
     if args.mode == "input":
-        request.update(path=str(Path(args.job).expanduser().resolve(strict=True)))
+        job = Path(args.job).expanduser().resolve(strict=True)
+        legacy = Path.home() / ".local/share/mini-archipel/desktop-automation"
+        canonical = Path.home() / ".local/share/mini-archipel/automation"
+        if legacy.is_symlink():
+            if os.readlink(legacy) != str(canonical) or canonical.is_symlink():
+                raise ValueError("Unexpected Automation state alias")
+            if job.parent != canonical or not job.is_file():
+                raise ValueError("Input must use the existing durable job store")
+            # The installed App compares standardizedFileURL, not resolved symlinks.
+            job = legacy / job.name
+        request.update(path=str(job))
     elif args.mode == "input-info":
         pass
     elif args.mode == "authorize":

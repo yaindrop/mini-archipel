@@ -17,6 +17,8 @@ target_app="$HOME/Applications/Mini Archipel Plugin - Screen Recorder.app"
 legacy_app="$HOME/Applications/Agent Screen Recorder.app"
 cli="$HOME/.local/bin/agent-screen-recorder"
 support="$HOME/Library/Application Support/Agent Screen Recorder"
+# Support migration is suspended: the installed App requires a real directory.
+[[ ! -L "$support" && ! -e "$HOME/.local/share/mini-archipel/screen-recording" && ! -L "$HOME/.local/share/mini-archipel/screen-recording" ]] || { echo 'Unsupported recorder state layout; restore the real legacy support directory first.' >&2; exit 1; }
 verify_app() {
   codesign --verify --strict "$1"
   [[ $(/usr/bin/plutil -extract CFBundleIdentifier raw -o - "$1/Contents/Info.plist") == org.agent-screen-recorder.app ]] || { echo 'Unexpected companion bundle ID.' >&2; exit 1; }

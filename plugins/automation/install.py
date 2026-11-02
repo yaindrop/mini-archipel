@@ -79,7 +79,14 @@ def register_app():
                 subprocess.run([str(register), "-f", str(app)], check=True, capture_output=True)
 
 
+def reject_migrated_layout():
+    home = Path.home()
+    if any(p.is_symlink() or p.exists() for p in [home / ".local/libexec/mini-archipel/automation", home / ".local/share/mini-archipel/automation"]) or (home / ".local/libexec/mini-archipel-desktop").is_symlink():
+        raise SystemExit("Directory layout migrated; roll back layout before this legacy installer (manifest installer pending)")
+
+
 def install_locked():
+    reject_migrated_layout()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rollback", action="store_true", help="Restore the previous helper release and its companion backup")
     parser.add_argument("--upgrade-app", action="store_true", help="Explicitly replace an existing localized companion, preserving a rollback copy")
@@ -185,6 +192,7 @@ def install_locked():
 
 
 def install():
+    reject_migrated_layout()
     root = Path.home() / ".local/share/mini-archipel/desktop-automation"
     root.mkdir(parents=True, mode=0o700, exist_ok=True)
     descriptors = []

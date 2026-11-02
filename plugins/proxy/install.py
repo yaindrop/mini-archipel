@@ -157,6 +157,8 @@ def service_plist(paths):
 
 
 def install(paths, assets, nodes_source=None, node=None, rollback=False):
+    if paths.migrated:
+        raise backend.Failure("Directory layout migrated; roll back layout before this legacy installer (manifest installer pending)")
     for path in managed(paths).values():
         backend.reject_gui_path(path)
         if path.is_symlink():

@@ -31,10 +31,24 @@ class Paths:
     def __init__(self, home, label=None):
         self.home = Path(home)
         self.root = self.home / ".local/mini-proxy"
-        self.assets = self.root / "bin"
+        self.program = self.home / ".local/libexec/mini-archipel/proxy"
+        self.state = self.home / ".local/share/mini-archipel/proxy"
+        self.migrated = (self.root / "bin").is_symlink()
+        if self.migrated:
+            if os.readlink(self.root / "bin") != str(self.program / "bin"):
+                raise Failure("Unexpected proxy layout alias")
+        elif self.program.exists() or self.state.exists():
+            raise Failure("Incomplete proxy layout migration; recover its journal first")
+        self.assets = (self.program if self.migrated else self.root) / "bin"
         self.xray = self.assets / "xray"
         self.nodes = self.root / "nodes.json"
         self.config = self.home / ".config/mini-proxy/config.json"
+        if self.migrated:
+            self.nodes = self.state / "nodes.json"
+            self.config = self.state / "config.json"
+        self.lock = (self.state if self.migrated else self.root) / ".operation.lock"
+        self.logs = self.home / ("Library/Logs/MiniArchipel/proxy" if self.migrated else "Library/Logs/MiniProxy")
+        self.backups = self.state / "backups" if self.migrated else self.home / ".local/share/mini-archipel/mini-proxy-backups"
         self.launcher = self.home / ".local/bin/mini-proxy-select"
         agents = self.home / "Library/LaunchAgents"
         if label is None:
@@ -60,7 +74,10 @@ def reject_gui_path(path):
 def operation_lock(paths):
     reject_gui_path(paths.root)
     paths.root.mkdir(parents=True, mode=0o700, exist_ok=True)
-    with (paths.root / ".operation.lock").open("a") as stream:
+    fd = os.open(paths.lock, os.O_CREAT | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, "a") as stream:
+        if os.fstat(stream.fileno()).st_uid != os.getuid():
+            raise Failure("Proxy operation lock is not owned by this user")
         os.fchmod(stream.fileno(), 0o600)
         try:
             fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -69,7 +86,39 @@ def operation_lock(paths):
         yield
 
 
+def unsafe_alias(path):
+    # macOS exposes these root-owned system aliases even in private temp directories.
+    return path.is_symlink() and not (str(path) in {"/var", "/tmp", "/etc"}
+        and path.lstat().st_uid == 0 and os.readlink(path) == "private" + str(path))
+
+
+def write_target(path):
+    """Only the precise compatibility aliases created by layout-v1 may be written."""
+    path = Path(path)
+    if path.is_symlink():
+        for home in path.parents:
+            state = home / ".local/share/mini-archipel/proxy"
+            mapping = {
+                home / ".local/mini-proxy" / name: state / name
+                for name in ("nodes.json", "release.json", "rollback.json", "service-label-migration.json")
+            }
+            mapping.update({home / ".config/mini-proxy" / name: state / name
+                            for name in ("config.json", "config.json.previous")})
+            expected = mapping.get(path)
+            if expected and os.readlink(path) == str(expected):
+                if any(unsafe_alias(p) for p in (expected, *expected.parents)):
+                    raise Failure("Unsafe proxy write target")
+                if not expected.is_file() or expected.stat().st_uid != os.getuid():
+                    raise Failure("Unsafe proxy write target")
+                return expected
+        raise Failure("Refusing to replace an unrecognized proxy symlink")
+    if any(unsafe_alias(p) for p in path.parents):
+        raise Failure("Refusing to write through an unrecognized directory symlink")
+    return path
+
+
 def atomic_write(path, data, mode=0o600):
+    path = write_target(path)
     path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=".mini-proxy-", dir=path.parent)
     try:

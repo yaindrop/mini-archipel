@@ -74,3 +74,17 @@ legacy_paths = ["~/Library/Logs/MiniProxy"]
 path = "~/.local/bin/mini-proxy-select"
 owner = "plugin"
 target = "~/.local/libexec/mini-archipel/proxy/mini-proxy-select"
+
+[paths.service_journal]
+path = "~/.local/share/mini-archipel/proxy/service-label-migration.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/service-label-migration.json"]
+
+[paths.config_previous]
+path = "~/.local/share/mini-archipel/proxy/config.json.previous"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.config/mini-proxy/config.json.previous"]

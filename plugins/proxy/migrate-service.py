@@ -202,6 +202,8 @@ def migrate(home, rollback=False):
 
 def migrate_locked(home, rollback=False):
     """Caller holds ci_maintenance through drain, migration and Listener restoration."""
+    if (Path(home) / ".local/mini-proxy/bin").is_symlink() or (Path(home) / ".local/libexec/mini-archipel/proxy").exists():
+        raise backend.Failure("Roll back directory layout before service-label migration")
     old = backend.Paths(home, backend.LEGACY_LABEL)
     new = backend.Paths(home, backend.LABEL)
     with backend.operation_lock(old):

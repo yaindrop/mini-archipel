@@ -5,6 +5,11 @@ umask 077
 cd "$(dirname "$0")"
 BIN=${BIN:-target/release/mini-archipel-agent}
 [[ -x "$BIN" ]] || { echo 'error: build first or set BIN='; exit 1; }
+# Until the manifest installer lands, refuse before changing Agent or fan payload.
+if [[ -L "$HOME/.local/share/mini-archipel/plugins/fan-control" || -e "$HOME/.local/libexec/mini-archipel/fan-control" || -L "$HOME/.local/libexec/mini-archipel/fan-control" ]]; then
+  echo 'error: fan payload layout migrated; use the manifest installer or roll back layout first' >&2
+  exit 1
+fi
 LABEL=local.miniarchipel.agent
 DEST="$HOME/.local/libexec/mini-archipel-agent"
 CONF="$HOME/.config/mini-archipel/agent.toml"
