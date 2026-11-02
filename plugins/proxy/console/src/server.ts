@@ -15,7 +15,7 @@ const ReplySchema = z.object({
   error: z.string().nullable().optional(),
 });
 
-export const miniProxyPlugin: PluginDefinition = {
+export const proxyPlugin: PluginDefinition = {
   id: "proxy",
   label: /*i18n*/ "代理出口",
   version: "1.0.0",

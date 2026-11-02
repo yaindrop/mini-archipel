@@ -4,6 +4,10 @@ import { loadConfig, saveConfig } from "./config.ts";
 import { createApp } from "./app.ts";
 import { serverPlugins } from "./plugins/catalog.server.ts";
 async function main() {
+  if (process.argv[2] === "--check-manifests") {
+    console.log(`Validated ${String(serverPlugins.length)} plugin manifests`);
+    return;
+  }
   const configPath = process.argv[2] ?? "console.json";
   const config = loadConfig(configPath);
   mkdirSync(dirname(config.dbPath), { recursive: true });

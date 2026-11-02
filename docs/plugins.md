@@ -6,6 +6,25 @@ Console使用仓根pnpm workspace，各插件Console包声明正常第三方依�
 
 仓根不保留 `desktop-automation/`、`fan-control/`、`mini-proxy/` 旧目录或符号链接；构建与测试缓存写入各插件目录，历史证据保存在明确的归档位置。
 
+## 插件清单
+
+每个插件在自己的 `manifest.toml` 声明 `schema_version = 1`、规范 `id`，以及实际存在的服务、程序和状态路径、命令、Bundle ID 与旧名。Agent、Console 服务端、工作台仍只在各自 catalog 显式登记。增加清单文件不会自动注册插件。
+
+| 字段 | 约定 |
+| --- | --- |
+| `legacy_ids`、`bundle_id` | 可选，分别用于边界旧 ID 和当前 App 身份 |
+| `services.<key>` | `label`、`domain`（gui/system）、`owner`（plugin/external），可选 `legacy_labels`。external 服务可用 `label_pattern` 代替具体标签 |
+| `paths.<key>` | 规范 `path`、可选 `legacy_paths`、`kind`（program/state/backup/log/app/socket）、`owner` 和 `migration`（move/fixed） |
+| `commands.<key>` | 调用 `path`、`owner`，可选实际 `target` 和 `legacy_paths`，参数由实现通过 argv 传递 |
+
+无内容的字段和资源表省略。automation 和 screen-recording 没有 launchd 服务表。fan-control 明确列出曲线和控制两个 system 服务，root 程序、状态、socket 和日志为 plugin/fixed。runners 的官方服务、安装目录和共享 CI 钩子为 external/fixed。两个 App 保持当前 Bundle ID。
+
+清单中的规范路径是迁移目标，明确列出的旧路径是合法过渡状态。校验不要求目标已经存在，也不触发搬移或改写用户配置。自有 move 路径按类别限定在 `~/.local/libexec/mini-archipel/<id>`、`~/.local/share/mini-archipel/<id>` 或 `~/Library/Logs/MiniArchipel/<id>` 下。external、App 和 socket 路径须为 fixed，既有用户自定义选项继续由插件校验。旧 proxy 根混有程序和状态，后续迁移需按清单逐项处理。
+
+Console 使用直接依赖 smol-toml，构建按服务端 catalog 复制原始清单到 `dist/manifests`，与 server.cjs、store-worker.cjs 和 web 一起安装、备份及回滚。服务端按自身模块位置读取，支持不同 cwd。`node dist/server.cjs --check-manifests` 在启动服务前校验发布包，缺失或无效清单明确失败。`pnpm test:release` 在临时发布目录检查正常启动和缺清单失败，已接入 `pnpm check`。
+
+Rust 通过 catalog 的 include_str 将清单编译进二进制，复用 toml/serde，正常启动和离线配置入口均校验。ID/别名或服务标签冲突拒绝启动，旧 ID 双写拒绝规则继续生效。清单使用简单的单行 TOML 值；五个插件安装器的读取接入与节点路径迁移属于后续阶段，届时须验证缺少 tomllib 的 Python 环境。
+
 ## 权限
 
 各插件自行声明所需权限与实际检测，请求由明确用户操作发起；普通轮询不弹窗。共用权限表显示目标节点、状态、最近检查和失败原因。用户态proxy/runners无需额外TCC，不把token当系统授权；fan-control检查实际特权服务，缺失时提供管理员安装/修复入口；automation检查AX与System Events AppleEvents；screen-recording检查真实屏幕帧和可选输入tap。系统本人确认仍由节点操作者完成。

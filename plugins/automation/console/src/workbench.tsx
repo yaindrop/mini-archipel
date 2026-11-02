@@ -62,7 +62,7 @@ function download(report: unknown) {
   }, 1000);
 }
 
-export function DesktopAutomation({ archipel, now }: WorkspaceProps) {
+export function Automation({ archipel, now }: WorkspaceProps) {
   const { t } = useLingui(),
     [search, setSearch] = useSearchParams();
   const host =

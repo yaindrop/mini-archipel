@@ -3,10 +3,11 @@
 set -euo pipefail
 umask 077
 cd "$(dirname "$0")"
-[[ -f dist/server.cjs && -f dist/store-worker.cjs && -f dist/web/index.html ]] || { echo 'error: run pnpm install --frozen-lockfile && pnpm check first'; exit 1; }
+[[ -f dist/server.cjs && -f dist/store-worker.cjs && -f dist/web/index.html && -d dist/manifests ]] || { echo 'error: run pnpm install --frozen-lockfile && pnpm check first'; exit 1; }
 NODE_BIN=${NODE_BIN:-$(command -v node)}
 [[ -x "$NODE_BIN" ]] || { echo 'error: node not found (set NODE_BIN=)'; exit 1; }
 "$NODE_BIN" -e 'const [major, minor] = process.versions.node.split(".").map(Number); if ((major !== 24 && major !== 26) || (major === 24 && minor < 12)) process.exit(1)' || { echo 'error: Node 24.12+ or 26 required'; exit 1; }
+"$NODE_BIN" dist/server.cjs --check-manifests
 LABEL=local.miniarchipel.console
 DEST_DIR="$HOME/.local/libexec/mini-archipel-console"
 CONF_DIR="$HOME/.config/mini-archipel"
@@ -47,6 +48,7 @@ mkdir -p "$STAGE_DIR/web"
 install -m 644 dist/server.cjs "$STAGE_DIR/server.cjs"
 install -m 644 dist/store-worker.cjs "$STAGE_DIR/store-worker.cjs"
 cp -R dist/web/. "$STAGE_DIR/web/"
+cp -R dist/manifests "$STAGE_DIR/manifests"
 # Retain the immediately previous deployment for rollback; archive older backups before rerunning.
 if [[ -e "$BACKUP_DIR" ]]; then mv "$BACKUP_DIR" "${BACKUP_DIR}-$(date +%Y%m%d-%H%M%S)"; fi
 PLIST_BACKUP="${PLIST}.previous"

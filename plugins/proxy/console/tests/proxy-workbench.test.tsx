@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntApp } from "antd";
 import { MemoryRouter } from "react-router";
 import type { Host } from "../../../../console/src/contracts.ts";
-import { MiniProxy } from "../src/workbench.tsx";
+import { Proxy } from "../src/workbench.tsx";
 import { api } from "../../../../console/src/web/api.ts";
 import { makeHost } from "../../../../console/tests/fixtures.ts";
 
@@ -104,7 +104,7 @@ describe("mini-proxy check-all", () => {
         <QueryClientProvider client={client}>
           <MemoryRouter>
             <AntApp>
-              <MiniProxy
+              <Proxy
                 now={now}
                 archipel={{
                   ts: now,

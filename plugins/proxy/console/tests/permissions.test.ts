@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { miniProxyPlugin } from "../src/server.ts";
+import { proxyPlugin } from "../src/server.ts";
 import type { PluginContext } from "../../../../console/src/plugins/runtime.ts";
 import { makeHost } from "../../../../console/tests/fixtures.ts";
 describe("proxy permission boundary", () => {
@@ -21,7 +21,7 @@ describe("proxy permission boundary", () => {
       command,
       transport: vi.fn(),
     };
-    const instance = miniProxyPlugin.create(context, {});
+    const instance = proxyPlugin.create(context, {});
     for (const action of ["permission-check", "permission-request"]) {
       await instance.action(action, {
         host: host.name,
@@ -43,7 +43,7 @@ describe("proxy permission boundary", () => {
       command,
       transport: vi.fn(),
     };
-    const instance = miniProxyPlugin.create(context, {});
+    const instance = proxyPlugin.create(context, {});
     await expect(
       instance.action("permission-check", {
         host: "node",

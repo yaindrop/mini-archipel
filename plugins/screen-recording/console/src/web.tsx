@@ -4,7 +4,7 @@ import { msg } from "@lingui/core/macro";
 import { Video } from "lucide-react";
 import type { WorkbenchPlugin } from "../../../../console/src/web/plugins.tsx";
 import "./styles.css";
-export const screenRecorderWorkbench: WorkbenchPlugin = {
+export const screenRecordingWorkbench: WorkbenchPlugin = {
   id: "screen-recording",
   get label() {
     return i18n._(msg`屏幕录制`);
@@ -13,7 +13,7 @@ export const screenRecorderWorkbench: WorkbenchPlugin = {
   icon: Video,
   nodeOrder: 0,
   Page: lazy(async () => ({
-    default: (await import("./workbench.tsx")).ScreenRecorder,
+    default: (await import("./workbench.tsx")).ScreenRecording,
   })),
   NodePanel: lazy(async () => ({
     default: (await import("./workbench.tsx")).NodePanel,

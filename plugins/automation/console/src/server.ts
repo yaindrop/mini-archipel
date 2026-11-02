@@ -14,7 +14,7 @@ import {
 } from "./contracts.ts";
 import { desktopCurrent, desktopData } from "./domain.ts";
 
-export const desktopAutomationPlugin: PluginDefinition = {
+export const automationPlugin: PluginDefinition = {
   id: "automation",
   label: /*i18n*/ "桌面自动化",
   version: "1.2.0",

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { JobRequestSchema } from "../src/contracts.ts";
 import { desktopCurrent, desktopData } from "../src/domain.ts";
-import { desktopAutomationPlugin } from "../src/server.ts";
+import { automationPlugin } from "../src/server.ts";
 import type { PluginContext } from "../../../../console/src/plugins/runtime.ts";
 import { makeHost } from "../../../../console/tests/fixtures.ts";
 import { desktopFixture } from "./desktop-fixture.ts";
@@ -39,7 +39,7 @@ function fixture() {
     host,
     data,
     command,
-    plugin: desktopAutomationPlugin.create(context, {}),
+    plugin: automationPlugin.create(context, {}),
   };
 }
 

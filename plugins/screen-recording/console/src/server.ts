@@ -8,7 +8,7 @@ import {
   readonlyAction,
 } from "./contracts.ts";
 import { recorderCurrent, recorderData } from "./domain.ts";
-export const screenRecorderPlugin: PluginDefinition = {
+export const screenRecordingPlugin: PluginDefinition = {
   id: "screen-recording",
   label: /*i18n*/ "屏幕录制",
   version: "1.0.0",

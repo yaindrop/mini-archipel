@@ -1,5 +1,6 @@
 pub mod catalog;
 pub mod cli;
+mod manifest;
 
 use crate::collectors::disk_rules::{self, PluginRule, RulesUpdate, RulesView};
 use crate::collectors::Shared;

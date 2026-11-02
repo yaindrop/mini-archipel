@@ -324,11 +324,11 @@ async fn artifact(o: &Options, body: Value) -> Result<Value, Failure> {
     )
 }
 #[derive(Default)]
-pub struct ScreenRecorder {
+pub struct ScreenRecording {
     operations: tokio::sync::Mutex<()>,
     permissions: tokio::sync::Mutex<std::collections::BTreeMap<String, Value>>,
 }
-impl ScreenRecorder {
+impl ScreenRecording {
     async fn permission_result(&self, action: &str, reply: &Value, waiting: bool) {
         let key = if action.starts_with("pointer-") {
             "input"
@@ -395,7 +395,7 @@ impl ScreenRecorder {
         data
     }
 }
-impl Plugin for ScreenRecorder {
+impl Plugin for ScreenRecording {
     fn id(&self) -> &'static str {
         "screen-recording"
     }
@@ -741,7 +741,7 @@ mod tests {
             state,
             cancelled: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
         };
-        let plugin = ScreenRecorder::default();
+        let plugin = ScreenRecording::default();
         let options =
             json!({"allow_control":true,"cli":"/missing/recorder","output_directory":directory});
         let result = plugin

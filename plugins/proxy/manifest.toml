@@ -1,0 +1,76 @@
+schema_version = 1
+id = "proxy"
+legacy_ids = ["mini-proxy"]
+
+[services.proxy]
+label = "local.miniarchipel.proxy"
+domain = "gui"
+owner = "plugin"
+legacy_labels = ["com.mini.proxy"]
+
+[paths.program]
+path = "~/.local/libexec/mini-archipel/proxy"
+kind = "program"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy"]
+
+[paths.state]
+path = "~/.local/share/mini-archipel/proxy"
+kind = "state"
+owner = "plugin"
+migration = "move"
+
+[paths.nodes]
+path = "~/.local/share/mini-archipel/proxy/nodes.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/nodes.json"]
+
+[paths.config]
+path = "~/.local/share/mini-archipel/proxy/config.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.config/mini-proxy/config.json"]
+
+[paths.release]
+path = "~/.local/share/mini-archipel/proxy/release.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/release.json"]
+
+[paths.rollback]
+path = "~/.local/share/mini-archipel/proxy/rollback.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/rollback.json"]
+
+[paths.lock]
+path = "~/.local/share/mini-archipel/proxy/.operation.lock"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/mini-proxy/.operation.lock"]
+
+[paths.backups]
+path = "~/.local/share/mini-archipel/proxy/backups"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/share/mini-archipel/mini-proxy-backups"]
+
+[paths.logs]
+path = "~/Library/Logs/MiniArchipel/proxy"
+kind = "log"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/Library/Logs/MiniProxy"]
+
+[commands.select]
+path = "~/.local/bin/mini-proxy-select"
+owner = "plugin"
+target = "~/.local/libexec/mini-archipel/proxy/mini-proxy-select"

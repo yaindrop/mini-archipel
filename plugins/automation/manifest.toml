@@ -1,0 +1,102 @@
+schema_version = 1
+id = "automation"
+legacy_ids = ["desktop-automation"]
+bundle_id = "local.yaindrop.agent-script-runner"
+
+[paths.program]
+path = "~/.local/libexec/mini-archipel/automation"
+kind = "program"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop"]
+
+[paths.state]
+path = "~/.local/share/mini-archipel/automation"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/share/mini-archipel/desktop-automation"]
+
+[paths.receipts]
+path = "~/.local/share/mini-archipel/automation/chat-requests"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.agent-chat-requests"]
+
+[paths.desktop_lock]
+path = "~/.local/share/mini-archipel/automation/.codex-chat.lock"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.codex-chat.lock"]
+
+[paths.native_lock]
+path = "~/.local/share/mini-archipel/automation/.agent-chat-native.lock"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.agent-chat-native.lock"]
+
+[paths.previous]
+path = "~/.local/share/mini-archipel/automation/backups/previous"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop.previous"]
+
+[paths.companion_backups]
+path = "~/.local/share/mini-archipel/automation/companion-backups"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/share/mini-archipel/desktop-automation/companion-backups"]
+
+[paths.rollback]
+path = "~/.local/share/mini-archipel/automation/companion-backup.json"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/companion-backup.json"]
+
+[paths.app]
+path = "~/Applications/Mini Archipel Plugin - Automation.app"
+kind = "app"
+owner = "plugin"
+migration = "fixed"
+legacy_paths = ["~/Agent Script Runner.app"]
+
+[commands.runner]
+path = "~/agent-script-runner"
+owner = "plugin"
+target = "~/.local/libexec/mini-archipel/automation/agent-script-runner"
+
+[commands.desktop_automation]
+path = "~/.local/libexec/mini-archipel/automation/desktop-automation"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/desktop-automation"]
+
+[commands.codex_chat]
+path = "~/.local/libexec/mini-archipel/automation/codex-chat"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/codex-chat"]
+
+[commands.zcode_chat]
+path = "~/.local/libexec/mini-archipel/automation/zcode-chat"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/zcode-chat"]
+
+[commands.codex_ui]
+path = "~/.local/libexec/mini-archipel/automation/codex-ui"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/codex-ui"]
+
+[commands.zcode_ui]
+path = "~/.local/libexec/mini-archipel/automation/zcode-ui"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/zcode-ui"]
+
+[commands.permissions]
+path = "~/.local/libexec/mini-archipel/automation/permissions"
+owner = "plugin"
+legacy_paths = ["~/.local/libexec/mini-archipel-desktop/permissions"]

@@ -20,6 +20,7 @@ export default defineConfig({
         "src/archipel.ts",
         "src/app.ts",
         "src/plugins/runtime.ts",
+        "src/plugins/manifest.ts",
         "../plugins/runners/console/src/domain.ts",
         "../plugins/runners/console/src/server.ts",
         "../plugins/fan-control/console/src/domain.ts",

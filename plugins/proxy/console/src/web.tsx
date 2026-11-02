@@ -5,7 +5,7 @@ import { Globe } from "lucide-react";
 import type { WorkbenchPlugin } from "../../../../console/src/web/plugins.tsx";
 import "./styles.css";
 
-export const miniProxyWorkbench: WorkbenchPlugin = {
+export const proxyWorkbench: WorkbenchPlugin = {
   id: "proxy",
   get label() {
     return i18n._(msg`代理出口`);
@@ -14,6 +14,6 @@ export const miniProxyWorkbench: WorkbenchPlugin = {
   icon: Globe,
   nodeOrder: 0,
   Page: lazy(async () => ({
-    default: (await import("./workbench.tsx")).MiniProxy,
+    default: (await import("./workbench.tsx")).Proxy,
   })),
 };

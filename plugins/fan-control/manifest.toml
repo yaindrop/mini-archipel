@@ -1,0 +1,95 @@
+schema_version = 1
+id = "fan-control"
+
+[services.curve]
+label = "local.miniarchipel.fanctl"
+domain = "system"
+owner = "plugin"
+legacy_labels = ["com.macmini.fan-control"]
+
+[services.control]
+label = "local.miniarchipel.fan-control"
+domain = "system"
+owner = "plugin"
+
+[paths.program]
+path = "~/.local/libexec/mini-archipel/fan-control"
+kind = "program"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/share/mini-archipel/plugins/fan-control"]
+
+[paths.backups]
+path = "~/.local/share/mini-archipel/fan-control/backups"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+
+[paths.root_program]
+path = "/Library/MiniArchipel/FanControl"
+kind = "program"
+owner = "plugin"
+migration = "fixed"
+
+[paths.root_config]
+path = "/Library/MiniArchipel/FanControl/control.json"
+kind = "state"
+owner = "plugin"
+migration = "fixed"
+
+[paths.curve_config]
+path = "/Library/MiniArchipel/FanControl/fanctl.conf"
+kind = "state"
+owner = "plugin"
+migration = "fixed"
+
+[paths.curve_state]
+path = "/Library/MiniArchipel/FanControl/fanctl.runtime.json"
+kind = "state"
+owner = "plugin"
+migration = "fixed"
+
+[paths.root_state]
+path = "/Library/Application Support/MiniArchipel/FanControl/state.json"
+kind = "state"
+owner = "plugin"
+migration = "fixed"
+
+[paths.root_backups]
+path = "/Library/Application Support/MiniArchipel/FanControl/backups"
+kind = "backup"
+owner = "plugin"
+migration = "fixed"
+
+[paths.socket]
+path = "/var/run/mini-archipel/fan-control.sock"
+kind = "socket"
+owner = "plugin"
+migration = "fixed"
+
+[paths.curve_log]
+path = "/Library/Logs/MiniArchipel/fan-control.log"
+kind = "log"
+owner = "plugin"
+migration = "fixed"
+
+[paths.control_log]
+path = "/Library/Logs/MiniArchipel/plugin.log"
+kind = "log"
+owner = "plugin"
+migration = "fixed"
+
+[paths.log_rotation]
+path = "/etc/newsyslog.d/miniarchipel-fanctl.conf"
+kind = "state"
+owner = "plugin"
+migration = "fixed"
+
+[commands.fanctl]
+path = "/Library/MiniArchipel/FanControl/fanctl"
+owner = "plugin"
+
+[commands.install]
+path = "~/.local/libexec/mini-archipel/fan-control/install.command"
+owner = "plugin"
+legacy_paths = ["~/.local/share/mini-archipel/plugins/fan-control/install.command"]

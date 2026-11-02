@@ -1,0 +1,43 @@
+schema_version = 1
+id = "screen-recording"
+legacy_ids = ["screen-recorder"]
+bundle_id = "org.agent-screen-recorder.app"
+
+[paths.program]
+path = "~/.local/libexec/mini-archipel/screen-recording"
+kind = "program"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/.local/libexec/mini-archipel-screen-recorder"]
+
+[paths.state]
+path = "~/.local/share/mini-archipel/screen-recording"
+kind = "state"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/Library/Application Support/Agent Screen Recorder"]
+
+[paths.backups]
+path = "~/.local/share/mini-archipel/screen-recording/backups"
+kind = "backup"
+owner = "plugin"
+migration = "move"
+legacy_paths = ["~/Library/Application Support/Agent Screen Recorder/backups"]
+
+[paths.app]
+path = "~/Applications/Mini Archipel Plugin - Screen Recorder.app"
+kind = "app"
+owner = "plugin"
+migration = "fixed"
+legacy_paths = ["~/Applications/Agent Screen Recorder.app"]
+
+[paths.output]
+path = "~/Movies/Mini Archipel"
+kind = "state"
+owner = "external"
+migration = "fixed"
+
+[commands.recorder]
+path = "~/.local/bin/agent-screen-recorder"
+owner = "plugin"
+target = "~/Applications/Mini Archipel Plugin - Screen Recorder.app/Contents/MacOS/AgentScreenRecorder"

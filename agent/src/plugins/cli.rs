@@ -17,7 +17,7 @@ fn validate(config: &config::Config, definitions: &[Arc<dyn Plugin>]) -> Result<
 /// Offline bootstrap only. Runtime changes use the authenticated plugin settings endpoint.
 pub fn configure(path: &str, id: &str, enabled: &str) -> Result<(), Box<dyn std::error::Error>> {
     let id = catalog::canonical_id(id);
-    let definitions = catalog::installed();
+    let definitions = catalog::installed()?;
     let mut config = config::load(path)?;
     if !definitions.iter().any(|plugin| plugin.id() == id) {
         return Err("plugin not installed".into());
@@ -35,7 +35,7 @@ pub fn configure(path: &str, id: &str, enabled: &str) -> Result<(), Box<dyn std:
 
 pub fn check(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     let config = config::load(path)?;
-    validate(&config, &catalog::installed())?;
+    validate(&config, &catalog::installed()?)?;
     // Only the public bind address is printed, never tokens or plugin options.
     println!("{}", config.bind);
     Ok(())

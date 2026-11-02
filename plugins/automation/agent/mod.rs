@@ -194,8 +194,8 @@ async fn read(options: &Options) -> Value {
     }
     state
 }
-pub struct DesktopAutomation;
-impl Plugin for DesktopAutomation {
+pub struct Automation;
+impl Plugin for Automation {
     fn id(&self) -> &'static str {
         "automation"
     }

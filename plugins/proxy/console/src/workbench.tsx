@@ -227,13 +227,7 @@ function HostProxy({ host, now }: { host: Host; now: number }) {
   );
 }
 
-export function MiniProxy({
-  archipel,
-  now,
-}: {
-  archipel: Archipel;
-  now: number;
-}) {
+export function Proxy({ archipel, now }: { archipel: Archipel; now: number }) {
   const { t } = useLinguiMacro();
   const client = useQueryClient();
   const { message: feedback } = App.useApp();

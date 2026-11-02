@@ -1,0 +1,47 @@
+schema_version = 1
+id = "runners"
+
+[services.official]
+label_pattern = "actions.runner.*"
+domain = "gui"
+owner = "external"
+
+[paths.official]
+path = "~/runners"
+kind = "program"
+owner = "external"
+migration = "fixed"
+
+[paths.hooks]
+path = "~/.local/libexec/mini-archipel/ci"
+kind = "program"
+owner = "external"
+migration = "fixed"
+
+[paths.state]
+path = "~/.local/state/mini-archipel/ci"
+kind = "state"
+owner = "external"
+migration = "fixed"
+
+[paths.backups]
+path = "~/.local/share/mini-archipel/ci/backups"
+kind = "backup"
+owner = "external"
+migration = "fixed"
+
+[commands.ci_lease_py]
+path = "~/.local/libexec/mini-archipel/ci/ci-lease.py"
+owner = "external"
+
+[commands.ci_housekeeping_py]
+path = "~/.local/libexec/mini-archipel/ci/ci-housekeeping.py"
+owner = "external"
+
+[commands.job_started_sh]
+path = "~/.local/libexec/mini-archipel/ci/job-started.sh"
+owner = "external"
+
+[commands.job_completed_sh]
+path = "~/.local/libexec/mini-archipel/ci/job-completed.sh"
+owner = "external"

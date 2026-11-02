@@ -3,7 +3,7 @@ import { readFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InputRequestSchema } from "../src/input-contracts.ts";
-import { desktopAutomationPlugin } from "../src/server.ts";
+import { automationPlugin } from "../src/server.ts";
 import type { PluginContext } from "../../../../console/src/plugins/runtime.ts";
 import {
   config,
@@ -64,7 +64,7 @@ function fixture() {
     data,
     toolkit: data.toolkit,
     command,
-    plugin: desktopAutomationPlugin.create(context, {}),
+    plugin: automationPlugin.create(context, {}),
   };
 }
 afterEach(() => vi.useRealTimers());
@@ -273,7 +273,7 @@ describe("native input boundary", () => {
         webDir: mkdtempSync(join(tmpdir(), "automation-console-02-")),
         transport,
         startPolling: false,
-        plugins: [desktopAutomationPlugin],
+        plugins: [automationPlugin],
       },
     );
     try {

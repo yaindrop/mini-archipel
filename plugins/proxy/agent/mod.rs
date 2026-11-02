@@ -301,11 +301,11 @@ fn body_node(body: &Value) -> Result<String, Failure> {
 }
 
 #[derive(Default)]
-pub struct MiniProxy {
+pub struct Proxy {
     health: Health,
 }
 
-impl Plugin for MiniProxy {
+impl Plugin for Proxy {
     fn id(&self) -> &'static str {
         "proxy"
     }

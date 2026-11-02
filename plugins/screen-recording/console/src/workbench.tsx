@@ -35,7 +35,7 @@ import { recorderCurrent, recorderData, recordingId } from "./domain.ts";
 
 import { PermissionChecks } from "../../../../console/src/web/permission-checks.tsx";
 
-export function ScreenRecorder({ archipel, now }: WorkspaceProps) {
+export function ScreenRecording({ archipel, now }: WorkspaceProps) {
   const { t } = useLingui(),
     [search, setSearch] = useSearchParams();
   const host =

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { screenRecorderPlugin } from "../src/server.ts";
+import { screenRecordingPlugin } from "../src/server.ts";
 import { StartSchema } from "../src/contracts.ts";
 import { recorderCurrent, recordingId } from "../src/domain.ts";
 import { makeHost } from "../../../../console/tests/fixtures.ts";
@@ -55,7 +55,7 @@ function fixture() {
     host,
     data,
     command,
-    plugin: screenRecorderPlugin.create(context, {}),
+    plugin: screenRecordingPlugin.create(context, {}),
   };
 }
 describe("screen recording boundary", () => {

@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             config.clone(),
             path.into(),
             Arc::clone(&core),
-            plugins::catalog::installed(),
+            plugins::catalog::installed()?,
         )
         .await?,
     );
